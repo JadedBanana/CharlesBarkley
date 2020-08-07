@@ -10,3 +10,5 @@ LOGS_DIR = 'logs'
 # Bot stuff
 BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.8jBguEMXHXFmZvXOY5UAdXu4FE0'
 GLOBAL_PREFIX = 'j!'
+
+RUNTIME_PREFIX = 'Bot has been running for '
