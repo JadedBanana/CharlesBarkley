@@ -9,22 +9,28 @@ LOG_TO_FILE = True
 DO_LEVEL_HEADERS = True
 DO_TIMESTAMPS = True
 LOGS_DIR = 'logs'
+
 # Server, channel, user
 COMM_LOG_PREFIX = '{} ({}, {}): '
 
 # Bot stuff
+# Global crap
 BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.8jBguEMXHXFmZvXOY5UAdXu4FE0'
 GLOBAL_PREFIX = 'j!'
 
-YOUTUBE_API_KEY = 'AIzaSyDfdrytJZ4Ft9W76VdR-t4HOZTOR7ESMEg'
+# YouTube
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
+YOUTUBE_CLIENT_SECRETS_FILE = 'google_client_secret.json'
 YOUTUBE_RICKROLL_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 YOUTUBE_RICKROLL_CHANCE = 0.0002
-YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search?key={}&maxResults={}&part=snippet&type=video&q={}'
+YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 YOUTUBE_SEARCH_COUNT = 100
 YOUTUBE_SEARCH_LENGTHS = [1, 2, 3, 4, 5]
 YOUTUBE_SEARCH_WEIGHTS = [36, 1296, 46656, 1679616, 60466176]
 YOUTUBE_VIDEO_URL_FORMAT = 'https://www.youtube.com/watch?v={}'
 
+# Globals for the eval function
 import math
 import util
 EVAL_GLOBALS = {
@@ -57,12 +63,15 @@ EVAL_GLOBALS = {
 	'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
 }
 
+# Conversion chars
 CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
 MAX_CONVERT_DEPTH = -16
 
+# Runtime and Uptime
 RUNTIME_PREFIX = 'Bot has been running for '
 UPTIME_PREFIX = 'Bot has been connected for '
 
+# Help message
 HELP_MSG ='''```
 Jadi3Pi {} Help
 PREFIX: j!

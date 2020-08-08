@@ -1,18 +1,25 @@
 # Jadi3Pi run file
+# Set the working directory to what we want so our imports work correctly
+import os
+os.chdir('/home/pi/Jadi3Pi')
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+import googleapiclient.errors
 from datetime import datetime
-from urllib import request
 from sys import exc_info
 import constants
 import discord
 import logger
 import random
 import string
+import urllib
 import json
 import math
 import time
-import os
 
 # Establishes logger
 log = logger.JLogger()
@@ -114,16 +121,11 @@ class JadieClient(discord.Client):
             log.info(f'{self.user} has disconnected from Discord')
             self.reconnected_since = False
         
-    async def on_error(event, *args, **kwargs):
-        print(event)
-        print(args)
-        print(kwargs)
-        print(exc_info())
-        
     async def on_message(self, message):
         """
         Reacts to messages.
         """        
+        print(message.author.id)
         # Checks to make sure the message, channel, and author exist.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
@@ -238,18 +240,18 @@ class JadieClient(discord.Client):
         # Otherwise...
         search_results = {'items': []}
         while not search_results['items']:
-            # Gets random search term and searches
+            # Gets random search term
             random_search = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(random.choices(constants.YOUTUBE_SEARCH_LENGTHS, weights=constants.YOUTUBE_SEARCH_WEIGHTS)[0]))
-            url_data = constants.YOUTUBE_SEARCH_URL.format(constants.YOUTUBE_API_KEY, constants.YOUTUBE_SEARCH_COUNT, random_search)
             
-            # Opens url
-            url_data = request.urlopen(url_data)
-            data = url_data.read()
-            
-            # Decodes data and makes it into a dict
-            encoding = url_data.info().get_content_charset('utf-8')
-            search_results = json.loads(data.decode(encoding))
-            
+            # Get credentials and create an API client
+            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(constants.YOUTUBE_CLIENT_SECRETS_FILE, constants.YOUTUBE_SCOPES)
+            credentials = flow.run_console()
+            youtube = googleapiclient.discovery.build(constants.YOUTUBE_API_SERVICE_NAME, constants.YOUTUBE_API_VERSION, credentials=credentials)
+
+            # Forms request and searches
+            request = youtube.search().list(part="snippet", maxResults=constants.YOUTUBE_SEARCH_COUNT, q=random_search)
+            search_results = request.execute()
+
         # Create list of video id's
         video_ids = [video['id']['videoId'] for video in search_results['items']]
         
@@ -495,7 +497,6 @@ class JadieClient(discord.Client):
             return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'DM')
         else:
             return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'Group Chat')
-                
     
     async def __get_num_from_argument(self, message, argument):
         # Gets usages for arguments
