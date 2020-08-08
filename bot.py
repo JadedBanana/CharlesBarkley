@@ -1,13 +1,16 @@
 # Jadi3Pi run file
 # Imports
+from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime
 from urllib import request
+from sys import exc_info
 import constants
 import discord
 import logger
 import random
 import string
 import json
+import math
 import time
 import os
 
@@ -64,7 +67,11 @@ class JadieClient(discord.Client):
             'randomyt': self.randomyt,
             'randomyoutube': self.randomyt,
             'ytroulette': self.randomyt,
-            'youtuberoulette': self.randomyt
+            'youtuberoulette': self.randomyt,
+            'calc': self.evaluate,
+            'eval': self.evaluate,
+            'calculate': self.evaluate,
+            'evaluate': self.evaluate
         }
     
     async def on_ready(self):
@@ -107,16 +114,28 @@ class JadieClient(discord.Client):
             log.info(f'{self.user} has disconnected from Discord')
             self.reconnected_since = False
         
+    async def on_error(event, *args, **kwargs):
+        print(event)
+        print(args)
+        print(kwargs)
+        print(exc_info())
+        
     async def on_message(self, message):
         """
         Reacts to messages.
-        """
-        if not message or not message.content or not message.channel or not message.guild or not message.author or message.author == self.user:
+        """        
+        # Checks to make sure the message, channel, and author exist.
+        if not message or not message.content or not message.channel or not message.author or message.author == self.user:
+            return
+            
+        # If the channel is a TextChannel, we check to make sure the guild exists and is good.
+        is_in_guild = isinstance(message.channel, discord.TextChannel)
+        if is_in_guild and not message.guild:
             return
             
         # Reactive commands (will return True if method should return now)
         # =================================================================
-        if await self.copy_msg(message): # Copy will copy a user's message if they're in the copy dict
+        if await self.copy_msg(message, is_in_guild): # Copy will copy a user's message if they're in the copy dict
             return
         
         # Prompted commands
@@ -129,23 +148,29 @@ class JadieClient(discord.Client):
             
         # Grabs specific method from dict and runs command
         if command in self.command_dict.keys():
-            await self.command_dict[command](message, argument)
+            await self.command_dict[command](message, argument, is_in_guild)
     
     
     # ===============================================================
     #                        FUN COMMANDS
     # ===============================================================
-    async def copy_msg(self, message):
+    async def copy_msg(self, message, is_in_guild):
         """
         Copies a user's message if they have been deemed COPIABLE by someone. 
         That is, unless the message is to stop copying.
         """
         if message.content.startswith('j!stopcopying') and (len(message.content) == 13 or message.content[13] == ' '):
             return
-        if str(message.guild.id) in self.copied_users.keys() and message.author in self.copied_users[str(message.guild.id)]:
-            await message.channel.send(message.content)
+        # Inside guilds
+        if is_in_guild:
+            if str(message.guild.id) in self.copied_users.keys() and message.author in self.copied_users[str(message.guild.id)]:
+                await message.channel.send(message.content)
+        # Inside DM's and Group Chats
+        else:
+            if str(message.channel.id) in self.copied_users.keys() and message.author in self.copied_users[str(message.channel.id)]:
+                await message.channel.send(message.content)
         
-    async def copy_user(self, message, argument):
+    async def copy_user(self, message, argument, is_in_guild):
         """
         Marks a user down as copiable.
         Copiable users will be copied in every message they send.
@@ -154,44 +179,63 @@ class JadieClient(discord.Client):
         users = self.__get_closest_users(message, argument)
         if not users:
             await message.channel.send('Invalid user.')
-            log.info(self.__get_comm_start + 'requested copy for user ' + argument + ', invalid user')
+            log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid user')
             return
         
+        # Gets the key we'll be using for the copied_users dict.
+        if is_in_guild:
+            copied_key = str(message.guild.id)
+        else:
+            copied_key = str(message.channel.id)
+        if copied_key not in self.copied_users.keys():
+            self.copied_users.update({copied_key: []})
+            
         # Adds the users to the copy dict.
-        if str(message.guild.id) not in self.copied_users.keys():
-            self.copied_users.update({str(message.guild.id): []})
         for user in users:
             
             # Checks to make sure it isn't self.
             if user == self.user:
                 if not len(users) - 1:
-                    log.debug(self.__get_comm_start + 'requested copy for THIS BOT. T_T')
+                    log.debug(self.__get_comm_start(message, is_in_guild) + 'requested copy for THIS BOT. T_T')
                     await message.channel.send('Yeah, no, I\'m not gonna copy myself.')
                 continue
                 
             # Other.
             await message.channel.send('Now copying user ' + (user.nick if user.nick else str(user)))
-            if user not in self.copied_users[str(message.guild.id)]:
-                self.copied_users[str(message.guild.id)].append(user)
-                log.info(self.__get_comm_start + 'requested copy for user ' + str(user) + ', now copying')
+            if user not in self.copied_users[copied_key]:
+                self.copied_users[copied_key].append(user)
+                log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', now copying')
             else:
-                log.info(self.__get_comm_start + 'requested copy for user ' + str(user) + ', already copying')
+                log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', already copying')
             
-    async def stop_copying(self, message, argument):
+    async def stop_copying(self, message, argument, is_in_guild):
         """
         Stops copying everyone in a server.
         """
+        # Gets copy key
+        if is_in_guild:
+            copied_key = str(message.guild.id)
+        else:
+            copied_key = str(message.channel.id)
+            
         # If the thing exists in the dict
-        if str(message.guild.id) in self.copied_users.keys():
-            log.debug(self.__get_comm_start(message) + 'requested to stop copying people, {} users deleted from copied_users'.format(len(self.copied_users[str(message.guild.id)])))
-            self.copied_users.pop(str(message.guild.id))
+        if copied_key in self.copied_users.keys():
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
+            self.copied_users.pop(copied_key)
             await message.channel.send('No longer copying people in this server.')
         else:
             await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
-            log.debug(self.__get_comm_start(message) + 'requested to stop copying people, already done')
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, already done')
     
-    async def randomyt(self, message, argument):
+    async def randomyt(self, message, argument, is_in_guild):
         """Generates a random youtube link."""
+        # Rolls the random chance for a rick roll...
+        if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
+            await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
+            log.info(self.__get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
+            return
+        
+        # Otherwise...
         search_results = {'items': []}
         while not search_results['items']:
             # Gets random search term and searches
@@ -214,104 +258,146 @@ class JadieClient(discord.Client):
         
         # Return selected video.
         await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
-        log.debug(self.__get_comm_start(message) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
         
     
     # ===============================================================
     #                      UTILITY COMMANDS
     # ===============================================================
-    async def hexadecimal(self, message, argument):
+    async def evaluate(self, message, argument, is_in_guild):
+        """
+        Does math and shit.
+        It's very basic, if your command needs 2 lines or a semicolon you're better off doing it yourself.
+        """
+        # Replace all the ^ with **.
+        argument = argument.replace('^', '**').strip('`')
+        
+        # Print statements list for when we sub print() for our own thing.
+        print_statements = []
+        def add_to_print(m = None):
+            print_statements.append(m)
+        
+        # Copies global vars to create local vars.
+        local_globals = constants.EVAL_GLOBALS.copy()
+        local_globals.update({'print': add_to_print, 'printf': add_to_print})
+        
+        # We surround our eval in a try statement so we can catch some errors.
+        try:
+            evaluated = eval(argument, local_globals)
+        # For a syntax error, we actually SEND THE ERROR back to the user.
+        except SyntaxError as e:
+            await message.channel.send('Syntax Error on line {}:```{}\n'.format(e.args[1][1], e.args[1][3].split('\n')[0]) + ' ' * (e.args[1][2] - 1) + '^```')
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a syntax error'.format(argument))
+            return
+        # For a type error or value error, we send that shit back too.
+        except (TypeError, ValueError) as e:
+            await message.channel.send(repr(e))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a type error'.format(argument))
+            return
+            
+        # Prints out the print statements.
+        for ps in print_statements:
+            await message.channel.send(repr(ps))
+        
+        # Sends the evaluated value.
+        if evaluated:
+            await message.channel.send(repr(evaluated))
+            
+        # Logs evaluated value.
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested eval for expression {}'.format(argument))
+    
+    async def hexadecimal(self, message, argument, is_in_guild):
         """Converts a number to hexadecimal"""
         # Getting the number
         num = await self.__get_num_from_argument(message, argument)
         
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message) + 'requested hex conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for number {}, invalid'.format(argument))
             return
             
         num = self.__convert_num_from_decimal(num, 16)
         
         await message.channel.send('0x' + str(num))
-        log.debug(self.__get_comm_start(message) + 'requested hex conversion for number {}, responded with 0x{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for number {}, responded with 0x{}'.format(argument, num))
         
-    async def duodecimal(self, message, argument):
+    async def duodecimal(self, message, argument, is_in_guild):
         """Converts a number to duodecimal"""
         # Getting the number
         num = await self.__get_num_from_argument(message, argument)
         
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message) + 'requested duodec conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for number {}, invalid'.format(argument))
             return
             
         num = self.__convert_num_from_decimal(num, 12)
         
         await message.channel.send('0d' + str(num))
-        log.debug(self.__get_comm_start(message) + 'requested duodec conversion for number {}, responded with 0d{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for number {}, responded with 0d{}'.format(argument, num))
         
-    async def decimal(self, message, argument):
+    async def decimal(self, message, argument, is_in_guild):
         """Converts a number to decimal."""
         # Getting the number
         num = await self.__get_num_from_argument(message, argument)
         
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message) + 'requested decimal conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, invalid'.format(argument))
             return
             
         await message.channel.send(int(num) if num % 1 == 0 else num)
-        log.debug(self.__get_comm_start(message) + 'requested decimal conversion for number {}, responded with {}'.format(argument, int(num) if num % 1 == 0 else num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, responded with {}'.format(argument, int(num) if num % 1 == 0 else num))
         
-    async def octal(self, message, argument):
+    async def octal(self, message, argument, is_in_guild):
         """Converts a number to octal"""
         # Getting the number
         num = await self.__get_num_from_argument(message, argument)
         
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message) + 'requested octal conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for number {}, invalid'.format(argument))
             return
             
         num = self.__convert_num_from_decimal(num, 8)
         
         await message.channel.send('0o' + str(num))
-        log.debug(self.__get_comm_start(message) + 'requested octal conversion for number {}, responded with 0o{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for number {}, responded with 0o{}'.format(argument, num))
         
-    async def binary(self, message, argument):
+    async def binary(self, message, argument, is_in_guild):
         """Converts a number to binary"""
         # Getting the number
         num = await self.__get_num_from_argument(message, argument)
         
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message) + 'requested binary conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for number {}, invalid'.format(argument))
             return
             
         num = self.__convert_num_from_decimal(num, 2)
         
         await message.channel.send('0b' + str(num))
-        log.debug(self.__get_comm_start(message) + 'requested binary conversion for number {}, responded with 0b{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for number {}, responded with 0b{}'.format(argument, num))
     
     
     # ===============================================================
     #                       OTHER COMMANDS
     # ===============================================================
-    async def help_command(self, message, argument):
+    async def help_command(self, message, argument, is_in_guild):
         """
         Prints out the help response.
         """
         await message.channel.send(constants.HELP_MSG.format(constants.VERSION))
-        log.debug(self.__get_comm_start(message) + 'requested help message')
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested help message')
         
-    async def runtime(self, message, argument):
+    async def runtime(self, message, argument, is_in_guild):
         """
         Prints out the runtime of the bot.
         """
         # Immediately returns if bot start time was not established
         if not bot_start_time:
             await message.channel.send('An error occurred while getting runtime, sorry! :P')
-            log.warning(self.__get_comm_start(message) + 'requested runtime, could not find start time')
+            log.warning(self.__get_comm_start(message, is_in_guild) + 'requested runtime, could not find start time')
             return
             
         # Time delta
@@ -320,16 +406,16 @@ class JadieClient(discord.Client):
         bot_str = await self.__report_time_passage(message, time_delta, constants.RUNTIME_PREFIX)
         
         # Logs message
-        log.debug(self.__get_comm_start(message) + 'requested runtime, responded with ' + bot_str[len(constants.RUNTIME_PREFIX):])
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested runtime, responded with ' + bot_str[len(constants.RUNTIME_PREFIX):])
         
-    async def uptime(self, message, argument):
+    async def uptime(self, message, argument, is_in_guild):
         """
         Prints out the uptime of the bot.
         """
         # Immediately returns if bot start time was not established
         if not self.bot_uptime:
             await message.channel.send('An error occurred while getting uptime, sorry! :P')
-            log.warning(self.__get_comm_start(message) + 'requested runtime, could not find start time')
+            log.warning(self.__get_comm_start(message, is_in_guild) + 'requested runtime, could not find start time')
             return
             
         # Time delta
@@ -339,7 +425,7 @@ class JadieClient(discord.Client):
         bot_str = await self.__report_time_passage(message, time_delta, constants.UPTIME_PREFIX)
         
         # Logs message
-        log.debug(self.__get_comm_start(message) + 'requested uptime, responded with ' + bot_str[len(constants.UPTIME_PREFIX):])
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str[len(constants.UPTIME_PREFIX):])
     
     
     # ===============================================================
@@ -401,9 +487,15 @@ class JadieClient(discord.Client):
         return string
     
     @staticmethod
-    def __get_comm_start(message):
+    def __get_comm_start(message, is_in_guild):
         """Gets the command prefix. Just used to cut down space."""
-        return constants.COMM_LOG_PREFIX.format(message.author, message.channel, message.guild)
+        if is_in_guild:
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, message.guild)
+        elif isinstance(message.channel, discord.DMChannel):
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'DM')
+        else:
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'Group Chat')
+                
     
     async def __get_num_from_argument(self, message, argument):
         # Gets usages for arguments
