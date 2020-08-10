@@ -3,7 +3,8 @@
 # Also checks the OS to make sure we load into the correct working directory
 import platform
 import os
-if platform.system() == 'Windows':
+on_windows = platform.system() == 'Windows'
+if on_windows:
     os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
 else:
     os.chdir('/home/pi/Jadi3Pi')
@@ -44,6 +45,9 @@ class JadieClient(discord.Client):
     # Keeps track of if the last attempt at randomyt was quota blocked.
     quota_blocked_last_time = False
 
+    # Keep track of whether or not we should ignore the developer.
+    ignore_developer = False
+
     # Prefixes for bases that aren't decimal
     nondecimal_bases = {'0x': [16, 'hexadecimal'], '0d': [12, 'duodecimal'], '0o': [8, 'octal'], '0b': [2, 'binary']}
 
@@ -77,7 +81,8 @@ class JadieClient(discord.Client):
 
         # Sets the developer command_dict
         self.developer_command_dict = {
-            'localip': self.get_local_ip
+            'localip': self.get_local_ip,
+            'toggleignoredev': self.toggle_ignore_dev
         }
 
     async def on_ready(self):
@@ -128,6 +133,17 @@ class JadieClient(discord.Client):
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
 
+        # Checks to see if the author was developer.
+        author_is_developer = message.author.id in constants.DEVELOPER_DISCORD_IDS
+
+        # If we're on Windows and the author was not developer and we're ignoring everyone but the author, we return
+        if on_windows and not author_is_developer and constants.ON_WINDOWS_ONLY_RESPOND_TO_DEV:
+            return
+        # If the author was developer and we're ignoring the developer, we return (unless the command was to toggle ignore developer)
+        elif author_is_developer and self.ignore_developer:
+            if not message.content.startswith('j!toggleignoredev'):
+                return
+
         # If the channel is a TextChannel, we check to make sure the guild exists and is good.
         is_in_guild = isinstance(message.channel, discord.TextChannel)
         if is_in_guild and not message.guild:
@@ -151,7 +167,7 @@ class JadieClient(discord.Client):
             await self.public_command_dict[command](message, argument, is_in_guild)
 
         # If the user is dev, we cycle through the developer dict as well.
-        if message.author.id in constants.DEVELOPER_DISCORD_IDS:
+        if author_is_developer:
             if command in self.developer_command_dict.keys():
                 await self.developer_command_dict[command](message, argument, is_in_guild)
 
@@ -481,6 +497,19 @@ class JadieClient(discord.Client):
         # Sends msg and logs.
         await message.channel.send(local_ip)
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested local ip, returned {}'.format(local_ip))
+
+    async def toggle_ignore_dev(self, message, argument, is_in_guild):
+        """
+        Toggles whether or not to ignore the developer.
+        If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
+        """
+        if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and on_windows:
+            await message.channel.send('Ignored ignore request because this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+            log.info(self.__get_comm_start(message) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+        else:
+            self.ignore_developer = not self.ignore_developer
+            await message.channel.send(('Windows: ' if on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
+            log.info(self.__get_comm_start(message) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
 
 
     # ===============================================================

@@ -1,10 +1,12 @@
 # Constants file
 # General use
-VERSION = '0.1.7'
+VERSION = '0.1.8'
 DEVELOPER_DISCORD_IDS = [
     110194551586570240,   # Jade
     158429528874680320    # Jabe
 ]
+ON_WINDOWS_ONLY_RESPOND_TO_DEV = True
+IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX = True
 
 # Logging constants
 DEFAULT_LEVEL = 0
@@ -269,4 +271,5 @@ HELP_MSG_DEV_ADDENDUM = '''
    DEV-ONLY
 ===============
 - localip: Returns the local ip the bot is running from
+- toggleignoredev: Toggles whether or not to ignore developer on Linux side
 ```'''
