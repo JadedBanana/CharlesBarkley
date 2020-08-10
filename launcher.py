@@ -24,8 +24,8 @@ if not cronstr_1:
     cronstr_1 = cron.get_cronstring()
 
 if cronstr_1:
-    # Wait 1 minute.
-    time.sleep(60)
+    # Wait a little less than a minute.
+    time.sleep(55)
 
     # Get the current cronstring again.
     cronstr_2 = cron.get_cronstring()

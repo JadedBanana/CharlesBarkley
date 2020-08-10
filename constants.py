@@ -282,6 +282,8 @@ HELP_MSG_DEV_ADDENDUM = '''
 ===============
    DEV-ONLY
 ===============
+- getpid: Returns the local PID of this process
 - localip: Returns the local ip the bot is running from
 - toggleignoredev: Toggles whether or not to ignore developer on Linux side
+- reboot: Trigger remote reboot
 ```'''

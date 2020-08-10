@@ -13,6 +13,8 @@ import string
 import urllib
 import json
 import time
+import sys
+import os
 
 # Establishes logger
 log = logger.JLogger()
@@ -43,6 +45,9 @@ class JadieClient(discord.Client):
 
     # Prefixes for bases that aren't decimal
     nondecimal_bases = {'0x': [16, 'hexadecimal'], '0d': [12, 'duodecimal'], '0o': [8, 'octal'], '0b': [2, 'binary']}
+
+    # Whether or not
+    reboot_confirmation = False
 
 
     # ===============================================================
@@ -78,7 +83,9 @@ class JadieClient(discord.Client):
         # Sets the developer command_dict
         self.developer_command_dict = {
             'localip': self.get_local_ip,
-            'toggleignoredev': self.toggle_ignore_dev
+            'toggleignoredev': self.toggle_ignore_dev,
+            'getpid': self.get_pid, 'localpid': self.get_pid, 'pid': self.get_pid,
+            'reboot': self.remote_reboot, 'restart': self.remote_reboot
         }
 
     async def on_ready(self):
@@ -149,6 +156,8 @@ class JadieClient(discord.Client):
         # =================================================================
         if await self.copy_msg(message, is_in_guild): # Copy will copy a user's message if they're in the copy dict
             return
+        if author_is_developer and self.reboot_confirmation:
+            await self.confirm_reboot(message, is_in_guild)
 
         # Prompted commands
         # ==================
@@ -273,7 +282,7 @@ class JadieClient(discord.Client):
                 target_time = datetime.today()
 
                 # If we are beyond the quota reset time, we add 1 to the target date.
-                if current_time.hour > constants.YOUTUBE_QUOTA_RESET_HOUR:
+                if current_time.hour >= constants.YOUTUBE_QUOTA_RESET_HOUR:
                     target_time = target_time + timedelta(days=1)
 
                 # Then we create a new date from the target_time.
@@ -501,11 +510,11 @@ class JadieClient(discord.Client):
         Gets the local ip address this bot is running on.
         """
         # Imports socket and gets the local ip.
-        import socket; local_ip = socket.gethostbyname_ex(socket.gethostname())
+        import socket; local_ip = socket.gethostbyname(socket.gethostname()) if self.on_windows else socket.gethostbyname(socket.getfqdn())
 
         # Sends msg and logs.
         await message.channel.send(local_ip)
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested local ip, returned {}'.format(local_ip))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
 
     async def toggle_ignore_dev(self, message, argument, is_in_guild):
         """
@@ -519,6 +528,64 @@ class JadieClient(discord.Client):
             self.ignore_developer = not self.ignore_developer
             await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
+
+    async def get_pid(self, message, argument, is_in_guild):
+        """
+        Gets the local PID this bot is running on.
+        """
+        # Gets PID
+        pid = os.getpid()
+
+        # Logs and returns PID
+        await message.channel.send(pid)
+        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered local PID, returned ' + str(pid))
+
+    async def remote_reboot(self, message, argument, is_in_guild):
+        """
+        Since this bot runs on automatic crontabs, we can just exit and assume the scheduling will do the rest.
+        However, we don't wanna reboot all willy-nilly.
+        So we have a contingency!
+        """
+        self.reboot_confirmation = True
+        await message.channel.send('Confirm remote reboot? (y/n)')
+        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote reboot, confirming...')
+
+    async def confirm_reboot(self, message, is_in_guild):
+        """
+        Confirms the reboot.
+        """
+        # Create response str.
+        response = self.__normalize_string(message.content).lower()
+
+        # Yes
+        if response.startswith('y'):
+            # Gets time until bot should be back.
+            current_time = datetime.today()
+            # If the minute is even, our time delta will be 3 minutes 15 seconds instead of 2 minutes 15 seconds.
+            time_delta_seconds = 135
+            if current_time.minute % 2 == 0:
+                time_delta_seconds = 185
+            # Creating next bot start time.
+            next_bot_start_time = datetime(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute) + timedelta(seconds=time_delta_seconds)
+
+            # Notify user.
+            await message.channel.send('Confirmed. Performing remote reboot...')
+            await message.channel.send('Bot is estimated to be back up in approximately {} seconds.'.format((next_bot_start_time - current_time).seconds))
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
+
+            # Exit.
+            sys.exit(0)
+
+        # No
+        elif response.startswith('n'):
+            self.reboot_confirmation = False
+            await message.channel.send('Remote reboot aborted.')
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Aborted remote restart')
+
+        # Invalid response
+        else:
+            await message.channel.send('Invalid response. Confirm? (y/n)')
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
 
 
     # ===============================================================
@@ -583,6 +650,8 @@ class JadieClient(discord.Client):
         if remove_double_spaces:
             while '  ' in input_str:
                 input_str = input_str.replace('  ', ' ')
+        # Code segments, spoilers, italics/bold
+        input_str = input_str.strip('`').strip('*').strip('_')
         # Return
         return input_str
 
@@ -702,21 +771,19 @@ def launch(on_windows):
     # All this crap around client.run occurs only if we can't connect initially.
     try:
         client.run(constants.BOT_TOKEN)
-        exit(0)
+        sys.exit(0)
     except ClientConnectorError:
         log.info('Cannot connect to Discord, will attempt again in 3 minutes.')
 
         # Sleeps for 3 minutes so we don't overdo it.
         time.sleep(180)
 
-        exit(-1)
+        sys.exit(-1)
 
 # __main__, just in case.
 if __name__ == '__main__':
     # Set the working directory to what we want so our imports work correctly
     # Also checks the OS to make sure we load into the correct working directory
-    import os
-
     on_windows = platform.system() == 'Windows'
     if on_windows:
         os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
