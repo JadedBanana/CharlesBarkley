@@ -244,6 +244,9 @@ MAX_CONVERT_DEPTH = -16
 RUNTIME_PREFIX = 'Bot has been running for '
 UPTIME_PREFIX = 'Bot has been connected for '
 
+# Ip methods
+LINUX_IP_PREFIXES = ['lo', 'eth0']
+
 # Help message
 HELP_MSG = '''```
 ======================

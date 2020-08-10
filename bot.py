@@ -509,12 +509,24 @@ class JadieClient(discord.Client):
         """
         Gets the local ip address this bot is running on.
         """
-        # Imports socket and gets the local ip.
-        import socket; local_ip = socket.gethostbyname(socket.gethostname()) if self.on_windows else socket.gethostbyname(socket.getfqdn())
+        # Windows part
+        if self.on_windows:
+            # Imports socket and gets the local ip.
+            import socket; local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
 
-        # Sends msg and logs.
-        await message.channel.send(local_ip)
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
+            # Sends msg and logs.
+            await message.channel.send(local_ip)
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
+        
+        # Linux Part
+        else:
+            # Imports netifaces and gets the local ip's.
+            import netifaces; local_ips = [pre + ': ' + netifaces.ifaddresses(pre)[netifaces.AF_INET][0]['addr'] for pre in constants.LINUX_IP_PREFIXES]
+
+            # Sends msg and logs.
+            for local_ip in local_ips:
+                await message.channel.send(local_ip)
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
 
     async def toggle_ignore_dev(self, message, argument, is_in_guild):
         """
