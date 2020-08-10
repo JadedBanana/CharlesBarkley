@@ -13,6 +13,7 @@ else:
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
 import constants
+import wikipedia
 import discord
 import logger
 import random
@@ -32,7 +33,7 @@ class JadieClient(discord.Client):
     public_command_dict = {}
     developer_command_dict = {}
 
-    # Keeps track of who we're copying by server and then id(hehehe)
+    # Keeps track of who we're copying by server and then id (hehehe)
     copied_users = {}
 
     # Time since last disconnect.
@@ -76,7 +77,8 @@ class JadieClient(discord.Client):
             'oct': self.octal, 'octal': self.octal,
             'bin': self.binary, 'binary': self.binary,
             'randomyt': self.randomyt, 'randomyoutube': self.randomyt, 'ytroulette': self.randomyt, 'youtuberoulette': self.randomyt,
-            'calc': self.evaluate, 'eval': self.evaluate, 'calculate': self.evaluate, 'evaluate': self.evaluate
+            'calc': self.evaluate, 'eval': self.evaluate, 'calculate': self.evaluate, 'evaluate': self.evaluate,
+            'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki
         }
 
         # Sets the developer command_dict
@@ -249,7 +251,9 @@ class JadieClient(discord.Client):
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, already done')
 
     async def randomyt(self, message, argument, is_in_guild):
-        """Generates a random youtube link."""
+        """
+        Generates a random youtube link.
+        """
         # Rolls the random chance for a rick roll...
         if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
             await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
@@ -304,6 +308,17 @@ class JadieClient(discord.Client):
         await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
         self.quota_blocked_last_time = False
+
+    async def randomwiki(self, message, argument, is_in_guild):
+        """
+        Generates a random youtube link.
+        """
+        # Simple call.
+        wiki_page = wikipedia.page(wikipedia.random(1))
+
+        await message.channel.send(wiki_page.url)
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
+
 
     # ===============================================================
     #                      UTILITY COMMANDS
@@ -504,7 +519,7 @@ class JadieClient(discord.Client):
         If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
         """
         if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and on_windows:
-            await message.channel.send('Ignored ignore request because this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+            await message.channel.send('Windows: ignored ignore request')
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
         else:
             self.ignore_developer = not self.ignore_developer
