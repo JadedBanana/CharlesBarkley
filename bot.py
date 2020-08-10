@@ -505,11 +505,11 @@ class JadieClient(discord.Client):
         """
         if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and on_windows:
             await message.channel.send('Ignored ignore request because this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
-            log.info(self.__get_comm_start(message) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
         else:
             self.ignore_developer = not self.ignore_developer
             await message.channel.send(('Windows: ' if on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
-            log.info(self.__get_comm_start(message) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
 
 
     # ===============================================================
