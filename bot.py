@@ -2,13 +2,9 @@
 # Set the working directory to what we want so our imports work correctly
 import os
 os.chdir('/home/pi/Jadi3Pi')
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
-import google_auth_oauthlib.flow
-import googleapiclient.discovery
-import googleapiclient.errors
 from datetime import datetime
 from sys import exc_info
 import constants
@@ -40,6 +36,9 @@ class JadieClient(discord.Client):
     # Keeps track of if this is the first time we've connected or not
     connected_before = False
     reconnected_since = False
+    
+    # Keeps track of if the last attempt at randomyt was quota blocked.
+    quota_blocked_last_time = False
     
     # Prefixes for bases that aren't decimal
     nondecimal_bases = {'0x': [16, 'hexadecimal'], '0d': [12, 'duodecimal'], '0o': [8, 'octal'], '0b': [2, 'binary']}    
@@ -124,8 +123,7 @@ class JadieClient(discord.Client):
     async def on_message(self, message):
         """
         Reacts to messages.
-        """        
-        print(message.author.id)
+        """
         # Checks to make sure the message, channel, and author exist.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
@@ -240,18 +238,26 @@ class JadieClient(discord.Client):
         # Otherwise...
         search_results = {'items': []}
         while not search_results['items']:
-            # Gets random search term
+            # Gets random search term and searches
             random_search = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(random.choices(constants.YOUTUBE_SEARCH_LENGTHS, weights=constants.YOUTUBE_SEARCH_WEIGHTS)[0]))
+            url_data = constants.YOUTUBE_SEARCH_URL.format(constants.YOUTUBE_API_KEY, constants.YOUTUBE_SEARCH_COUNT, random_search)
             
-            # Get credentials and create an API client
-            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(constants.YOUTUBE_CLIENT_SECRETS_FILE, constants.YOUTUBE_SCOPES)
-            credentials = flow.run_console()
-            youtube = googleapiclient.discovery.build(constants.YOUTUBE_API_SERVICE_NAME, constants.YOUTUBE_API_VERSION, credentials=credentials)
-
-            # Forms request and searches
-            request = youtube.search().list(part="snippet", maxResults=constants.YOUTUBE_SEARCH_COUNT, q=random_search)
-            search_results = request.execute()
-
+            # Opens url
+            try:
+                url_data = urllib.request.urlopen(url_data)
+                data = url_data.read()
+            # The only reason we would have an error is if quota has been reached. We tell the user that here.
+            except urllib.error.HTTPError:
+                await message.channel.send('Youtube quota of 100 videos reached. Try again tomorrow.')
+                if not self.quota_blocked_last_time:
+                    log.warning(self.__get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
+                    self.quota_blocked_last_time = True
+                return
+                
+            # Decodes data and makes it into a dict
+            encoding = url_data.info().get_content_charset('utf-8')
+            search_results = json.loads(data.decode(encoding))
+            
         # Create list of video id's
         video_ids = [video['id']['videoId'] for video in search_results['items']]
         
@@ -261,7 +267,7 @@ class JadieClient(discord.Client):
         # Return selected video.
         await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
-        
+        self.quota_blocked_last_time = False
     
     # ===============================================================
     #                      UTILITY COMMANDS
