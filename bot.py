@@ -574,7 +574,7 @@ class JadieClient(discord.Client):
             log.info(self.__get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
 
             # Exit.
-            sys.exit(0)
+            os._exit(0)
 
         # No
         elif response.startswith('n'):
@@ -771,14 +771,14 @@ def launch(on_windows):
     # All this crap around client.run occurs only if we can't connect initially.
     try:
         client.run(constants.BOT_TOKEN)
-        sys.exit(0)
+        os._exit(0)
     except ClientConnectorError:
         log.info('Cannot connect to Discord, will attempt again in 3 minutes.')
 
         # Sleeps for 3 minutes so we don't overdo it.
         time.sleep(180)
 
-        sys.exit(-1)
+        os._exit(-1)
 
 # __main__, just in case.
 if __name__ == '__main__':
