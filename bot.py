@@ -13,7 +13,6 @@ import string
 import urllib
 import json
 import time
-import sys
 import os
 
 # Establishes logger
@@ -85,7 +84,8 @@ class JadieClient(discord.Client):
             'localip': self.get_local_ip,
             'toggleignoredev': self.toggle_ignore_dev,
             'getpid': self.get_pid, 'localpid': self.get_pid, 'pid': self.get_pid,
-            'reboot': self.remote_reboot, 'restart': self.remote_reboot
+            'reboot': self.remote_reboot, 'restart': self.remote_reboot,
+            'update': self.update_remote
         }
 
     async def on_ready(self):
@@ -598,6 +598,19 @@ class JadieClient(discord.Client):
         else:
             await message.channel.send('Invalid response. Confirm? (y/n)')
             log.debug(self.__get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
+
+    async def update_remote(self, message, argument, is_in_guild):
+        """
+        Uses git to pull the most recent commit down.
+        Reboot will need to be done to apply the changes.
+        """
+        # Import subprocess so we can do the call
+        import subprocess; process = subprocess.Popen(['git', 'pull'], stdout=subprocess.PIPE)
+
+        # Send report and log.
+        await message.channel.send('```' + process.communicate()[0] + '```')
+        await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
+        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote update.')
 
 
     # ===============================================================
