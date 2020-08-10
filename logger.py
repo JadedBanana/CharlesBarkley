@@ -63,6 +63,8 @@ class JLogger:
 		
 		# Logs to file
 		if self.log_to_file:
+			if not os.path.isdir(constants.LOGS_DIR):
+				os.mkdir(constants.LOGS_DIR)
 			log_file = open(os.path.join(constants.LOGS_DIR, today.strftime('%Y-%m-%d') + '.txt'), 'a')
 			for m in msg:
 				if m:

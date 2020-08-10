@@ -2,8 +2,8 @@
 # General use
 VERSION = '0.1.7'
 DEVELOPER_DISCORD_IDS = [
-	110194551586570240,	# Jade
-	158429528874680320	# Jabe
+    110194551586570240,   # Jade
+    158429528874680320    # Jabe
 ]
 
 # Logging constants
@@ -24,6 +24,7 @@ GLOBAL_PREFIX = 'j!'
 
 # YouTube
 YOUTUBE_API_KEY = 'AIzaSyDfdrytJZ4Ft9W76VdR-t4HOZTOR7ESMEg'
+YOUTUBE_QUOTA_RESET_HOUR = 3
 YOUTUBE_RICKROLL_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 YOUTUBE_RICKROLL_CHANCE = 0.0002
 YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search?key={}&maxResults={}&part=snippet&type=video&q={}'
@@ -34,15 +35,15 @@ YOUTUBE_VIDEO_URL_FORMAT = 'https://www.youtube.com/watch?v={}'
 
 # Ultimates
 ULTIMATE_PRONOUNS = [
-	['you', 'they'],
-	['your', 'their'],
-	["you're", "they're"],
+    ['you', 'they'],
+    ['your', 'their'],
+    ["you're", "they're"],
     ['yourself', 'themselves'],
     ["you've", "they've"],
     ["you'll", "they'll"],
-	['You', 'They'],
-	['Your', 'Their'],
-	["You're", "They're"],
+    ['You', 'They'],
+    ['Your', 'Their'],
+    ["You're", "They're"],
     ['Yourself', 'Themselves'],
     ["You've", "They've"],
     ["You'll", "They'll"]
@@ -92,15 +93,15 @@ ULTIMATE_TITLES = {
     'DJ': '! Lay down some beats, man!',
     'Electrical Engineer': '',
     'Entomologist': '... so, if I find a spider, do I bring it to you?',
-    'Entrepeneur': '',
-    'Epidemioligist': '',
+    'Entrepreneur': '',
+    'Epidemiologist': '',
     'Exorcist': '',
     'Fanfic Creator': '! So, what next? Maybe a slow-burn coffee shop AU with some self-inserts, a handful of OC\'s, F/F and M/M, a little OOC if necessary, but all in all just fanservice fic for Danganronpa?',
     'Farmer': '! Do {1} have a dog named Bingo? Or... just Ingo? Or Ngo?',
     'Fashionista': '! Looking cool, {8}!',
     'Film Director': '! When on set, nobody questions {1} judgement.',
     'Forum Admin': '. {10} seen some serious shit.',
-    'Gambler':  '',
+    'Gambler': '',
     'Gamer': '',
     'Golfer': '. No one can beat the power of a true Scottish swing.',
     'Guitarist': '',
@@ -111,7 +112,7 @@ ULTIMATE_TITLES = {
     'Housekeeper': '',
     'Hypnotist': '',
     'Idol': '',
-    'Imposter': '. No one truly knows who {0} are beneath the mask... or that {2} even wearing one at all.',
+    'Impostor': '. No one truly knows who {0} are beneath the mask... or that {2} even wearing one at all.',
     'Internet Troll': '. {8} really good at pissing people off online.',
     'Inventor': '',
     'Landscaper': '',
@@ -165,7 +166,7 @@ ULTIMATE_TITLES = {
     'Student Council President': '',
     'Stunt Double': '',
     'Superhero': '',
-    'Supervillain': '! What seperates a regular villain from a super one? Why, presentation, of course!',
+    'Supervillain': '! What separates a regular villain from a super one? Why, presentation, of course!',
     'Supreme Leader': '',
     'Survivor': '',
     'Swimmer': '',
@@ -185,40 +186,41 @@ ULTIMATE_TITLES = {
     'Wrestler': '',
     'Writer': '',
     'Yakuza': '',
-    'Yoga Guru': '. All {1} cchakras are open and flowing the sweet nectar of the soul.'
+    'Yoga Guru': '. All {1} chakras are open and flowing the sweet nectar of the soul.'
 }
 
 # Globals for the eval function
 import math
 import util
+
 EVAL_GLOBALS = {
-	# Math overall
-	'math': math,
-	# Math constants
-	'pi': math.pi, 'e': math.e, 'tau': math.tau, 'inf': math.inf, 'nan': math.nan,
-	# Easy baby shit
-	'ceil': math.ceil, 'ncr': util.comb, 'comb': util.comb,	'copysign': math.copysign, 
-	'fabs': math.fabs, 	'abs': math.fabs, 'factorial': math.factorial, 'floor': math.floor,
-	'fmod': math.fmod, 'frexp': math.frexp,	'fsum': math.fsum, 'gcd': math.gcd, 
-	'isclose': math.isclose, 'isfinite': math.isfinite, 'isinf': math.isinf, 
-	'isinfinite': math.isinf, 'isnan': math.isnan, 'ldexp': math.ldexp, 
-	'modf': math.modf, 'npr': util.perm, 'perm': util.perm, 'prod': util.prod,
-	'product': util.prod, 'remainder': math.remainder, 'trunc': math.trunc, 
-	'truncate': math.trunc,
-	# Power and logarithmic
-	'exp': math.exp, 'expm1': math.expm1, 'log': math.log, 'log1p': math.log1p,
-	'log2': math.log2, 'log10': math.log10, 'pow': math.pow, 'sqrt': math.sqrt,
-	# Trig
-	'acos': math.acos, 'asin': math.asin, 'atan': math.atan, 'atan2': math.atan2,
-	'cos': math.cos, 'hypot': math.hypot, 'sin': math.sin, 'tan': math.tan,
-	# Angles shit
-	'deg': math.degrees, 'degrees': math.degrees, 'rad': math.radians,
-	'radians': math.radians,
-	# Hyperbolas
-	'acosh': math.acosh, 'asinh': math.asinh, 'atanh': math.atanh, 'cosh': math.cosh,
-	'sinh': math.sinh, 'tanh': math.tanh,
-	# Other
-	'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
+    # Math overall
+    'math': math,
+    # Math constants
+    'pi': math.pi, 'e': math.e, 'tau': math.tau, 'inf': math.inf, 'nan': math.nan,
+    # Easy baby shit
+    'ceil': math.ceil, 'ncr': util.comb, 'comb': util.comb, 'copysign': math.copysign,
+    'fabs': math.fabs, 'abs': math.fabs, 'factorial': math.factorial, 'floor': math.floor,
+    'fmod': math.fmod, 'frexp': math.frexp, 'fsum': math.fsum, 'gcd': math.gcd,
+    'isclose': math.isclose, 'isfinite': math.isfinite, 'isinf': math.isinf,
+    'isinfinite': math.isinf, 'isnan': math.isnan, 'ldexp': math.ldexp,
+    'modf': math.modf, 'npr': util.perm, 'perm': util.perm, 'prod': util.prod,
+    'product': util.prod, 'remainder': math.remainder, 'trunc': math.trunc,
+    'truncate': math.trunc,
+    # Power and logarithmic
+    'exp': math.exp, 'expm1': math.expm1, 'log': math.log, 'log1p': math.log1p,
+    'log2': math.log2, 'log10': math.log10, 'pow': math.pow, 'sqrt': math.sqrt,
+    # Trig
+    'acos': math.acos, 'asin': math.asin, 'atan': math.atan, 'atan2': math.atan2,
+    'cos': math.cos, 'hypot': math.hypot, 'sin': math.sin, 'tan': math.tan,
+    # Angles shit
+    'deg': math.degrees, 'degrees': math.degrees, 'rad': math.radians,
+    'radians': math.radians,
+    # Hyperbolas
+    'acosh': math.acosh, 'asinh': math.asinh, 'atanh': math.atanh, 'cosh': math.cosh,
+    'sinh': math.sinh, 'tanh': math.tanh,
+    # Other
+    'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
 }
 
 # Conversion chars
@@ -230,10 +232,10 @@ RUNTIME_PREFIX = 'Bot has been running for '
 UPTIME_PREFIX = 'Bot has been connected for '
 
 # Help message
-HELP_MSG ='''```
-===================
+HELP_MSG = '''```
+======================
   Jadi3Pi {} Help
-===================
+======================
    (PREFIX: j!)
 
 ===============
@@ -259,4 +261,12 @@ HELP_MSG ='''```
 - help: Display this message
 - runtime: Display the amount of time this bot has been running for
 - uptime: Display the amount of time this bot has been connected to Discord for
+'''
+
+# Dev-only section for help message
+HELP_MSG_DEV_ADDENDUM = '''
+===============
+   DEV-ONLY
+===============
+- localip: Returns the local ip the bot is running from
 ```'''
