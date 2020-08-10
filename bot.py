@@ -607,8 +607,12 @@ class JadieClient(discord.Client):
         # Import subprocess so we can do the call
         import subprocess; process = subprocess.Popen(['git', 'pull'], stdout=subprocess.PIPE)
 
+        # Get decoded version of the output.
+        decoded_output = process.communicate()[0].decode('utf-8')
+
+
         # Send report and log.
-        await message.channel.send('```' + process.communicate()[0] + '```')
+        await message.channel.send('Git output: ```' + decoded_output + '```')
         await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
         log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote update.')
 
