@@ -1,12 +1,20 @@
 # Constants file
 # General use
 VERSION = '0.2.0'
+
+# Developer stuff
 DEVELOPER_DISCORD_IDS = [
     110194551586570240,   # Jade
     158429528874680320    # Jabe
 ]
 ON_WINDOWS_ONLY_RESPOND_TO_DEV = True
 IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX = True
+
+# Crontab shit
+CRONTAB_CHECK_FILE = '.croncheck'
+CRONTAB_WAIT_INTERVAL = 45
+CRONTAB_STR_LENGTH = 24
+CRONTAB_STR_CHARS = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
 
 # Logging constants
 DEFAULT_LEVEL = 0
@@ -130,7 +138,7 @@ ULTIMATE_TITLES = {
     'Matchmaker': '',
     'Mechanic': '. Every tractor {0} work on is sexy.',
     'Medium': '',
-    'Merchant': '',
+    'Merchant': '. No one knows supply and demand better than {6}, and {0} always have just enough stock to match what the public desires.',
     'Meteorologist': '',
     'Model': '',
     'Moral Compass': '. {7} are the best at telling other people how to act.',

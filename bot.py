@@ -1,19 +1,11 @@
-# Jadi3Pi run file
-# Set the working directory to what we want so our imports work correctly
-# Also checks the OS to make sure we load into the correct working directory
-import platform
-import os
-on_windows = platform.system() == 'Windows'
-if on_windows:
-    os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
-else:
-    os.chdir('/home/pi/Jadi3Pi')
+# Jadi3Pi bot file
 
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
 import constants
 import wikipedia
+import platform
 import discord
 import logger
 import random
@@ -56,12 +48,14 @@ class JadieClient(discord.Client):
     # ===============================================================
     #                     GLOBAL BOT COMMANDS
     # ===============================================================
-    def __init__(self):
+    def __init__(self, on_windows):
         """
         Sets up the commands.
         """
         # Discord client init
         discord.Client.__init__(self)
+
+        self.on_windows = on_windows
 
         # Sets the public_command_dict!
         self.public_command_dict = {
@@ -139,7 +133,7 @@ class JadieClient(discord.Client):
         author_is_developer = message.author.id in constants.DEVELOPER_DISCORD_IDS
 
         # If we're on Windows and the author was not developer and we're ignoring everyone but the author, we return
-        if on_windows and not author_is_developer and constants.ON_WINDOWS_ONLY_RESPOND_TO_DEV:
+        if self.on_windows and not author_is_developer and constants.ON_WINDOWS_ONLY_RESPOND_TO_DEV:
             return
         # If the author was developer and we're ignoring the developer, we return (unless the command was to toggle ignore developer)
         elif author_is_developer and self.ignore_developer:
@@ -507,7 +501,7 @@ class JadieClient(discord.Client):
         Gets the local ip address this bot is running on.
         """
         # Imports socket and gets the local ip.
-        import socket; local_ip = socket.gethostbyname(socket.gethostname())
+        import socket; local_ip = socket.gethostbyname_ex(socket.gethostname())
 
         # Sends msg and logs.
         await message.channel.send(local_ip)
@@ -518,12 +512,12 @@ class JadieClient(discord.Client):
         Toggles whether or not to ignore the developer.
         If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
         """
-        if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and on_windows:
+        if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and self.on_windows:
             await message.channel.send('Windows: ignored ignore request')
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
         else:
             self.ignore_developer = not self.ignore_developer
-            await message.channel.send(('Windows: ' if on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
+            await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
 
 
@@ -691,8 +685,12 @@ class JadieClient(discord.Client):
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
-if __name__ == '__main__':
-    client = JadieClient()
+def launch(on_windows):
+    client = JadieClient(on_windows)
+
+    # Next, start the cron loop so we don't end up running more than one of these at once.
+    import cron
+    cron.start_cron_loop()
 
     # Logging new instance
     start_str = 'Starting new instance of JadieClient'
@@ -712,3 +710,18 @@ if __name__ == '__main__':
         time.sleep(180)
 
         exit(-1)
+
+# __main__, just in case.
+if __name__ == '__main__':
+    # Set the working directory to what we want so our imports work correctly
+    # Also checks the OS to make sure we load into the correct working directory
+    import os
+
+    on_windows = platform.system() == 'Windows'
+    if on_windows:
+        os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
+    else:
+        os.chdir('/home/pi/Jadi3Pi')
+
+    # Then we launch.
+    launch(on_windows)
