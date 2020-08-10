@@ -10,7 +10,7 @@ else:
 
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
-from datetime import datetime
+from datetime import datetime, timedelta
 import constants
 import discord
 import logger
@@ -18,7 +18,6 @@ import random
 import string
 import urllib
 import json
-import math
 import time
 
 # Establishes logger
@@ -252,9 +251,24 @@ class JadieClient(discord.Client):
             try:
                 url_data = urllib.request.urlopen(url_data)
                 data = url_data.read()
+
             # The only reason we would have an error is if quota has been reached. We tell the user that here.
             except urllib.error.HTTPError:
-                await message.channel.send('Youtube quota of 100 videos reached. Try again tomorrow.')
+                # First, we get the time delta between now and when the quota should be reset.
+                current_time = datetime.today()
+                target_time = datetime.today()
+
+                # If we are beyond the quota reset time, we add 1 to the target date.
+                if current_time.hour > constants.YOUTUBE_QUOTA_RESET_HOUR:
+                    target_time = target_time + timedelta(days=1)
+
+                # Then we create a new date from the target_time.
+                target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=constants.YOUTUBE_QUOTA_RESET_HOUR)
+
+                # Get time until quota and return that.
+                quota_str = self.__calculate_time_passage(target_time - current_time)
+                await message.channel.send('Youtube quota of 100 videos reached. Try again in {}'.format(quota_str))
+                # We only put out the quota if it's the first time doing so today.
                 if not self.quota_blocked_last_time:
                     log.warning(self.__get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
                     self.quota_blocked_last_time = True
@@ -427,10 +441,12 @@ class JadieClient(discord.Client):
         # Time delta
         time_delta = datetime.today() - bot_start_time
 
-        bot_str = await self.__report_time_passage(message, time_delta, constants.RUNTIME_PREFIX)
+        # Does the thing
+        bot_str = self.__calculate_time_passage(time_delta)
 
-        # Logs message
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested runtime, responded with ' + bot_str[len(constants.RUNTIME_PREFIX):])
+        # Sends report, logs message
+        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested runtime, responded with ' + bot_str)
 
     async def uptime(self, message, argument, is_in_guild):
         """
@@ -446,10 +462,11 @@ class JadieClient(discord.Client):
         time_delta = datetime.today() - self.bot_uptime
 
         # Does the thing
-        bot_str = await self.__report_time_passage(message, time_delta, constants.UPTIME_PREFIX)
+        bot_str = self.__calculate_time_passage(time_delta)
 
-        # Logs message
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str[len(constants.UPTIME_PREFIX):])
+        # Sends report, logs message
+        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str)
 
     # ===============================================================
     #                     DEV-ONLY COMMANDS
@@ -498,10 +515,11 @@ class JadieClient(discord.Client):
         return []
 
     @staticmethod
-    async def __report_time_passage(message, time_delta, bot_str):
+    def __calculate_time_passage(time_delta):
         """
         Creates the time delta string and reports to channel, then returns time delta string.
         """
+        bot_str = ''
         if time_delta.days:
             bot_str+= str(time_delta.days) + 'd '
         if int(time_delta.seconds / 3600):
@@ -509,9 +527,6 @@ class JadieClient(discord.Client):
         if int(time_delta.seconds / 60):
             bot_str+= str(int(time_delta.seconds % 3600 / 60)) + 'm '
         bot_str+= str(time_delta.seconds % 60) + 's '
-
-        # Send report
-        await message.channel.send(bot_str)
 
         return bot_str
 
