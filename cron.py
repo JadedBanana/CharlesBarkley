@@ -5,6 +5,10 @@ import random
 
 # get cronstring is used for the launcher
 def get_cronstring():
+    """
+    Gets the cronstring from the file.
+    If the file doesn't exist, it returns None.
+    """
     # If the crontab check file isn't there, we return None
     if not path.isfile(constants.CRONTAB_CHECK_FILE):
         return None
@@ -14,7 +18,11 @@ def get_cronstring():
 
 # this class runs the loop
 class CronLoop(threading.Thread):
+
     def run(self):
+        """
+        Cron loop updates the cron file with new random strings so we don't create more than one instance at once thanks to cron.
+        """
         import time
         while True:
             cronstr = ''.join([random.choice(constants.CRONTAB_STR_CHARS) for i in range(constants.CRONTAB_STR_LENGTH)])
@@ -24,5 +32,8 @@ class CronLoop(threading.Thread):
 
 # starts the cron loop
 def start_cron_loop():
+    """
+    Starts the cron loop.
+    """
     # Just starts a cron loop.
     CronLoop().start()

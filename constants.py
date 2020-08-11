@@ -185,7 +185,7 @@ ULTIMATE_TITLES = {
     'Swimmer': '',
     'Swordsman': '. While most others spend their time playing video games or watching TV, {0} study the blade.',
     'Tailor': '. Capes aren\'t usually fashionable, but the way {0} make it, anyone can rock that shit.',
-    'Team Manager': '',
+    'Team Manager': '! ',
     'Tennis Pro': '',
     'Test Subject': '',
     'Therapist': '. Of course, {0} can\'t talk about it that much, since patient confidentiality is {1} number 1 priority.',
@@ -288,6 +288,7 @@ HELP_MSG_DEV_ADDENDUM = '''
 - getpid: Returns the local PID of this process
 - localip: Returns the local ip the bot is running from
 - toggleignoredev: Toggles whether or not to ignore developer on Linux side
+- sendlog: Sends the log for today, or a specific date (YYYYMMDD)
 - update: Trigger remote update (pull from Git master branch)
 - reboot: Trigger remote reboot
 ```'''

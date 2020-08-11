@@ -1,8 +1,9 @@
 # Utility logging file
 # Imports
-import os
-import constants
 from datetime import datetime
+import constants
+import threading
+import os
 
 class JLogger:
     
@@ -20,7 +21,11 @@ class JLogger:
     log_to_file = constants.LOG_TO_FILE
     do_level_headers = constants.DO_LEVEL_HEADERS
     do_timestamps = constants.DO_TIMESTAMPS
-    
+
+    def __init__(self):
+        # Just starts the ErrorLogger.
+        ErrorLogger(self).start()
+
     def change_log_level(self, level):
         pass
 
@@ -32,17 +37,15 @@ class JLogger:
     def critical(self, msg): self.log(msg, self.CRITICAL)
 
     def log(self, msg, level):
-        """Does the log, to file and/or console, with fitting prefix"""
+        """
+        Does the log, to file and/or console, with fitting prefix.
+        """
         # Immediately returns if the log level is below what is required to do a log
         if level < self.current_log_level: 
             return
             
         # Get the string version of msg, then list version
         msg = str(msg).split('\n')
-        
-        # Gets current datetime if we're going to a file or we've got timestamps
-        if self.do_timestamps or self.log_to_file:
-            today = datetime.today()
             
         # Creates message prefix
         msg_prefix = ''
@@ -73,3 +76,31 @@ class JLogger:
                     log_file.write('\n')
             log_file.close()
         
+class ErrorLogger(threading.Thread):
+
+    # Log file
+    log = None
+
+    # Initializer
+    def __init__(self, log):
+        self.log = log
+        threading.Thread.__init__(self)
+
+    def run(self):
+        # Imports
+        from io import StringIO
+        import time
+        import sys
+
+        # Sets stderr
+        sys.stderr = mystderr = StringIO()
+
+        # Enter loop. Every second, we check to see if the stderr has any output in it.
+        while True:
+            strval = mystderr.getvalue()
+            if strval:
+                self.log.error(strval)
+                mystderr.close()
+                # Makes stderr a new StringIO
+                sys.stderr = mystderr = StringIO()
+            time.sleep(1)

@@ -15,8 +15,10 @@ import json
 import time
 import os
 
+# Outer-level crap
 # Establishes logger
 log = logger.JLogger()
+
 # Gets start time
 bot_start_time = datetime.today()
 
@@ -85,7 +87,8 @@ class JadieClient(discord.Client):
             'toggleignoredev': self.toggle_ignore_dev,
             'getpid': self.get_pid, 'localpid': self.get_pid, 'pid': self.get_pid,
             'reboot': self.remote_reboot, 'restart': self.remote_reboot,
-            'update': self.update_remote
+            'update': self.update_remote,
+            'sendlog': self.send_log
         }
 
     async def on_ready(self):
@@ -610,16 +613,49 @@ class JadieClient(discord.Client):
         # Get decoded version of the output.
         decoded_output = process.communicate()[0].decode('utf-8')
 
-
         # Send report and log.
         await message.channel.send('Git output: ```' + decoded_output + '```')
         await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
         log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote update.')
 
+    async def send_log(self, message, argument, is_in_guild):
+        """
+        Sends a log file through discord.
+        Argument should be formatted in YYYYMMDD.
+        """
+        # If there is no argument, we simply grab today's log file.
+
+        # Normalizing the string (argument)
+        argument = self.__normalize_string(argument)
+        for i in range(len(argument) - 1, -1, -1):
+            if argument[i] not in string.digits:
+                argument = argument[:i] + argument[i + 1:]
+
 
     # ===============================================================
     #               INTERNAL-USE (PRIVATE) COMMANDS
-    # ===============================================================    
+    # ===============================================================
+    async def __get_num_from_argument(self, message, argument):
+        # Gets usages for arguments
+        argument = self.__normalize_string(argument)
+        argument2 = argument.lower()
+
+        # Nondecimal bases
+        for base in self.nondecimal_bases.keys():
+            if argument2.startswith(base):
+                try:
+                    return self.__convert_num_to_decimal(argument[2:], self.nondecimal_bases[base][0])
+                except ValueError:
+                    await message.channel.send(argument + ' is not a valid {} number').format(self.nondecimal_bases[base][1])
+                    return ''
+
+        # Decimal base
+        try:
+            return float(argument)
+        except ValueError:
+            await message.channel.send(argument + ' is not a valid decimal number')
+            return ''
+
     @staticmethod
     def __get_command_from_message(message):
         """
@@ -695,27 +731,6 @@ class JadieClient(discord.Client):
             return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'DM')
         else:
             return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'Group Chat')
-
-    async def __get_num_from_argument(self, message, argument):
-        # Gets usages for arguments
-        argument = self.__normalize_string(argument)
-        argument2 = argument.lower()
-
-        # Nondecimal bases
-        for base in self.nondecimal_bases.keys():
-            if argument2.startswith(base):
-                try:
-                    return self.__convert_num_to_decimal(argument[2:], self.nondecimal_bases[base][0])
-                except ValueError:
-                    await message.channel.send(argument + ' is not a valid {} number').format(self.nondecimal_bases[base][1])
-                    return ''
-
-        # Decimal base
-        try:
-            return float(argument)
-        except ValueError:
-            await message.channel.send(argument + ' is not a valid decimal number')
-            return ''
 
     @staticmethod
     def __convert_num_to_decimal(n, base):
