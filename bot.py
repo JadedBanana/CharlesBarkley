@@ -88,7 +88,8 @@ class JadieClient(discord.Client):
             'getpid': self.get_pid, 'localpid': self.get_pid, 'pid': self.get_pid,
             'reboot': self.remote_reboot, 'restart': self.remote_reboot,
             'update': self.update_remote,
-            'sendlog': self.send_log
+            'sendlog': self.send_log,
+            'loglist': self.log_list, 'logs': self.log_list
         }
 
     async def on_ready(self):
@@ -656,6 +657,44 @@ class JadieClient(discord.Client):
         else:
             log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered log file, file {} does not exist'.format(target_log))
             await message.channel.send('Log file {} does not exist.'.format(target_log))
+
+    async def log_list(self, message, argument, is_in_guild):
+        """
+        Sends a list of all the log files in the log folder.
+        """
+        # Logs debug
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered log list.')
+
+        # Gets the file list and file sizes
+        dir_files = os.listdir(constants.LOGS_DIR)
+        file_sizes = [os.path.getsize(os.path.join(constants.LOGS_DIR, f)) for f in dir_files]
+
+        # While there's dir files, we need to put them into their own sections (so that we don't overdo the 2000 character limit).
+        messages = []
+        current_message = '```'
+        while dir_files:
+            # Adds lines to the output.
+            next_line = dir_files[0] + '\t({} bytes)\n'.format(file_sizes[0])
+            if len(current_message) + len(next_line) + 3 <= 2000:
+                current_message += next_line
+            else:
+                messages.append(current_message + '```')
+                current_message = '```' + next_line
+
+            # Removing the files from the list.
+            dir_files.remove(dir_files[0])
+            file_sizes.remove(file_sizes[0])
+
+        # Finally, we add the final message to the end.
+        messages.append(current_message + '```')
+
+        # If the file list isn't empty, we send it.
+        # Otherwise,
+        if messages:
+            for msg in messages:
+                await message.channel.send(msg)
+        else:
+            await message.channel.send('Could not find any log files.')
 
 
     # ===============================================================
