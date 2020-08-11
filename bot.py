@@ -9,6 +9,7 @@ import platform
 import discord
 import logger
 import random
+import socket
 import string
 import urllib
 import json
@@ -515,8 +516,8 @@ class JadieClient(discord.Client):
         """
         # Windows part
         if self.on_windows:
-            # Imports socket and gets the local ip.
-            import socket; local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
+            # Gets the local ip using socket.
+            local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
 
             # Sends msg and logs.
             log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
@@ -872,7 +873,7 @@ def launch(on_windows):
 
     # Logging new instance
     start_str = 'Starting new instance of JadieClient'
-    run_str = 'Running on {} ({})'.format(os.environ['COMPUTERNAME'], 'Windows' if on_windows else 'Linux')
+    run_str = 'Running on {} ({})'.format(socket.gethostname(), 'Windows' if on_windows else 'Linux')
     log.info('')
     log.info('=' * (max(len(start_str), len(run_str)) + 1))
     log.info(start_str)
