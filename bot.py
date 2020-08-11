@@ -208,7 +208,7 @@ class JadieClient(discord.Client):
         # Tries to get a valid user out of the argument.
         users = self.__get_closest_users(message, argument)
         if not users:
-            log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid user')
+            log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid')
             await message.channel.send('Invalid user.')
             return
 
@@ -226,7 +226,7 @@ class JadieClient(discord.Client):
             # Checks to make sure it isn't self.
             if user == self.user:
                 if not len(users) - 1:
-                    log.debug(self.__get_comm_start(message, is_in_guild) + 'requested copy for THIS BOT. T_T')
+                    log.debug(self.__get_comm_start(message, is_in_guild) + 'requested copy for this bot')
                     await message.channel.send('Yeah, no, I\'m not gonna copy myself.')
                 continue
 
@@ -250,11 +250,11 @@ class JadieClient(discord.Client):
 
         # If the thing exists in the dict
         if copied_key in self.copied_users.keys():
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
             self.copied_users.pop(copied_key)
             await message.channel.send('No longer copying people in this server.')
         else:
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, already done')
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying, already done')
             await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
 
     async def randomyt(self, message, argument, is_in_guild):
@@ -312,7 +312,7 @@ class JadieClient(discord.Client):
         choice = random.randint(0, len(video_ids) - 1)
 
         # Return selected video.
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
         await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
         self.quota_blocked_last_time = False
 
@@ -381,13 +381,13 @@ class JadieClient(discord.Client):
 
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for {}, invalid'.format(argument))
             return
 
         num = self.__convert_num_from_decimal(num, 16)
 
         await message.channel.send('0x' + str(num))
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for number {}, responded with 0x{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested hex conversion for {}, responded 0x{}'.format(argument, num))
 
     async def duodecimal(self, message, argument, is_in_guild):
         """
@@ -398,12 +398,12 @@ class JadieClient(discord.Client):
 
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for {}, invalid'.format(argument))
             return
 
         num = self.__convert_num_from_decimal(num, 12)
 
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for number {}, responded with 0d{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for {}, responded 0d{}'.format(argument, num))
         await message.channel.send('0d' + str(num))
 
     async def decimal(self, message, argument, is_in_guild):
@@ -415,10 +415,10 @@ class JadieClient(discord.Client):
 
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for {}, invalid'.format(argument))
             return
 
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, responded with {}'.format(argument, int(num) if num % 1 == 0 else num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for {}, responded {}'.format(argument, int(num) if num % 1 == 0 else num))
         await message.channel.send(int(num) if num % 1 == 0 else num)
 
     async def octal(self, message, argument, is_in_guild):
@@ -430,12 +430,12 @@ class JadieClient(discord.Client):
 
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for {}, invalid'.format(argument))
             return
 
         num = self.__convert_num_from_decimal(num, 8)
 
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for number {}, responded with 0o{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for {}, responded 0o{}'.format(argument, num))
         await message.channel.send('0o' + str(num))
 
     async def binary(self, message, argument, is_in_guild):
@@ -447,12 +447,12 @@ class JadieClient(discord.Client):
 
         # Error handling for not numbers
         if isinstance(num, str):
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for number {}, invalid'.format(argument))
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, invalid'.format(argument))
             return
 
         num = self.__convert_num_from_decimal(num, 2)
 
-        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for number {}, responded with 0b{}'.format(argument, num))
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, responded with 0b{}'.format(argument, num))
         await message.channel.send('0b' + str(num))
 
 
@@ -538,12 +538,12 @@ class JadieClient(discord.Client):
         If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
         """
         if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and self.on_windows:
-            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows')
             await message.channel.send('Windows: ignored ignore request')
         else:
             self.ignore_developer = not self.ignore_developer
-            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
-            await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set to ' + str(self.ignore_developer))
+            await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set to ' + str(self.ignore_developer))
 
     async def get_pid(self, message, argument, is_in_guild):
         """
@@ -872,10 +872,12 @@ def launch(on_windows):
 
     # Logging new instance
     start_str = 'Starting new instance of JadieClient'
+    run_str = 'Running on {} ({})'.format(os.environ['COMPUTERNAME'], 'Windows' if on_windows else 'Linux')
     log.info('')
-    log.info('=' * (len(start_str) + 1))
+    log.info('=' * (max(len(start_str), len(run_str)) + 1))
     log.info(start_str)
-    log.info('=' * (len(start_str) + 1))
+    log.info(run_str)
+    log.info('=' * (max(len(start_str), len(run_str)) + 1))
 
     # All this crap around client.run occurs only if we can't connect initially.
     try:
