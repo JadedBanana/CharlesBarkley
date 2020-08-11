@@ -207,8 +207,8 @@ class JadieClient(discord.Client):
         # Tries to get a valid user out of the argument.
         users = self.__get_closest_users(message, argument)
         if not users:
-            await message.channel.send('Invalid user.')
             log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid user')
+            await message.channel.send('Invalid user.')
             return
 
         # Gets the key we'll be using for the copied_users dict.
@@ -253,8 +253,8 @@ class JadieClient(discord.Client):
             self.copied_users.pop(copied_key)
             await message.channel.send('No longer copying people in this server.')
         else:
-            await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested to stop copying people, already done')
+            await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
 
     async def randomyt(self, message, argument, is_in_guild):
         """
@@ -262,8 +262,8 @@ class JadieClient(discord.Client):
         """
         # Rolls the random chance for a rick roll...
         if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
-            await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
             log.info(self.__get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
+            await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
             return
 
         # Otherwise...
@@ -311,8 +311,8 @@ class JadieClient(discord.Client):
         choice = random.randint(0, len(video_ids) - 1)
 
         # Return selected video.
-        await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result number ' + str(choice) + ' in the results for ' + random_search)
+        await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
         self.quota_blocked_last_time = False
 
     async def randomwiki(self, message, argument, is_in_guild):
@@ -322,8 +322,8 @@ class JadieClient(discord.Client):
         # Simple call.
         wiki_page = wikipedia.page(wikipedia.random(1))
 
-        await message.channel.send(wiki_page.url)
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
+        await message.channel.send(wiki_page.url)
 
 
     # ===============================================================
@@ -351,13 +351,13 @@ class JadieClient(discord.Client):
             evaluated = eval(argument, local_globals)
         # For a syntax error, we actually SEND THE ERROR back to the user.
         except SyntaxError as e:
-            await message.channel.send('Syntax Error on line {}:```{}\n'.format(e.args[1][1], e.args[1][3].split('\n')[0]) + ' ' * (e.args[1][2] - 1) + '^```')
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a syntax error'.format(argument))
+            await message.channel.send('Syntax Error on line {}:```{}\n'.format(e.args[1][1], e.args[1][3].split('\n')[0]) + ' ' * (e.args[1][2] - 1) + '^```')
             return
         # For a type error or value error, we send that shit back too.
         except (TypeError, ValueError) as e:
-            await message.channel.send(repr(e))
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a type error'.format(argument))
+            await message.channel.send(repr(e))
             return
 
         # Prints out the print statements.
@@ -402,8 +402,8 @@ class JadieClient(discord.Client):
 
         num = self.__convert_num_from_decimal(num, 12)
 
-        await message.channel.send('0d' + str(num))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested duodec conversion for number {}, responded with 0d{}'.format(argument, num))
+        await message.channel.send('0d' + str(num))
 
     async def decimal(self, message, argument, is_in_guild):
         """
@@ -417,8 +417,8 @@ class JadieClient(discord.Client):
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, invalid'.format(argument))
             return
 
-        await message.channel.send(int(num) if num % 1 == 0 else num)
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested decimal conversion for number {}, responded with {}'.format(argument, int(num) if num % 1 == 0 else num))
+        await message.channel.send(int(num) if num % 1 == 0 else num)
 
     async def octal(self, message, argument, is_in_guild):
         """
@@ -434,8 +434,8 @@ class JadieClient(discord.Client):
 
         num = self.__convert_num_from_decimal(num, 8)
 
-        await message.channel.send('0o' + str(num))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested octal conversion for number {}, responded with 0o{}'.format(argument, num))
+        await message.channel.send('0o' + str(num))
 
     async def binary(self, message, argument, is_in_guild):
         """
@@ -451,8 +451,8 @@ class JadieClient(discord.Client):
 
         num = self.__convert_num_from_decimal(num, 2)
 
-        await message.channel.send('0b' + str(num))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested binary conversion for number {}, responded with 0b{}'.format(argument, num))
+        await message.channel.send('0b' + str(num))
 
 
     # ===============================================================
@@ -462,8 +462,8 @@ class JadieClient(discord.Client):
         """
         Prints out the help response.
         """
-        await message.channel.send(constants.HELP_MSG.format(constants.VERSION) + (constants.HELP_MSG_DEV_ADDENDUM if message.author.id in constants.DEVELOPER_DISCORD_IDS else '```'))
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested help message')
+        await message.channel.send(constants.HELP_MSG.format(constants.VERSION) + (constants.HELP_MSG_DEV_ADDENDUM if message.author.id in constants.DEVELOPER_DISCORD_IDS else '```'))
 
     async def runtime(self, message, argument, is_in_guild):
         """
@@ -471,8 +471,8 @@ class JadieClient(discord.Client):
         """
         # Immediately returns if bot start time was not established
         if not bot_start_time:
-            await message.channel.send('An error occurred while getting runtime, sorry! :P')
             log.warning(self.__get_comm_start(message, is_in_guild) + 'requested runtime, could not find start time')
+            await message.channel.send('An error occurred while getting runtime, sorry! :P')
             return
 
         # Time delta
@@ -482,8 +482,8 @@ class JadieClient(discord.Client):
         bot_str = self.__calculate_time_passage(time_delta)
 
         # Sends report, logs message
-        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested runtime, responded with ' + bot_str)
+        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
 
     async def uptime(self, message, argument, is_in_guild):
         """
@@ -491,8 +491,8 @@ class JadieClient(discord.Client):
         """
         # Immediately returns if bot start time was not established
         if not self.bot_uptime:
-            await message.channel.send('An error occurred while getting uptime, sorry! :P')
             log.warning(self.__get_comm_start(message, is_in_guild) + 'requested runtime, could not find start time')
+            await message.channel.send('An error occurred while getting uptime, sorry! :P')
             return
 
         # Time delta
@@ -502,8 +502,8 @@ class JadieClient(discord.Client):
         bot_str = self.__calculate_time_passage(time_delta)
 
         # Sends report, logs message
-        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str)
+        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
 
     # ===============================================================
     #                     DEV-ONLY COMMANDS
@@ -518,8 +518,8 @@ class JadieClient(discord.Client):
             import socket; local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
 
             # Sends msg and logs.
-            await message.channel.send(local_ip)
             log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
+            await message.channel.send(local_ip)
         
         # Linux Part
         else:
@@ -527,9 +527,9 @@ class JadieClient(discord.Client):
             import netifaces; local_ips = [pre + ': ' + netifaces.ifaddresses(pre)[netifaces.AF_INET][0]['addr'] for pre in constants.LINUX_IP_PREFIXES]
 
             # Sends msg and logs.
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
             for local_ip in local_ips:
                 await message.channel.send(local_ip)
-            log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
 
     async def toggle_ignore_dev(self, message, argument, is_in_guild):
         """
@@ -537,12 +537,12 @@ class JadieClient(discord.Client):
         If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
         """
         if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and self.on_windows:
-            await message.channel.send('Windows: ignored ignore request')
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows and IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is True')
+            await message.channel.send('Windows: ignored ignore request')
         else:
             self.ignore_developer = not self.ignore_developer
-            await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
             log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set ignore_developer to ' + str(self.ignore_developer))
+            await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set ignore_developer to ' + str(self.ignore_developer))
 
     async def get_pid(self, message, argument, is_in_guild):
         """
@@ -552,8 +552,8 @@ class JadieClient(discord.Client):
         pid = os.getpid()
 
         # Logs and returns PID
-        await message.channel.send(pid)
         log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered local PID, returned ' + str(pid))
+        await message.channel.send(pid)
 
     async def remote_reboot(self, message, argument, is_in_guild):
         """
@@ -562,8 +562,8 @@ class JadieClient(discord.Client):
         So we have a contingency!
         """
         self.reboot_confirmation = True
-        await message.channel.send('Confirm remote reboot? (y/n)')
         log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote reboot, confirming...')
+        await message.channel.send('Confirm remote reboot? (y/n)')
 
     async def confirm_reboot(self, message, is_in_guild):
         """
@@ -584,9 +584,9 @@ class JadieClient(discord.Client):
             next_bot_start_time = datetime(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute) + timedelta(seconds=time_delta_seconds)
 
             # Notify user.
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
             await message.channel.send('Confirmed. Performing remote reboot...')
             await message.channel.send('Bot is estimated to be back up in approximately {} seconds.'.format((next_bot_start_time - current_time).seconds))
-            log.info(self.__get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
 
             # Exit.
             os._exit(0)
@@ -594,13 +594,13 @@ class JadieClient(discord.Client):
         # No
         elif response.startswith('n'):
             self.reboot_confirmation = False
-            await message.channel.send('Remote reboot aborted.')
             log.info(self.__get_comm_start(message, is_in_guild) + 'Aborted remote restart')
+            await message.channel.send('Remote reboot aborted.')
 
         # Invalid response
         else:
-            await message.channel.send('Invalid response. Confirm? (y/n)')
             log.debug(self.__get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
+            await message.channel.send('Invalid response. Confirm? (y/n)')
 
     async def update_remote(self, message, argument, is_in_guild):
         """
@@ -614,22 +614,48 @@ class JadieClient(discord.Client):
         decoded_output = process.communicate()[0].decode('utf-8')
 
         # Send report and log.
+        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote update.')
         await message.channel.send('Git output: ```' + decoded_output + '```')
         await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
-        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered remote update.')
 
     async def send_log(self, message, argument, is_in_guild):
         """
         Sends a log file through discord.
-        Argument should be formatted in YYYYMMDD.
+        Argument should be formatted in YYYY-MM-DD.
         """
         # If there is no argument, we simply grab today's log file.
+        is_today = not argument
+        if is_today:
+            target_log = datetime.today().strftime('%Y-%m-%d') + '.txt'
 
-        # Normalizing the string (argument)
-        argument = self.__normalize_string(argument)
-        for i in range(len(argument) - 1, -1, -1):
-            if argument[i] not in string.digits:
-                argument = argument[:i] + argument[i + 1:]
+        # Otherwise, we grab the argument and try to work it into a good target log.
+        else:
+            # Normalizing the string
+            argument_slim = self.__normalize_string(argument)
+            for i in range(len(argument_slim) - 1, -1, -1):
+                if argument_slim[i] not in string.digits:
+                    argument_slim = argument_slim[:i] + argument_slim[i + 1:]
+
+            # If the length of our argument isn't now 8, we tell the user that and return.
+            if len(argument_slim) != 8:
+                log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered log file, invalid date')
+                await message.channel.send('Invalid date format. Should be YYYY-MM-DD')
+                return
+
+            # Now, we form a date.
+            target_log = '{}-{}-{}.txt'.format(argument_slim[:4], argument_slim[4:6], argument_slim[6:8])
+            is_today = target_log == datetime.today().strftime('%Y-%m-%d') + '.txt'
+
+        # We see if that log file exists.
+        if os.path.isfile(os.path.join(constants.LOGS_DIR, target_log)) or is_today:
+            # Log then send file.
+            log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered log file {}, sending'.format(target_log))
+            await message.channel.send(file=discord.File(os.path.join(constants.LOGS_DIR, target_log)))
+
+        # If the log file doesn't exist, we tell the user that.
+        else:
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered log file, file {} does not exist'.format(target_log))
+            await message.channel.send('Log file {} does not exist.'.format(target_log))
 
 
     # ===============================================================

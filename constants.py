@@ -288,7 +288,8 @@ HELP_MSG_DEV_ADDENDUM = '''
 - getpid: Returns the local PID of this process
 - localip: Returns the local ip the bot is running from
 - toggleignoredev: Toggles whether or not to ignore developer on Linux side
-- sendlog: Sends the log for today, or a specific date (YYYYMMDD)
+- loglist: Sends a list of all the log files in the logs folder
+- sendlog: Sends the log for today, or a specific date (YYYY-MM-DD)
 - update: Trigger remote update (pull from Git master branch)
 - reboot: Trigger remote reboot
 ```'''
