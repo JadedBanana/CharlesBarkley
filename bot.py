@@ -666,7 +666,7 @@ class JadieClient(discord.Client):
         log.debug(self.__get_comm_start(message, is_in_guild) + 'Ordered log list.')
 
         # Gets the file list and file sizes
-        dir_files = os.listdir(constants.LOGS_DIR)
+        dir_files = sorted(os.listdir(constants.LOGS_DIR))
         file_sizes = [os.path.getsize(os.path.join(constants.LOGS_DIR, f)) for f in dir_files]
 
         # While there's dir files, we need to put them into their own sections (so that we don't overdo the 2000 character limit).
@@ -791,11 +791,11 @@ class JadieClient(discord.Client):
         Gets the command prefix. Just used to cut down space.
         """
         if is_in_guild:
-            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, message.guild)
+            return constants.COMM_LOG_PREFIX_GUILD.format(message.author, message.channel, message.guild)
         elif isinstance(message.channel, discord.DMChannel):
-            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'DM')
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
         else:
-            return constants.COMM_LOG_PREFIX.format(message.author, message.channel, 'Group Chat')
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
 
     @staticmethod
     def __convert_num_to_decimal(n, base):

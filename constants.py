@@ -25,7 +25,8 @@ DO_TIMESTAMPS = True
 LOGS_DIR = 'logs'
 
 # Server, channel, user
-COMM_LOG_PREFIX = '{} ({}, {}): '
+COMM_LOG_PREFIX_GUILD = '{} ({}, {}): '
+COMM_LOG_PREFIX = '{} ({}): '
 
 # Bot stuff
 # Global crap
