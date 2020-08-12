@@ -3,6 +3,7 @@
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
+from exceptions import *
 import constants
 import wikipedia
 import platform
@@ -207,7 +208,10 @@ class JadieClient(discord.Client):
         Copiable users will be copied in every message they send.
         """
         # Tries to get a valid user out of the argument.
-        users = self.__get_closest_users(message, argument)
+        try:
+            users = self.__get_closest_users(message, argument, is_in_guild)
+        except (ArgumentTooShortError, NoUserSpecifiedError, UnableToFindUserError):
+            users = []
         if not users:
             log.info(self.__get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid')
             await message.channel.send('Invalid user.')
@@ -740,15 +744,190 @@ class JadieClient(discord.Client):
             return message, None
         return message[:end_index].lower(), message[end_index + 1:]
 
-    @staticmethod
-    def __get_closest_users(message, argument):
+    def __get_closest_users(self, message, argument, is_in_guild, exclude_bots=False):
         """
         Gets the closest user to the given argument. Returns list of users.
         """
         # Checks to see if this message specifically mentions anyone.
+        # If so, immediately return that.
         if message.mentions:
             return message.mentions
-        return []
+
+        # If there is no argument left to parse, we raise NoUserSpecifiedError.
+        if not argument:
+            raise NoUserSpecifiedError()
+
+        # Normalize the argument, split it by its spaces.
+        arguments = self.__normalize_string(argument, remove_discord_formatting=False).lower().split(' ')
+
+        # Same as above, but now on the normalized and split str.
+        if not arguments:
+            raise NoUserSpecifiedError()
+
+        # If any of the arguments is below 2 in length, we raise ArgumentTooShortError.
+        for arg in arguments:
+            if len(arg) < 2:
+                raise ArgumentTooShortError(arg)
+
+        # Otherwise, we search through the users and try to find matching strings.
+        # First, we get a list of all users.
+        all_users = message.guild.members if is_in_guild else ([message.channel.recipient] if isinstance(message.channel, discord.DMChannel) else message.channel.recipients)
+        # If we were told to not include bots, we get rid of them.
+        if exclude_bots:
+            for i in range(len(all_users) - 1, -1, -1):
+                if all_users[i].bot:
+                    all_users.remove(all_users[i])
+
+        # Then, we iterate through each argument and find the closest user.
+        # This is prioritized as:
+        #   1. nick
+        #   2. username
+        #   3. id
+        # In the form of COUNT, INDEX(ES), and NON-ARGUMENT CHARACTER COUNT.
+        # If two users match in one, the next best values are compared.
+        # If two users match for all three, the preexisting one is prioritized.
+        # Users can be chosen more than once, but priority will be given to ones that also match once it has been put into the list.
+        # Duplicate users will be removed at the end.
+        pointed_users = []
+        for arg in arguments:
+
+            # This list will store the following:
+            #   1. The user object
+            #   2. Whether or not the user is already in pointed_users
+            #   3. The COUNTS for argument appearance in nick and username
+            #   4. The INDEXES for argument appearance in nick and username
+            #   5. The NON-ARGUMENT CHARACTER COUNT for argument appearance in nick and username
+            #   6. The COUNTS, INDEXES, and NON-ARGUMENT CHARACTER COUNT for argument appearance in id
+            current_user_priority = []
+
+            # Iterate through all users
+            for usr in all_users:
+
+                # Test to see if argument is in the user's attributes described above
+                if any([str(attr).lower().find(arg) + 1 for attr in [usr.name, usr.nick if usr.nick else '', usr.id]]):
+
+                    # Gathering the values for the attributes
+                    in_pointed_users = usr in pointed_users
+                    counts = [attr.lower().count(arg) for attr in [usr.name, usr.nick if usr.nick else '']]
+                    indexes = [self.__get_multi_index(attr.lower(), arg) for attr in [usr.name + '#' + usr.discriminator, usr.nick if usr.nick else '']]
+                    non_argument_char_count = [len(attr) - len(arg) * attr.lower().count(arg) for attr in [usr.name + '#' + usr.discriminator, usr.nick if usr.nick else '']]
+                    id_stuffs = [str(usr.id).count(arg), self.__get_multi_index(str(usr.id), arg), len(str(usr.id)) - len(arg) * str(usr.id).count(arg)]
+
+                    # Seeing if there is already a user in current_user_priority. If so, we do comparison.
+                    if current_user_priority:
+                        # If this user is the same as the one in current_user_priority, we continue.
+                        if usr == current_user_priority[0]:
+                            continue
+
+                        # Otherwise, we prioritize the one that isn't already in_pointed_users.
+                        # If both, we let the first one stay.
+                        if in_pointed_users:
+                            continue
+                        if current_user_priority[1]:
+                            current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                            continue
+
+                        # Gottem says whether or not we got one out in the previous check,
+                        gottem = False
+
+                        # Next, we check and see which has the highest count in username and nick.
+                        for i in range(2):
+                            if current_user_priority[2][i] < counts[i]:
+                                current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                                gottem = True
+                            elif current_user_priority[2][i] > counts[i]:
+                                gottem = True
+
+                        # Do gottem check.
+                        if gottem:
+                            continue
+
+                        # Next, we check and see whose occurrences happen FIRST.
+                        for i in range(2):
+                            for j in range(len(current_user_priority[3][i])):
+                                if current_user_priority[3][i][j] < indexes[i][j]:
+                                    current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                                    gottem = True
+                                elif current_user_priority[3][i][j] > indexes[i][j]:
+                                    gottem = True
+
+                        # Do gottem check.
+                        if gottem:
+                            continue
+
+                        # Next, we check and see which has the lowest non-argument character count in username and nick.
+                        for i in range(2):
+                            if current_user_priority[4][i] > non_argument_char_count[i]:
+                                current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                                gottem = True
+                            elif current_user_priority[4][i] < non_argument_char_count[i]:
+                                gottem = True
+
+                        # Do gottem check.
+                        if gottem:
+                            continue
+
+                        # Finally, we do the same for the id's.
+                        # First, the count.
+                        if current_user_priority[5][0] < id_stuffs[0]:
+                            current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                            continue
+                        elif current_user_priority[5][0] > id_stuffs[0]:
+                            continue
+
+                        # Then, the indexes.
+                        for j in range(len(current_user_priority[5][1])):
+                            if current_user_priority[5][1][j] < id_stuffs[1][j]:
+                                current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                                gottem = True
+                            elif current_user_priority[5][1][j] > id_stuffs[1][j]:
+                                gottem = True
+
+                        # Do gottem check.
+                        if gottem:
+                            continue
+
+                        # Finally, the lowest non-argument character count.
+                        if current_user_priority[5][2] > id_stuffs[2]:
+                            current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+                            continue
+                        elif current_user_priority[5][2] < id_stuffs[2]:
+                            continue
+
+                    # If there isn't a user in the current_user_priority, we set it to the current one.
+                    else:
+                        current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
+
+            # Now that that's out of the way, we test and see if the current_user_priority has a thing in it.
+            if current_user_priority:
+                # If it's already in pointed_users, we ignore it.
+                if current_user_priority[0] not in pointed_users:
+                    pointed_users.append(current_user_priority[0])
+
+            # If there is no current_user_priority, we throw an UnableToFindUserError.
+            else:
+                raise UnableToFindUserError(pointed_users, arg)
+
+        return pointed_users
+
+    @staticmethod
+    def __get_multi_index(source, arg):
+        """
+        Gets multiple indexes for the argument in the source.
+        """
+        all_indexes = []
+        len_removed = 0
+        # Iterates through all the appearances of arg in the source.
+        while arg in source:
+            next_index = source.index(arg)
+
+            # Updates outer variables.
+            all_indexes.append(len_removed + next_index)
+            len_removed+= next_index + len(arg)
+            source = source[next_index + len(arg):]
+
+        # Returns.
+        return all_indexes
 
     @staticmethod
     def __calculate_time_passage(time_delta):
@@ -767,7 +946,7 @@ class JadieClient(discord.Client):
         return bot_str
 
     @staticmethod
-    def __normalize_string(input_str, remove_double_spaces=True):
+    def __normalize_string(input_str, remove_discord_formatting=True, remove_double_spaces=True):
         """
         Removes spaces at the start and end as well as double spaces in a string.
         """
@@ -777,12 +956,15 @@ class JadieClient(discord.Client):
         # End spaces
         while input_str.endswith(' '):
             input_str = input_str[:len(input_str) - 1]
+        # Newlines, tabs
+        input_str = input_str.replace('\t', ' ').replace('\n', ' ')
         # Double spaces
         if remove_double_spaces:
             while '  ' in input_str:
                 input_str = input_str.replace('  ', ' ')
         # Code segments, spoilers, italics/bold
-        input_str = input_str.strip('`').strip('*').strip('_')
+        if remove_discord_formatting:
+            input_str = input_str.strip('`').strip('*').strip('_')
         # Return
         return input_str
 

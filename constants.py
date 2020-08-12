@@ -261,7 +261,7 @@ HELP_MSG = '''```
 - copy: Mention someone to start copying their every word
 - stopcopying: Stop copying everyone in this server
 - randomyt / randomyoutube: Generate a random YouTube video
-- randomwiki / randomwikipedia: Generate a random Wikipedia page
+- randomwiki / randomwikipedia: Generate a random English Wikipedia page
 
 ===============
     UTILITY
