@@ -9,6 +9,7 @@ DEVELOPER_DISCORD_IDS = [
 ]
 ON_WINDOWS_ONLY_RESPOND_TO_DEV = True
 IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX = True
+TEMP_DIR = 'temp'
 
 # Crontab shit
 CRONTAB_CHECK_FILE = '.croncheck'
@@ -237,6 +238,22 @@ EVAL_GLOBALS = {
     'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
 }
 
+# Shipping
+SHIP_HEART_IMG = 'assets/heart.png'
+SHIP_ICON_SIZE = 128
+SHIP_MESSAGES = [
+    'I ship {} with {}! Isn\'t it cute?',
+    'If you ask me, {} and {} were meant for each other.',
+    'OTP: {} and {}.',
+    'I ship {} and {}. Cute, right?',
+    'I like {} and {}. Enemies to lovers-sorta thing.',
+    '{} x {}. No further questions.',
+    'Imagine a yandere {} going after {}. Crazy, right?',
+    '{} and {}. Both are huge tsunderes.',
+    '{} and {}. Bakadere relationships are so cute, IMO.',
+    'Say whatever you want. {} and {} is the purest, most amazing ship and I will not stand for any others.'
+]
+
 # Conversion chars
 CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
 MAX_CONVERT_DEPTH = -16
@@ -247,6 +264,11 @@ UPTIME_PREFIX = 'Bot has been connected for '
 
 # Ip methods
 LINUX_IP_PREFIXES = ['lo', 'eth0']
+
+# Image Manipulation crap
+PFP_SIZE_PREFIX = '?size='
+PFP_FILETYPE = '.webp'
+PFP_DEFAULT_SIZE = 1024
 
 # Help message
 HELP_MSG = '''```
@@ -260,6 +282,7 @@ HELP_MSG = '''```
 ===============
 - copy: Mention someone to start copying their every word
 - stopcopying: Stop copying everyone in this server
+- ship: Ship two random users together. Tag another user to ship them with a random someone else.
 - randomyt / randomyoutube: Generate a random YouTube video
 - randomwiki / randomwikipedia: Generate a random English Wikipedia page
 

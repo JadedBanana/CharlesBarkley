@@ -4,9 +4,11 @@
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
 from exceptions import *
+from PIL import Image
 import constants
 import wikipedia
 import platform
+import requests
 import discord
 import logger
 import random
@@ -80,7 +82,8 @@ class JadieClient(discord.Client):
             'bin': self.binary, 'binary': self.binary,
             'randomyt': self.randomyt, 'randomyoutube': self.randomyt, 'ytroulette': self.randomyt, 'youtuberoulette': self.randomyt,
             'calc': self.evaluate, 'eval': self.evaluate, 'calculate': self.evaluate, 'evaluate': self.evaluate,
-            'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki
+            'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki,
+            'ship': self.ship
         }
 
         # Sets the developer command_dict
@@ -330,6 +333,77 @@ class JadieClient(discord.Client):
 
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
         await message.channel.send(wiki_page.url)
+
+    async def ship(self, message, argument, is_in_guild):
+        """
+        Ships 2 or more users together.
+        If a user isn't tagged, it ships the author and a random user.
+        If a user IS tagged, it ships them with someone random.
+        """
+        # Gets the user from the argument.
+        try:
+            partner_1 = self.__get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
+        except (UnableToFindUserError, ArgumentTooShortError):
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
+            await message.channel.send('Invalid user.')
+            return
+        except NoUserSpecifiedError:
+            partner_1 = None
+
+        # If an argument wasn't passed, we do BOTH the shipping ourselves.
+        if not partner_1:
+            # Gets valid users.
+            users_choices = self.__get_applicable_users(message, is_in_guild)
+            # Getting the two users.
+            partner_1 = random.choice(users_choices)
+            users_choices.remove(partner_1)
+            partner_2 = random.choice(users_choices)
+
+        else:
+            # Gets valid users.
+            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_users=[partner_1])
+            # Getting the second user.
+            partner_2 = random.choice(users_choices)
+
+        # Log this ship
+        log.debug(self.__get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
+
+        # Gets the PFP for partner 1 and 2. Also resizes them
+        partner_1_img, partner_1_filepath = self.__get_profile_picture(partner_1)
+        partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE),)
+        partner_2_img, partner_2_filepath = self.__get_profile_picture(partner_2)
+        partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE),)
+
+        # Gets the image for the heart (aww!)
+        heart_img = Image.open(constants.SHIP_HEART_IMG)
+
+        # Creates the ultra-wide canvas
+        together_canvas = Image.new('RGBA', (constants.SHIP_ICON_SIZE * 3, constants.SHIP_ICON_SIZE))
+
+        # Pastes the images onto the canvas in order
+        together_canvas.paste(partner_1_img, (0, 0))
+        together_canvas.paste(heart_img, (constants.SHIP_ICON_SIZE, 0))
+        together_canvas.paste(partner_2_img, (constants.SHIP_ICON_SIZE * 2, 0))
+
+        # Saves the canvas to disk
+        current_ship_filepath = os.path.join(constants.TEMP_DIR, 'current_ship.png')
+        together_canvas.save(current_ship_filepath)
+
+        embed = discord.Embed(title=random.choice(constants.SHIP_MESSAGES).format(partner_1.nick if partner_1.nick else partner_1.name, partner_2.nick if partner_2.nick else partner_2.name), colour=((221 << 16) + (115 << 8) + 215))
+        file = discord.File(current_ship_filepath, filename='ship_image.png')
+        embed.set_image(url='attachment://ship_image.png')
+
+        await message.channel.send(file = file, embed=embed)
+
+        # Cleanup -- closing Images and deleting them off disk.
+        partner_1_img.close()
+        partner_2_img.close()
+        heart_img.close()
+        together_canvas.close()
+        os.remove(partner_1_filepath)
+        os.remove(partner_2_filepath)
+        os.remove(current_ship_filepath)
+
 
 
     # ===============================================================
@@ -705,26 +779,120 @@ class JadieClient(discord.Client):
     # ===============================================================
     #               INTERNAL-USE (PRIVATE) COMMANDS
     # ===============================================================
-    async def __get_num_from_argument(self, message, argument):
-        # Gets usages for arguments
-        argument = self.__normalize_string(argument)
-        argument2 = argument.lower()
+    @staticmethod
+    def __calculate_time_passage(time_delta):
+        """
+        Creates the time delta string and reports to channel, then returns time delta string.
+        """
+        bot_str = ''
+        if time_delta.days:
+            bot_str+= str(time_delta.days) + 'd '
+        if int(time_delta.seconds / 3600):
+            bot_str+= str(int(time_delta.seconds / 3600)) + 'h '
+        if int(time_delta.seconds / 60):
+            bot_str+= str(int(time_delta.seconds % 3600 / 60)) + 'm '
+        bot_str+= str(time_delta.seconds % 60) + 's '
 
-        # Nondecimal bases
-        for base in self.nondecimal_bases.keys():
-            if argument2.startswith(base):
-                try:
-                    return self.__convert_num_to_decimal(argument[2:], self.nondecimal_bases[base][0])
-                except ValueError:
-                    await message.channel.send(argument + ' is not a valid {} number').format(self.nondecimal_bases[base][1])
-                    return ''
+        return bot_str
 
-        # Decimal base
-        try:
-            return float(argument)
-        except ValueError:
-            await message.channel.send(argument + ' is not a valid decimal number')
-            return ''
+    @staticmethod
+    def __convert_num_from_decimal(n, base):
+        """
+        Converts a number from decimal to another base.
+        """
+        # Gets maximum exponent of base
+        exp = 0
+        while base**(exp  + 1) <= n:
+            exp+= 1
+
+        # Adds all the numbers that aren't a multiple of base to the string.
+        num_str = ''
+        while n != 0 and exp >= constants.MAX_CONVERT_DEPTH:
+            # Adds a decimal point if we're below 0 exp.
+            if exp == -1:
+                num_str+= '.'
+            num_str+= constants.CONVERT_CHARS[int(n / base**exp)]
+            n -= (int(n / base**exp) * base**exp)
+            exp-= 1
+
+        # Adds all the zeros between exp and 0 if exp is not below 0.
+        while exp >= 0:
+            num_str+= '0'
+            exp-= 1
+
+        return num_str
+
+    @staticmethod
+    def __convert_num_to_decimal(n, base):
+        """
+        Converts a number to decimal from another base.
+        """
+        # If there's more than 1 decimal point, we raise a ValueError.
+        if n.count('.') > 1:
+            raise ValueError()
+
+        # If there is no decimal point, we take the easy way out.
+        if '.' not in n:
+            return int(n, base=base)
+
+        # Otherwise, we're in for a ride.
+        else:
+            # Get the index of the period.
+            per_index = n.find('.')
+
+            # Take the easy way for the numbers BEFORE the decimal point.
+            final_num = int(n[:per_index], base=base)
+
+            # We add a little leniency for those below base 36 in terms of capitalization.
+            if base <= 36:
+                n = n.upper()
+
+            # Do it ourselves for numbers after.
+            for index in range(per_index + 1, len(n)):
+                exp = per_index - index
+                num_of = constants.CONVERT_CHARS.find(n[index])
+                # A little error handling for -1's or stuff outside the range.
+                if num_of == -1 or num_of >= base:
+                    raise ValueError()
+                else:
+                    final_num+= base**exp * num_of
+
+            return final_num
+
+    @staticmethod
+    def __get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=None):
+        """
+        Returns a list of applicable users that fit the criteria provided.
+        """
+        # First, we get a list of all users.
+        all_users = message.guild.members if is_in_guild else ([message.channel.recipient] if isinstance(message.channel, discord.DMChannel) else message.channel.recipients)
+
+        # If we were told to not include bots, we get rid of them.
+        if exclude_bots:
+            for i in range(len(all_users) - 1, -1, -1):
+                if all_users[i].bot:
+                    all_users.remove(all_users[i])
+
+        # We remove all the users in exclude_users, if any.
+        if exclude_users:
+            for usr in exclude_users:
+                if usr in all_users:
+                    all_users.remove(usr)
+
+        # Returns.
+        return all_users
+
+    @staticmethod
+    def __get_comm_start(message, is_in_guild):
+        """
+        Gets the command prefix. Just used to cut down space.
+        """
+        if is_in_guild:
+            return constants.COMM_LOG_PREFIX_GUILD.format(message.author, message.channel, message.guild)
+        elif isinstance(message.channel, discord.DMChannel):
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
+        else:
+            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
 
     @staticmethod
     def __get_command_from_message(message):
@@ -764,19 +932,9 @@ class JadieClient(discord.Client):
         if not arguments:
             raise NoUserSpecifiedError()
 
-        # If any of the arguments is below 2 in length, we raise ArgumentTooShortError.
-        for arg in arguments:
-            if len(arg) < 2:
-                raise ArgumentTooShortError(arg)
-
         # Otherwise, we search through the users and try to find matching strings.
         # First, we get a list of all users.
-        all_users = message.guild.members if is_in_guild else ([message.channel.recipient] if isinstance(message.channel, discord.DMChannel) else message.channel.recipients)
-        # If we were told to not include bots, we get rid of them.
-        if exclude_bots:
-            for i in range(len(all_users) - 1, -1, -1):
-                if all_users[i].bot:
-                    all_users.remove(all_users[i])
+        all_users = self.__get_applicable_users(message, is_in_guild, exclude_bots=exclude_bots)
 
         # Then, we iterate through each argument and find the closest user.
         # This is prioritized as:
@@ -790,6 +948,10 @@ class JadieClient(discord.Client):
         # Duplicate users will be removed at the end.
         pointed_users = []
         for arg in arguments:
+
+            # Return ArgumentTooShortError when an argument is too short.
+            if len(arg) < 2:
+                raise ArgumentTooShortError(arg)
 
             # This list will store the following:
             #   1. The user object
@@ -934,21 +1096,42 @@ class JadieClient(discord.Client):
         # Returns.
         return all_indexes
 
-    @staticmethod
-    def __calculate_time_passage(time_delta):
-        """
-        Creates the time delta string and reports to channel, then returns time delta string.
-        """
-        bot_str = ''
-        if time_delta.days:
-            bot_str+= str(time_delta.days) + 'd '
-        if int(time_delta.seconds / 3600):
-            bot_str+= str(int(time_delta.seconds / 3600)) + 'h '
-        if int(time_delta.seconds / 60):
-            bot_str+= str(int(time_delta.seconds % 3600 / 60)) + 'm '
-        bot_str+= str(time_delta.seconds % 60) + 's '
+    async def __get_num_from_argument(self, message, argument):
+        # Gets usages for arguments
+        argument = self.__normalize_string(argument)
+        argument2 = argument.lower()
 
-        return bot_str
+        # Nondecimal bases
+        for base in self.nondecimal_bases.keys():
+            if argument2.startswith(base):
+                try:
+                    return self.__convert_num_to_decimal(argument[2:], self.nondecimal_bases[base][0])
+                except ValueError:
+                    await message.channel.send(argument + ' is not a valid {} number').format(self.nondecimal_bases[base][1])
+                    return ''
+
+        # Decimal base
+        try:
+            return float(argument)
+        except ValueError:
+            await message.channel.send(argument + ' is not a valid decimal number')
+            return ''
+
+    def __get_profile_picture(self, user):
+        """
+        Gets the profile picture for a user.
+        """
+        # Gets the url.
+        pfp_url = user.avatar_url
+        # Downloads image in bytes
+        image_bytes = requests.get(pfp_url).content
+        # Writes image to disk
+        with open(os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE), 'wb') as w:
+            w.write(image_bytes)
+        # Opens as image
+        img_return = Image.open(os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE))
+        # Returns image.
+        return img_return, os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
 
     @staticmethod
     def __normalize_string(input_str, remove_discord_formatting=True, remove_double_spaces=True):
@@ -972,82 +1155,6 @@ class JadieClient(discord.Client):
             input_str = input_str.strip('`').strip('*').strip('_')
         # Return
         return input_str
-
-    @staticmethod
-    def __get_comm_start(message, is_in_guild):
-        """
-        Gets the command prefix. Just used to cut down space.
-        """
-        if is_in_guild:
-            return constants.COMM_LOG_PREFIX_GUILD.format(message.author, message.channel, message.guild)
-        elif isinstance(message.channel, discord.DMChannel):
-            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
-        else:
-            return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
-
-    @staticmethod
-    def __convert_num_to_decimal(n, base):
-        """
-        Converts a number to decimal from another base.
-        """
-        # If there's more than 1 decimal point, we raise a ValueError.
-        if n.count('.') > 1:
-            raise ValueError()
-
-        # If there is no decimal point, we take the easy way out.
-        if '.' not in n:
-            return int(n, base=base)
-
-        # Otherwise, we're in for a ride.
-        else:
-            # Get the index of the period.
-            per_index = n.find('.')
-
-            # Take the easy way for the numbers BEFORE the decimal point.
-            final_num = int(n[:per_index], base=base)
-
-            # We add a little leniency for those below base 36 in terms of capitalization.
-            if base <= 36:
-                n = n.upper()
-
-            # Do it ourselves for numbers after.
-            for index in range(per_index + 1, len(n)):
-                exp = per_index - index
-                num_of = constants.CONVERT_CHARS.find(n[index])
-                # A little error handling for -1's or stuff outside the range.
-                if num_of == -1 or num_of >= base:
-                    raise ValueError()
-                else:
-                    final_num+= base**exp * num_of
-
-            return final_num
-
-    @staticmethod
-    def __convert_num_from_decimal(n, base):
-        """
-        Converts a number from decimal to another base.
-        """
-        # Gets maximum exponent of base
-        exp = 0
-        while base**(exp  + 1) <= n:
-            exp+= 1
-
-        # Adds all the numbers that aren't a multiple of base to the string.
-        num_str = ''
-        while n != 0 and exp >= constants.MAX_CONVERT_DEPTH:
-            # Adds a decimal point if we're below 0 exp.
-            if exp == -1:
-                num_str+= '.'
-            num_str+= constants.CONVERT_CHARS[int(n / base**exp)]
-            n -= (int(n / base**exp) * base**exp)
-            exp-= 1
-
-        # Adds all the zeros between exp and 0 if exp is not below 0.
-        while exp >= 0:
-            num_str+= '0'
-            exp-= 1
-
-        return num_str
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
