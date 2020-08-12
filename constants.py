@@ -184,7 +184,7 @@ ULTIMATE_TITLES = {
     'Supervillain': '! What separates a regular villain from a super one? Why, presentation, of course!',
     'Supreme Leader': '',
     'Survivor': '',
-    'Swimmer': '',
+    'Swimmer': '! {7} swear {0} could swim across the ocean if it was legal!',
     'Swordsman': '. While most others spend their time playing video games or watching TV, {0} study the blade.',
     'Tailor': '. Capes aren\'t usually fashionable, but the way {0} make it, anyone can rock that shit.',
     'Team Manager': '! ',

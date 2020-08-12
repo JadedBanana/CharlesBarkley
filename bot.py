@@ -353,7 +353,7 @@ class JadieClient(discord.Client):
         # If an argument wasn't passed, we do BOTH the shipping ourselves.
         if not partner_1:
             # Gets valid users.
-            users_choices = self.__get_applicable_users(message, is_in_guild)
+            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=False)
             # Getting the two users.
             partner_1 = random.choice(users_choices)
             users_choices.remove(partner_1)
@@ -361,7 +361,7 @@ class JadieClient(discord.Client):
 
         else:
             # Gets valid users.
-            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_users=[partner_1])
+            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=False, exclude_users=[partner_1])
             # Getting the second user.
             partner_2 = random.choice(users_choices)
 
@@ -370,9 +370,9 @@ class JadieClient(discord.Client):
 
         # Gets the PFP for partner 1 and 2. Also resizes them
         partner_1_img, partner_1_filepath = self.__get_profile_picture(partner_1)
-        partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE),)
+        partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_1_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
         partner_2_img, partner_2_filepath = self.__get_profile_picture(partner_2)
-        partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE),)
+        partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_2_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
 
         # Gets the image for the heart (aww!)
         heart_img = Image.open(constants.SHIP_HEART_IMG)
