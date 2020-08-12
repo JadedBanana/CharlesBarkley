@@ -509,7 +509,7 @@ class JadieClient(discord.Client):
 
         # Sends report, logs message
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str)
-        await message.channel.send(constants.RUNTIME_PREFIX + bot_str)
+        await message.channel.send(constants.UPTIME_PREFIX + bot_str)
 
     # ===============================================================
     #                     DEV-ONLY COMMANDS
@@ -744,7 +744,7 @@ class JadieClient(discord.Client):
             return message, None
         return message[:end_index].lower(), message[end_index + 1:]
 
-    def __get_closest_users(self, message, argument, is_in_guild, exclude_bots=False):
+    def __get_closest_users(self, message, argument, is_in_guild, exclude_bots=False, limit=None):
         """
         Gets the closest user to the given argument. Returns list of users.
         """
@@ -907,6 +907,11 @@ class JadieClient(discord.Client):
             # If there is no current_user_priority, we throw an UnableToFindUserError.
             else:
                 raise UnableToFindUserError(pointed_users, arg)
+
+            # If we're operating under a limit, we return the second the limit matches.
+            if limit:
+                if len(pointed_users) == limit:
+                    return pointed_users
 
         return pointed_users
 
@@ -1078,11 +1083,11 @@ def launch(on_windows):
 if __name__ == '__main__':
     # Set the working directory to what we want so our imports work correctly
     # Also checks the OS to make sure we load into the correct working directory
-    on_windows = platform.system() == 'Windows'
-    if on_windows:
+    running_on_windows = platform.system() == 'Windows'
+    if running_on_windows:
         os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
     else:
         os.chdir('/home/pi/Jadi3Pi')
 
     # Then we launch.
-    launch(on_windows)
+    launch(running_on_windows)
