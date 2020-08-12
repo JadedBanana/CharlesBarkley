@@ -1174,6 +1174,10 @@ def launch(on_windows):
     log.info(run_str)
     log.info('=' * (max(len(start_str), len(run_str)) + 1))
 
+    # Making the temp dir if it doesn't exist already.
+    if not os.path.isdir(constants.TEMP_DIR):
+        os.mkdir(constants.TEMP_DIR)
+
     # All this crap around client.run occurs only if we can't connect initially.
     try:
         client.run(constants.BOT_TOKEN)
