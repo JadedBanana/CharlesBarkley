@@ -352,18 +352,28 @@ class JadieClient(discord.Client):
 
         # If an argument wasn't passed, we do BOTH the shipping ourselves.
         if not partner_1:
-            # Gets valid users.
-            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True)
-            # Getting the two users.
-            partner_1 = random.choice(users_choices)
-            users_choices.remove(partner_1)
-            partner_2 = random.choice(users_choices)
+            try:
+                # Gets valid users.
+                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True)
+                # Getting the two users.
+                partner_1 = random.choice(users_choices)
+                users_choices.remove(partner_1)
+                partner_2 = random.choice(users_choices)
+            except IndexError:
+                log.debug(self.__get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+                await message.channel.send('There aren\'t enough users in here to form a ship!')
+                return
 
         else:
-            # Gets valid users.
-            users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=[partner_1])
-            # Getting the second user.
-            partner_2 = random.choice(users_choices)
+            try:
+                # Gets valid users.
+                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=[partner_1])
+                # Getting the second user.
+                partner_2 = random.choice(users_choices)
+            except IndexError:
+                log.debug(self.__get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+                await message.channel.send('There aren\'t enough users in here to form a ship!')
+                return
 
         # Log this ship
         log.debug(self.__get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
