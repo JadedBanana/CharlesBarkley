@@ -212,6 +212,12 @@ WEATHER_ALT_COUNTRY_CODES = {
     'KR': 'South Korea', 'LA': 'Laos', 'MD': 'Moldova', 'PS': 'Palestine', 'RU': 'Russia', 'SX': 'Sint Maarten',
     'SY': 'Syria', 'TW': 'Taiwan', 'TZ': 'Tanzania', 'US': 'United States', 'VE': 'Venezuela', 'VN': 'Vietnam'
 }
+WEATHER_EMBED_COLOR_DEFAULT = (235 << 16) + (110 << 8) + 75
+WEATHER_EMBED_COLORS_BY_ICON = {
+    '01d': (235 << 16) + (110 << 8) + 75, '02d': (235 << 16) + (110 << 8) + 75, '10d': (235 << 16) + (110 << 8) + 75, '11d': (235 << 16) + (110 << 8) + 75, '11n': (235 << 16) + (110 << 8) + 75,
+    '03d': (242 << 16) + (242 << 8) + 242, '03n': (242 << 16) + (242 << 8) + 242, '04d': (242 << 16) + (242 << 8) + 242, '04n': (242 << 16) + (242 << 8) + 242, '13d': (242 << 16) + (242 << 8) + 242, '13n': (242 << 16) + (242 << 8) + 242, '50d': (242 << 16) + (242 << 8) + 242, '50n': (242 << 16) + (242 << 8) + 242,
+    '01n': (72 << 16) + (72 << 8) + 74, '02n': (72 << 16) + (72 << 8) + 74, '09d': (72 << 16) + (72 << 8) + 74, '09n': (72 << 16) + (72 << 8) + 74, '10n': (72 << 16) + (72 << 8) + 74
+}
 WEATHER_KELVIN_SUB = 273.15
 WEATHER_THUMBNAIL_URL = 'http://openweathermap.org/img/wn/{}@4x.png'
 WEATHER_WIND_DIRECTIONS = {

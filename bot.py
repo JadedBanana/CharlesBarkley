@@ -641,7 +641,17 @@ class JadieClient(discord.Client):
             lon_lat = '{}\N{DEGREE SIGN}{}"{}, {}\N{DEGREE SIGN}{}"{}'.format(latdeg, latmin, latdir, londeg, lonmin, londir)
         else:
             lon_lat = 'No coordinates available'
-        embed = discord.Embed(title='Weather for {}, {}'.format(weather_json['name'], constants.WEATHER_ALT_COUNTRY_CODES[weather_json['sys']['country']] if weather_json['sys']['country'] in constants.WEATHER_ALT_COUNTRY_CODES.keys() else countries.get(weather_json['sys']['country']).name), colour=((221 << 16) + (115 << 8) + 215), description=lon_lat)
+
+        # Get the color for the embed.
+        embed_color = constants.WEATHER_EMBED_COLOR_DEFAULT
+        if 'weather' in weather_json.keys() and len(weather_json['weather']) > 0 and 'icon' in weather_json['weather'][0].keys() and weather_json['weather'][0]['icon']:
+            if weather_json['weather'][0]['icon'] in constants.WEATHER_EMBED_COLORS_BY_ICON.keys():
+                embed_color = constants.WEATHER_EMBED_COLORS_BY_ICON[weather_json['weather'][0]['icon']]
+            else:
+                log.error('New weather icon {}, please create embed colors for it asap!'.format(weather_json['weather'][0]['icon']))
+
+        # Creates the embed
+        embed = discord.Embed(title='Weather for {}, {}'.format(weather_json['name'], constants.WEATHER_ALT_COUNTRY_CODES[weather_json['sys']['country']] if weather_json['sys']['country'] in constants.WEATHER_ALT_COUNTRY_CODES.keys() else countries.get(weather_json['sys']['country']).name), colour=embed_color, description=lon_lat)
 
         # Formats a kelvin temperature in celsius and fahrenheit, rounded to nearest degree.
         def format_temperature(temp_num):
