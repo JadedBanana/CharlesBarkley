@@ -342,7 +342,7 @@ class JadieClient(discord.Client):
         """
         # Gets the user from the argument.
         try:
-            partner_1 = self.__get_closest_users(message, argument, is_in_guild, exclude_bots=True, limit=1)[0]
+            partner_1 = self.__get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
         except (UnableToFindUserError, ArgumentTooShortError):
             log.debug(self.__get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
             await message.channel.send('Invalid user.')
@@ -354,7 +354,7 @@ class JadieClient(discord.Client):
         if not partner_1:
             try:
                 # Gets valid users.
-                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True)
+                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot)
                 # Getting the two users.
                 partner_1 = random.choice(users_choices)
                 users_choices.remove(partner_1)
