@@ -1183,11 +1183,7 @@ def launch(on_windows):
         client.run(constants.BOT_TOKEN)
         os._exit(0)
     except ClientConnectorError:
-        log.info('Cannot connect to Discord, will attempt again in 3 minutes.')
-
-        # Sleeps for 3 minutes so we don't overdo it.
-        time.sleep(180)
-
+        log.info('Cannot connect to Discord.')
         os._exit(-1)
 
 # __main__, just in case.
