@@ -305,6 +305,7 @@ HELP_MSG = '''```
 ===============
     UTILITY
 ===============
+- weather: Give the name of a city and will report the current weather at that location
 - calc / eval: Give a math equation and it will be evaluated as one (python eval() function)
 - hex / hexadecimal: Converts a number to hexadecimal
 - duo / duodec / duodecimal: Converts a number to duodecimal
