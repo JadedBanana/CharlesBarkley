@@ -3,7 +3,10 @@
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
+from dateutil.tz import tzoffset
+from iso3166 import countries
 from exceptions import *
+from math import fabs
 from PIL import Image
 import constants
 import wikipedia
@@ -16,7 +19,6 @@ import socket
 import string
 import urllib
 import json
-import time
 import os
 
 # Outer-level crap
@@ -83,7 +85,8 @@ class JadieClient(discord.Client):
             'randomyt': self.randomyt, 'randomyoutube': self.randomyt, 'ytroulette': self.randomyt, 'youtuberoulette': self.randomyt,
             'calc': self.evaluate, 'eval': self.evaluate, 'calculate': self.evaluate, 'evaluate': self.evaluate,
             'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki,
-            'ship': self.ship
+            'ship': self.ship,
+            'weather': self.weather
         }
 
         # Sets the developer command_dict
@@ -594,6 +597,161 @@ class JadieClient(discord.Client):
         # Sends report, logs message
         log.debug(self.__get_comm_start(message, is_in_guild) + 'requested uptime, responded with ' + bot_str)
         await message.channel.send(constants.UPTIME_PREFIX + bot_str)
+
+    async def weather(self, message, argument, is_in_guild):
+        """
+        Gets the current weather for the given city/state/province.
+        """
+        # Test the argument.
+        if not argument:
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
+            await message.channel.send('Invalid city.')
+            return
+
+        # Normalize the argument
+        argument = self.__normalize_string(argument)
+
+        # Testing again.
+        if not argument:
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
+            await message.channel.send('Invalid city.')
+            return
+
+        # Simple request call.
+        response = requests.get(constants.WEATHER_API_URL.format(constants.WEATHER_API_KEY, argument))
+        weather_json = response.json()
+
+        # If we didn't get weather_json or it's broken, we tell the user that.
+        if not weather_json or 'cod' not in weather_json.keys():
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested weather, think it\'s broken')
+            await message.channel.send('Weather service is down, please be patient.')
+            return
+
+        # If the code is a 404, then we tell the user they have an invalid city.
+        if weather_json['cod'] == 404 or any([key not in weather_json.keys() for key in ['name', 'sys', 'main']]):
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested weather for city {}, invalid'.format(argument))
+            await message.channel.send('Invalid city.')
+            return
+
+        # Otherwise, we get the weather. If there are latitude and longitude included, we also put those there.
+        if 'coord' in weather_json.keys() and 'lat' in weather_json['coord'].keys() and 'lat' in weather_json['coord'].keys():
+            lat = weather_json['coord']['lat']; lon = weather_json['coord']['lon']
+            latdeg = int(fabs(lat)); latmin = str(int((fabs(lat) % 1) * 100)); latmin = '0' + latmin if len(latmin) < 2 else latmin; latdir = 'N' if lat > 0 else ('S' if lat < 0 else '')
+            londeg = int(fabs(lon)); lonmin = str(int((fabs(lon) % 1) * 100)); lonmin = '0' + lonmin if len(lonmin) < 2 else lonmin; londir = 'E' if lon > 0 else ('W' if lon < 0 else '')
+            lon_lat = '{}\N{DEGREE SIGN}{}"{}, {}\N{DEGREE SIGN}{}"{}'.format(latdeg, latmin, latdir, londeg, lonmin, londir)
+        else:
+            lon_lat = 'No coordinates available'
+        embed = discord.Embed(title='Weather for {}, {}'.format(weather_json['name'], constants.WEATHER_ALT_COUNTRY_CODES[weather_json['sys']['country']] if weather_json['sys']['country'] in constants.WEATHER_ALT_COUNTRY_CODES.keys() else countries.get(weather_json['sys']['country']).name), colour=((221 << 16) + (115 << 8) + 215), description=lon_lat)
+
+        # Formats a kelvin temperature in celsius and fahrenheit, rounded to nearest degree.
+        def format_temperature(temp_num):
+            return '{}\N{DEGREE SIGN}C / {}\N{DEGREE SIGN}F'.format(int(temp_num - constants.WEATHER_KELVIN_SUB + 0.5), int((temp_num - constants.WEATHER_KELVIN_SUB) * 1.8 + 32 + 0.5))
+
+        # Adds temperature to embed
+        if 'temp' in weather_json['main'].keys() and (isinstance(weather_json['main']['temp'], float) or isinstance(weather_json['main']['temp'], int)):
+            embed.add_field(name='Current Temp.', value=format_temperature(weather_json['main']['temp']) + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Current Temp.', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds status + thumbnail to embed
+        if 'weather' in weather_json.keys() and len(weather_json['weather']) > 0:
+            if 'description' in weather_json['weather'][0].keys() and weather_json['weather'][0]['description']:
+                embed.add_field(name='Status', value=self.__upper_per_word(weather_json['weather'][0]['description']) + ' \u200b \u200b \u200b', inline=True)
+            elif 'main' in weather_json['weather'][0].keys() and weather_json['weather'][0]['main']:
+                embed.add_field(name='Status', value=self.__upper_per_word(weather_json['weather'][0]['main']) + ' \u200b \u200b \u200b', inline=True)
+            else:
+                embed.add_field(name='Status', value='Unavailable \u200b \u200b \u200b', inline=True)
+            if 'icon' in weather_json['weather'][0].keys() and weather_json['weather'][0]['icon']:
+                embed.set_thumbnail(url=constants.WEATHER_THUMBNAIL_URL.format(weather_json['weather'][0]['icon']))
+        else:
+            embed.add_field(name='Status', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds blank space
+        embed.add_field(name='\u200b', value='\u200b', inline=True)
+
+        # Adds feels like to embed
+        if 'feels_like' in weather_json['main'].keys() and (isinstance(weather_json['main']['feels_like'], float) or isinstance(weather_json['main']['feels_like'], int)):
+            embed.add_field(name='Feels Like', value=format_temperature(weather_json['main']['feels_like']) + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Feels Like', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds low to embed
+        if 'temp_min' in weather_json['main'].keys() and (isinstance(weather_json['main']['temp_min'], float) or isinstance(weather_json['main']['temp_min'], int)):
+            embed.add_field(name='Low Temp.', value=format_temperature(weather_json['main']['temp_min']) + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Low Temp.', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds high to embed
+        if 'temp_max' in weather_json['main'].keys() and (isinstance(weather_json['main']['temp_max'], float) or isinstance(weather_json['main']['temp_max'], int)):
+            embed.add_field(name='High Temp.', value=format_temperature(weather_json['main']['temp_max']) + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='High Temp.', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds humidity to embed
+        if 'humidity' in weather_json['main'].keys() and (isinstance(weather_json['main']['humidity'], float) or isinstance(weather_json['main']['humidity'], int)):
+            embed.add_field(name='Humidity', value='{}% \u200b \u200b \u200b'.format(int(weather_json['main']['humidity'])), inline=True)
+        else:
+            embed.add_field(name='Humidity', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds pressure to embed
+        if 'pressure' in weather_json['main'].keys() and (isinstance(weather_json['main']['pressure'], float) or isinstance(weather_json['main']['pressure'], int)):
+            embed.add_field(name='Air Pressure', value='{} hPa \u200b \u200b \u200b'.format(int(weather_json['main']['pressure'])), inline=True)
+        else:
+            embed.add_field(name='Humidity', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds visibility to embed
+        if 'visibility' in weather_json.keys() and (isinstance(weather_json['visibility'], float) or isinstance(weather_json['visibility'], int)):
+            embed.add_field(name='Visibility', value='{} m / {} ft \u200b \u200b \u200b'.format(int(weather_json['main']['pressure']), int(weather_json['main']['pressure'] * 3.28084)), inline=True)
+        else:
+            embed.add_field(name='Visibility', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds wind stuff to embed
+        if 'wind' in weather_json.keys():
+            direction = ''
+            if 'deg' in weather_json['wind'].keys() and (isinstance(weather_json['wind']['deg'], float) or isinstance(weather_json['wind']['deg'], int)):
+                for cardinal, max_angle in constants.WEATHER_WIND_DIRECTIONS.items():
+                    if weather_json['wind']['deg'] <= max_angle:
+                        direction = cardinal
+                        break
+            if 'speed' in weather_json['wind'].keys() and (isinstance(weather_json['wind']['speed'], float) or isinstance(weather_json['wind']['speed'], int)):
+                embed.add_field(name='Wind Speed', value='{} kmh / {} mph {} \u200b \u200b \u200b'.format(int(weather_json['wind']['speed'] * 3.6), int(weather_json['wind']['speed'] * 2.23694), direction), inline=True)
+            else:
+                embed.add_field(name='Wind Speed', value='Unavailable', inline=True)
+            if 'gust' in weather_json['wind'].keys() and (isinstance(weather_json['wind']['gust'], float) or isinstance(weather_json['wind']['gust'], int)):
+                embed.add_field(name='Wind Gust', value='{} kmh / {} mph {} \u200b \u200b \u200b'.format(int(weather_json['wind']['gust'] * 3.6), int(weather_json['wind']['gust'] * 2.23694), direction), inline=True)
+            else:
+                embed.add_field(name='Wind Gust', value='Unavailable \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Wind Speed', value='Unavailable \u200b \u200b \u200b', inline=True)
+            embed.add_field(name='Wind Gust', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds blank space
+        embed.add_field(name='\u200b', value='\u200b', inline=True)
+
+        # Adds local time
+        if 'timezone' in weather_json.keys() and isinstance(weather_json['timezone'], int):
+            local_timezone = tzoffset('placeholder', weather_json['timezone'])
+            local_time = datetime.now(local_timezone)
+            embed.add_field(name='Local Time', value=local_time.strftime('%H:%M (%I:%M %p)') + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Local Time', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds sunrise
+        if local_timezone and 'sunrise' in weather_json['sys'].keys() and isinstance(weather_json['sys']['sunrise'], int):
+            dr = datetime.utcfromtimestamp(weather_json['sys']['sunrise'] + weather_json['timezone'])
+            embed.add_field(name='Sunrise Time', value=dr.strftime('%H:%M (%I:%M %p)') + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Sunrise Time', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        # Adds sunset
+        if local_timezone and 'sunrise' in weather_json['sys'].keys() and isinstance(weather_json['sys']['sunset'], int):
+            dr = datetime.utcfromtimestamp(weather_json['sys']['sunset'] + weather_json['timezone'])
+            embed.add_field(name='Sunset Time', value=dr.strftime('%H:%M (%I:%M %p)') + ' \u200b \u200b \u200b', inline=True)
+        else:
+            embed.add_field(name='Sunset Time', value='Unavailable \u200b \u200b \u200b', inline=True)
+
+        await message.channel.send(embed=embed)
+
 
     # ===============================================================
     #                     DEV-ONLY COMMANDS
@@ -1164,6 +1322,18 @@ class JadieClient(discord.Client):
         if remove_discord_formatting:
             input_str = input_str.strip('`').strip('*').strip('_')
         # Return
+        return input_str
+
+    @staticmethod
+    def __upper_per_word(input_str):
+        """
+        Makes the beginning of every word an uppercase letter, and all others lowercase.
+        """
+        for i in range(len(input_str)):
+            if i == 0 or input_str[i - 1] == ' ':
+                input_str = input_str[:i] + input_str[i].upper() + input_str[i + 1:]
+            else:
+                input_str = input_str[:i] + input_str[i].lower() + input_str[i + 1:]
         return input_str
 
 

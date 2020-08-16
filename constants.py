@@ -95,7 +95,7 @@ ULTIMATE_TITLES = {
     'Child Caregiver': '. {9} basically like a goblin herder.',
     'Clairvoyant': '! {7} and {1} 30% accuracy rate can predict ANY crime that probably won\'t happen!',
     'Clown': '! {9} a clown! Honk honk! :o)',
-    'Composer': '',
+    'Composer': '. Popping out songs one after another ain\'t easy, but it\'s a way of life for {6}.',
     'Con Artist': '{9} a slimy bastard who can convince anyone anything is a good idea.',
     'Confectioner': '! How sweet of {0}!',
     'Conspiracy Theorist': '. So you think the moon landing was faked, huh? Well, have you heard the MOON is fake, too?',
@@ -202,6 +202,22 @@ ULTIMATE_TITLES = {
     'Writer': '',
     'Yakuza': '',
     'Yoga Guru': '. All {1} chakras are open and flowing the sweet nectar of the soul.'
+}
+
+# Weather constants
+WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'
+WEATHER_API_URL = 'http://api.openweathermap.org/data/2.5/weather?appid={}&q={}'
+WEATHER_ALT_COUNTRY_CODES = {
+    'BO': 'Bolivia', 'FK': 'Falkland Islands', 'FM': 'Micronesia', 'GB': 'United Kingdom', 'IR': 'Iran', 'KP': 'North Korea',
+    'KR': 'South Korea', 'LA': 'Laos', 'MD': 'Moldova', 'PS': 'Palestine', 'RU': 'Russia', 'SX': 'Sint Maarten',
+    'SY': 'Syria', 'TW': 'Taiwan', 'TZ': 'Tanzania', 'US': 'United States', 'VE': 'Venezuela', 'VN': 'Vietnam'
+}
+WEATHER_KELVIN_SUB = 273.15
+WEATHER_THUMBNAIL_URL = 'http://openweathermap.org/img/wn/{}@4x.png'
+WEATHER_WIND_DIRECTIONS = {
+    'North': 22.5, 'Northeast': 67.5, 'East': 112.5,
+    'Southeast': 157.5, 'South': 202.5, 'Southeast': 247.5,
+    'East': 292.5, 'Northeast': 337.5, 'North': 382.5
 }
 
 # Globals for the eval function
