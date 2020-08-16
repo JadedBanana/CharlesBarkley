@@ -354,7 +354,7 @@ class JadieClient(discord.Client):
         if not partner_1:
             try:
                 # Gets valid users.
-                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot)
+                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True)
                 # Getting the two users.
                 partner_1 = random.choice(users_choices)
                 users_choices.remove(partner_1)
@@ -367,7 +367,7 @@ class JadieClient(discord.Client):
         else:
             try:
                 # Gets valid users.
-                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=[partner_1])
+                users_choices = self.__get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot, exclude_users=[partner_1])
                 # Getting the second user.
                 partner_2 = random.choice(users_choices)
             except IndexError:
