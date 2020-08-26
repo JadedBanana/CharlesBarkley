@@ -1,6 +1,6 @@
 # Constants file
 # General use
-VERSION = '0.3.0'
+VERSION = '0.3.2'
 
 # Developer stuff
 DEVELOPER_DISCORD_IDS = [
