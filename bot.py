@@ -652,6 +652,7 @@ class JadieClient(discord.Client):
 
         # Creates the embed
         embed = discord.Embed(title='Weather for {}, {}'.format(weather_json['name'], constants.WEATHER_ALT_COUNTRY_CODES[weather_json['sys']['country']] if weather_json['sys']['country'] in constants.WEATHER_ALT_COUNTRY_CODES.keys() else countries.get(weather_json['sys']['country']).name), colour=embed_color, description=lon_lat)
+        embed.set_footer(text=constants.WEATHER_CREDIT_TEXT)
 
         # Formats a kelvin temperature in celsius and fahrenheit, rounded to nearest degree.
         def format_temperature(temp_num):

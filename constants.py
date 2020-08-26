@@ -212,6 +212,7 @@ WEATHER_ALT_COUNTRY_CODES = {
     'KR': 'South Korea', 'LA': 'Laos', 'MD': 'Moldova', 'PS': 'Palestine', 'RU': 'Russia', 'SX': 'Sint Maarten',
     'SY': 'Syria', 'TW': 'Taiwan', 'TZ': 'Tanzania', 'US': 'United States', 'VE': 'Venezuela', 'VN': 'Vietnam'
 }
+WEATHER_CREDIT_TEXT = 'Powered by OpenWeatherMap'
 WEATHER_EMBED_COLOR_DEFAULT = (235 << 16) + (110 << 8) + 75
 WEATHER_EMBED_COLORS_BY_ICON = {
     '01d': (235 << 16) + (110 << 8) + 75, '02d': (235 << 16) + (110 << 8) + 75, '10d': (235 << 16) + (110 << 8) + 75, '11d': (235 << 16) + (110 << 8) + 75, '11n': (235 << 16) + (110 << 8) + 75,
