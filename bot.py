@@ -86,7 +86,8 @@ class JadieClient(discord.Client):
             'calc': self.evaluate, 'eval': self.evaluate, 'calculate': self.evaluate, 'evaluate': self.evaluate,
             'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki,
             'ship': self.ship,
-            'weather': self.weather
+            'weather': self.weather,
+            'uwu': self.uwuify, 'owo': self.uwuify, 'uwuify': self.uwuify, 'owoify': self.uwuify
         }
 
         # Sets the developer command_dict
@@ -417,6 +418,18 @@ class JadieClient(discord.Client):
         os.remove(partner_2_filepath)
         os.remove(current_ship_filepath)
 
+    async def uwuify(self, message, argument, is_in_guild):
+        """
+        Weplaces all the r's in a message with w's.
+        Lol.
+        """
+        if argument:
+            await message.channel.send(argument.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W'))
+        else:
+            try:
+                await message.channel.send((await self.__get_secondmost_recent_message(message.channel)).replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W'))
+            except FirstMessageInChannelError:
+                pass
 
 
     # ===============================================================
@@ -1311,6 +1324,16 @@ class JadieClient(discord.Client):
         img_return = Image.open(os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE))
         # Returns image.
         return img_return, os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
+
+    @staticmethod
+    async def __get_secondmost_recent_message(channel):
+        """
+        Gets the second-most recent message in a channel, given a channel.
+        """
+        try:
+            return (await channel.history(limit=2).flatten())[1].content
+        except IndexError:
+            raise FirstMessageInChannelError()
 
     @staticmethod
     def __normalize_string(input_str, remove_discord_formatting=True, remove_double_spaces=True):
