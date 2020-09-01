@@ -500,7 +500,9 @@ class JadieClient(discord.Client):
         # Otherwise, we attempt to do it on the second-most recent message.
         else:
             try:
-                await message.channel.send(do_uwu_replace((await self.__get_secondmost_recent_message(message.channel))))
+                content = await self.__get_secondmost_recent_message(message.channel)
+                if content:
+                    await message.channel.send(do_uwu_replace(content))
             # If we got a little error, we pass.
             except FirstMessageInChannelError:
                 pass
