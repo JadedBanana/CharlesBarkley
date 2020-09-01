@@ -423,11 +423,64 @@ class JadieClient(discord.Client):
         Weplaces all the r's in a message with w's.
         Lol.
         """
+        def do_uwu_replace(text):
+            """
+            Method for advanced replacement, so that we avoid replacing characters in emotes.
+            """
+            colon_count = text.count(':')
+            # If there IS an emote, we take special care.
+            if colon_count > 1:
+                # uwuify all the text ASIDE from emotes.
+                text_uwued = 't'
+                # Indexes that will be needed to do this properly.
+                last_index = -1
+                uwued_max = -1
+                colons_passed = 0
+
+                # Perform loop.
+                while colons_passed < colon_count - 1:
+                    # Find the next colon.
+                    colon_index = text.index(':', last_index + 1)
+                    last_index = colon_index
+
+                    # Find the NEXT next colon.
+                    next_colon_index = text.index(':', colon_index + 1)
+
+                    # Test and see if all the characters between the two colons are alphanumeric.
+                    # Also makes sure the colons are more than 2 apart.
+                    is_emote = next_colon_index - colon_index > 2
+                    if is_emote:
+                        for c in text[colon_index + 1:next_colon_index]:
+                            if c not in constants.EMOTE_CHARACTERS:
+                                is_emote = False
+
+                    # If this is an emote, we act accordingly.
+                    if is_emote:
+                        # We go ahead and uwuify everything up to this point.
+                        text_uwued += text[uwued_max + 1 : colon_index]
+                        # TODO: finish this mofo
+                        print('EMOTE')
+                        colons_passed += 1
+
+                    # This isn't an emote.
+                    else:
+                        colons_passed += 1
+                        continue
+
+                return text_uwued
+
+            # If there is no emote, we just return the basics.
+            return text.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+
+        # If an argument was provided, we uwuify it.
         if argument:
-            await message.channel.send(argument.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W'))
+            await message.channel.send(do_uwu_replace(argument))
+
+        # Otherwise, we attempt to do it on the second-most recent message.
         else:
             try:
-                await message.channel.send((await self.__get_secondmost_recent_message(message.channel)).replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W'))
+                await message.channel.send(do_uwu_replace((await self.__get_secondmost_recent_message(message.channel)).content))
+            # If we got a little error, we pass.
             except FirstMessageInChannelError:
                 pass
 

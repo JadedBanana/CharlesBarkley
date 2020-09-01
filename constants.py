@@ -277,6 +277,19 @@ SHIP_MESSAGES = [
     'Say whatever you want. {} and {} is the purest, most amazing ship and I will not stand for any others.'
 ]
 
+# Uwu
+EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
+UWU_FACES = {
+    ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
+    '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
+    'D:': 'umu', '):': 'umu'
+}
+OWO_FACES = {
+    ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
+    '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
+    'D:': 'omo', '):': 'omo'
+}
+
 # Conversion chars
 CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
 MAX_CONVERT_DEPTH = -16
