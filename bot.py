@@ -87,7 +87,8 @@ class JadieClient(discord.Client):
             'randomwiki': self.randomwiki, 'randomwikipedia': self.randomwiki, 'wikiroulette': self.randomwiki, 'wikipediaroulette': self.randomwiki,
             'ship': self.ship,
             'weather': self.weather,
-            'uwu': self.uwuify, 'owo': self.uwuify, 'uwuify': self.uwuify, 'owoify': self.uwuify
+            'uwu': self.uwuify, 'uwuify': self.uwuify,
+            'owo': self.owoify, 'owoify': self.owoify
         }
 
         # Sets the developer command_dict
@@ -418,7 +419,7 @@ class JadieClient(discord.Client):
         os.remove(partner_2_filepath)
         os.remove(current_ship_filepath)
 
-    async def uwuify(self, message, argument, is_in_guild):
+    async def uwuify(self, message, argument, is_in_guild, use_owo=False):
         """
         Weplaces all the r's in a message with w's.
         Lol.
@@ -431,7 +432,7 @@ class JadieClient(discord.Client):
             # If there IS an emote, we take special care.
             if colon_count > 1:
                 # uwuify all the text ASIDE from emotes.
-                text_uwued = 't'
+                text_uwued = ''
                 # Indexes that will be needed to do this properly.
                 last_index = -1
                 uwued_max = -1
@@ -441,7 +442,6 @@ class JadieClient(discord.Client):
                 while colons_passed < colon_count - 1:
                     # Find the next colon.
                     colon_index = text.index(':', last_index + 1)
-                    last_index = colon_index
 
                     # Find the NEXT next colon.
                     next_colon_index = text.index(':', colon_index + 1)
@@ -457,20 +457,41 @@ class JadieClient(discord.Client):
                     # If this is an emote, we act accordingly.
                     if is_emote:
                         # We go ahead and uwuify everything up to this point.
-                        text_uwued += text[uwued_max + 1 : colon_index]
-                        # TODO: finish this mofo
-                        print('EMOTE')
-                        colons_passed += 1
+                        uwu_append = text[uwued_max + 1:colon_index].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                        faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
+                        for key in faces.keys():
+                            uwu_append = uwu_append.replace(' ' + key, ' ' + faces[key])
+                            if uwued_max == -1 and uwu_append.startswith(key):
+                                    uwu_append = faces[key] + uwu_append[len(key):]
+                        text_uwued += uwu_append
+
+                        # Add the raw emote in.
+                        text_uwued+= text[colon_index:next_colon_index + 1]
+
+                        # Update uwued_max and other vars.
+                        uwued_max = next_colon_index
+                        last_index = next_colon_index
+                        colons_passed += 2
 
                     # This isn't an emote.
                     else:
                         colons_passed += 1
-                        continue
+                        last_index = colon_index
+
+                # Appends everything else that hasn't been appended yet
+                uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                text_uwued += uwu_append
 
                 return text_uwued
 
             # If there is no emote, we just return the basics.
-            return text.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+            replaced_text = text.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+            faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
+            for key in faces.keys():
+                replaced_text = replaced_text.replace(' ' + key, ' ' + faces[key])
+                if replaced_text.startswith(key):
+                    replaced_text = faces[key] + replaced_text[len(key):]
+            return replaced_text
 
         # If an argument was provided, we uwuify it.
         if argument:
@@ -479,10 +500,13 @@ class JadieClient(discord.Client):
         # Otherwise, we attempt to do it on the second-most recent message.
         else:
             try:
-                await message.channel.send(do_uwu_replace((await self.__get_secondmost_recent_message(message.channel)).content))
+                await message.channel.send(do_uwu_replace((await self.__get_secondmost_recent_message(message.channel))))
             # If we got a little error, we pass.
             except FirstMessageInChannelError:
                 pass
+
+    async def owoify(self, message, argument, is_in_guild):
+        await self.uwuify(message, argument, is_in_guild, True)
 
 
     # ===============================================================

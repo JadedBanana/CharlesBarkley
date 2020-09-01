@@ -278,16 +278,18 @@ SHIP_MESSAGES = [
 ]
 
 # Uwu
-EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
+EMOTE_CHARACTERS = '0123456789_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
 UWU_FACES = {
+    ':3': 'uwu', '>:)': '>w<', '>:(': '>m<', '>:]': '>w<', '>:[': '>m<', ':]': 'uwu', ':[': 'umu',
     ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
     '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
-    'D:': 'umu', '):': 'umu'
+    'D:': 'umu', '):': 'umu', ':O': 'u.u', ':o': 'u.u', 'O:': 'u.u', 'o:': 'u.u', ';)': 'uwo'
 }
 OWO_FACES = {
+    ':3': 'owo', '>:)': '>w<', '>:(': '>m<', '>:]': '>w<', '>:[': '>m<', ':]': 'owo', ':[': 'omo',
     ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
     '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
-    'D:': 'omo', '):': 'omo'
+    'D:': 'omo', '):': 'omo', ':O': 'o.o', ':o': 'o.o', 'O:': 'o.o', 'o:': 'o.o', ';)': 'owu'
 }
 
 # Conversion chars
@@ -319,6 +321,7 @@ HELP_MSG = '''```
 - copy: Mention someone to start copying their every word
 - stopcopying: Stop copying everyone in this server
 - uwu: Convert a message to uwu-speak.
+- owo: Convert a message to owo-speak.
 - ship: Ship two random users together. Tag another user to ship them with a random someone else.
 - randomyt / randomyoutube: Generate a random YouTube video
 - randomwiki / randomwikipedia: Generate a random English Wikipedia page
