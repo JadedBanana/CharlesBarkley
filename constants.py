@@ -292,9 +292,14 @@ OWO_FACES = {
     'D:': 'omo', '):': 'omo', ':O': 'o.o', ':o': 'o.o', 'O:': 'o.o', 'o:': 'o.o', ';)': 'owu'
 }
 
+UWU_OWO_FIND_AND_REPLACE = {
+    'fuck': 'yiff', 'FUCK': 'YIFF', 'Fuck': 'Yiff', 'fUCK': 'yIFF',
+    'shitting': 'scritching', 'SHITTING': 'SCRITCHING', 'Shitting': 'Scritching', 'sHITTING': 'sCRITCHING'
+}
+
 # Business-speak
 BUSINESS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-BUSINESS_FIND_AND_REPLACE = {
+BUSINESS_EMOTE_FIND_AND_REPLACE = {
     ':3': 'This is most profitable.', '>:)': 'Our competitors won\'t know what hit them.', '>:(': 'This spells bad news for our stock price.',
     '>:]': 'Our competitors won\'t know what hit them.', '>:[': 'This spells bad news for our stock price.', ':]': 'This is most profitable.',
     ':[': 'Our investors were expecting more.', ':)': 'This is most profitable.', ':(': 'Our investors were expecting more.',
@@ -308,9 +313,7 @@ BUSINESS_FIND_AND_REPLACE = {
     '>m<': 'Our current plan needs modification to stay ahead of the market.', 'umu': 'Our investors were expecting more.',
     'Umu': 'Our investors were expecting more.', 'Omo': 'Our investors were expecting more.', 'omo': 'Our investors were expecting more.',
     'u_u': 'Our investors were expecting more.', ':P': 'Our competitors won\'t know what hit them.', ':p': 'Our competitors won\'t know what hit them.',
-    'T_t': 'The stock price is tanking, gentlemen.', '._.': 'Our investors were expecting more.', '>.<': 'Our current plan needs modification to stay ahead of the market.',
-    'happy': 'making a profit', 'upset': 'not meeting our profit margins', 'sad': 'not meeting our profit margins', 'angry': 'disappointed', 'Sorry': 'apologies',
-    'just': 'simply', 'Just': 'simply'
+    'T_t': 'The stock price is tanking, gentlemen.', '._.': 'Our investors were expecting more.', '>.<': 'Our current plan needs modification to stay ahead of the market.'
 }
 
 # Conversion chars
@@ -376,6 +379,7 @@ HELP_MSG_DEV_ADDENDUM = '''
 - toggleignoredev: Toggles whether or not to ignore developer on Linux side
 - loglist: Sends a list of all the log files in the logs folder
 - sendlog: Sends the log for today, or a specific date (YYYY-MM-DD)
+- bash: Runs a bash script on the raspberry Pi from the Jadi3Pi directory
 - update: Trigger remote update (pull from Git master branch)
 - reboot: Trigger remote reboot
 ```'''

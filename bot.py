@@ -5,6 +5,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
 from dateutil.tz import tzoffset
 from iso3166 import countries
+from textblob import TextBlob
 from exceptions import *
 from math import fabs
 from PIL import Image
@@ -482,6 +483,12 @@ class JadieClient(discord.Client):
 
                 # Appends everything else that hasn't been appended yet
                 uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                for key in faces.keys():
+                    uwu_append = replaced_text.replace(' ' + key, ' ' + faces[key])
+                    if uwu_append.startswith(key):
+                        uwu_append = faces[key] + uwu_append[len(key):]
+                for key in constants.UWU_OWO_FIND_AND_REPLACE.keys():
+                    uwu_append = uwu_append.replace(key, constants.UWU_OWO_FIND_AND_REPLACE[key])
                 text_uwued += uwu_append
 
                 return text_uwued
@@ -493,6 +500,8 @@ class JadieClient(discord.Client):
                 replaced_text = replaced_text.replace(' ' + key, ' ' + faces[key])
                 if replaced_text.startswith(key):
                     replaced_text = faces[key] + replaced_text[len(key):]
+            for key in constants.UWU_OWO_FIND_AND_REPLACE.keys():
+                replaced_text = replaced_text.replace(key, constants.UWU_OWO_FIND_AND_REPLACE[key])
             return replaced_text
 
         # If an argument was provided, we uwuify it.
@@ -1068,7 +1077,12 @@ class JadieClient(discord.Client):
 
         # Send report and log.
         log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered bash execution of command ' + argument)
-        await message.channel.send('Bash output: ```' + decoded_output + '```')
+        if len(decoded_output) > 2000:
+            await message.channel.send('Bash output greater than 2000 characters')
+        elif not decoded_output:
+            await message.channel.send('No output')
+        else:
+            await message.channel.send('Bash output: ```' + decoded_output + '```')
 
 
     # ===============================================================
