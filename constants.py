@@ -292,6 +292,27 @@ OWO_FACES = {
     'D:': 'omo', '):': 'omo', ':O': 'o.o', ':o': 'o.o', 'O:': 'o.o', 'o:': 'o.o', ';)': 'owu'
 }
 
+# Business-speak
+BUSINESS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+BUSINESS_FIND_AND_REPLACE = {
+    ':3': 'This is most profitable.', '>:)': 'Our competitors won\'t know what hit them.', '>:(': 'This spells bad news for our stock price.',
+    '>:]': 'Our competitors won\'t know what hit them.', '>:[': 'This spells bad news for our stock price.', ':]': 'This is most profitable.',
+    ':[': 'Our investors were expecting more.', ':)': 'This is most profitable.', ':(': 'Our investors were expecting more.',
+    ':|': 'Business as usual.', ':-)': 'This is most profitable.', ':-(': 'Our investors were expecting more.',
+    ':-|': 'Business as usual.', '^_^': 'This is most profitable.', '^w^': 'This is most profitable.', 'O_o': 'This is an unexpected development.',
+    'o_o': 'This is an unexpected development.', '(:': 'This is most profitable.', ':D': 'This is most_profitable.',
+    'D:': 'Our investors were expecting more.', '):': 'Our investors were expecting more.', ':O': 'This is an unexpected development.',
+    ':o': 'This is an unexpected development.', 'O:': 'This is an unexpected development.', 'o:': 'This is an unexpected development.', ';)': '',
+    'B)': 'This is most profitable.', 'owo': 'This is most profitable.', 'Owo': 'This is unexpected, but will still turn us a profit.', 'uwu': 'This is most profitable.',
+    'Uwu': 'This is most profitable.', '>w<': 'This is most profitable.', 'uwo': '', 'owu': '', 'Owu': '', 'Uwo': '',
+    '>m<': 'Our current plan needs modification to stay ahead of the market.', 'umu': 'Our investors were expecting more.',
+    'Umu': 'Our investors were expecting more.', 'Omo': 'Our investors were expecting more.', 'omo': 'Our investors were expecting more.',
+    'u_u': 'Our investors were expecting more.', ':P': 'Our competitors won\'t know what hit them.', ':p': 'Our competitors won\'t know what hit them.',
+    'T_t': 'The stock price is tanking, gentlemen.', '._.': 'Our investors were expecting more.', '>.<': 'Our current plan needs modification to stay ahead of the market.',
+    'happy': 'making a profit', 'upset': 'not meeting our profit margins', 'sad': 'not meeting our profit margins', 'angry': 'disappointed', 'Sorry': 'apologies',
+    'just': 'simply', 'Just': 'simply'
+}
+
 # Conversion chars
 CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
 MAX_CONVERT_DEPTH = -16

@@ -88,7 +88,8 @@ class JadieClient(discord.Client):
             'ship': self.ship,
             'weather': self.weather,
             'uwu': self.uwuify, 'uwuify': self.uwuify,
-            'owo': self.owoify, 'owoify': self.owoify
+            'owo': self.owoify, 'owoify': self.owoify,
+            'business': self.business_only, 'businessonly': self.business_only
         }
 
         # Sets the developer command_dict
@@ -99,7 +100,8 @@ class JadieClient(discord.Client):
             'reboot': self.remote_reboot, 'restart': self.remote_reboot,
             'update': self.update_remote,
             'sendlog': self.send_log,
-            'loglist': self.log_list, 'logs': self.log_list
+            'loglist': self.log_list, 'logs': self.log_list,
+            'bash': self.bash
         }
 
     async def on_ready(self):
@@ -509,6 +511,13 @@ class JadieClient(discord.Client):
 
     async def owoify(self, message, argument, is_in_guild):
         await self.uwuify(message, argument, is_in_guild, True)
+
+    async def business_only(self, message, argument, is_in_guild):
+        """
+        Takes a message and makes the most serious shit out of it.
+        Business only.
+        """
+        pass
 
 
     # ===============================================================
@@ -1045,6 +1054,21 @@ class JadieClient(discord.Client):
                 await message.channel.send(msg)
         else:
             await message.channel.send('Could not find any log files.')
+
+    async def bash(self, message, argument, is_in_guild):
+        """
+        Runs bash using the arguments presented in the argument.
+        """
+        # Import subprocess so we can do the call
+        import subprocess;
+        process = subprocess.Popen(argument.split(' '), stdout=subprocess.PIPE)
+
+        # Get decoded version of the output.
+        decoded_output = process.communicate()[0].decode('utf-8')
+
+        # Send report and log.
+        log.info(self.__get_comm_start(message, is_in_guild) + 'Ordered bash execution of command ' + argument)
+        await message.channel.send('Bash output: ```' + decoded_output + '```')
 
 
     # ===============================================================
