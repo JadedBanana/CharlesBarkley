@@ -483,6 +483,7 @@ class JadieClient(discord.Client):
 
                 # Appends everything else that hasn't been appended yet
                 uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
                 for key in faces.keys():
                     uwu_append = replaced_text.replace(' ' + key, ' ' + faces[key])
                     if uwu_append.startswith(key):
@@ -526,7 +527,30 @@ class JadieClient(discord.Client):
         Takes a message and makes the most serious shit out of it.
         Business only.
         """
-        pass
+        def do_busy_replace(text):
+            # Remove all double spaces.
+            while '  ' in input_str:
+                input_str = input_str.replace('  ', ' ')
+
+            # Replace all emotes.
+            for key in constants.BUSINESS_EMOTE_FIND_AND_REPLACE:
+                text = text.replace(' ' + key + ' ', ' ' + constants.BUSINESS_EMOTE_FIND_AND_REPLACE[key] + ' ')
+
+            return str(text)
+
+        # If an argument was provided, we business replace it.
+        if argument:
+            await message.channel.send(do_busy_replace(argument))
+
+        # Otherwise, we attempt to do it on the second-most recent message.
+        else:
+            try:
+                content = await self.__get_secondmost_recent_message(message.channel)
+                if content:
+                    await message.channel.send(do_busy_replace(content))
+            # If we got a little error, we pass.
+            except FirstMessageInChannelError:
+                pass
 
 
     # ===============================================================
