@@ -485,7 +485,7 @@ class JadieClient(discord.Client):
                 uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
                 faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
                 for key in faces.keys():
-                    uwu_append = replaced_text.replace(' ' + key, ' ' + faces[key])
+                    uwu_append = uwu_append.replace(' ' + key, ' ' + faces[key])
                     if uwu_append.startswith(key):
                         uwu_append = faces[key] + uwu_append[len(key):]
                 for key in constants.UWU_OWO_FIND_AND_REPLACE.keys():
