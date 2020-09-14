@@ -460,7 +460,7 @@ class JadieClient(discord.Client):
                     # If this is an emote, we act accordingly.
                     if is_emote:
                         # We go ahead and uwuify everything up to this point.
-                        uwu_append = text[uwued_max + 1:colon_index].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                        uwu_append = text[uwued_max + 1:colon_index].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W').replace('no', 'nyo').replace('NO', 'NYO').replace('nO', 'nYO').replace('No', 'Nyo')
                         faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
                         for key in faces.keys():
                             uwu_append = uwu_append.replace(' ' + key, ' ' + faces[key])
@@ -482,7 +482,7 @@ class JadieClient(discord.Client):
                         last_index = colon_index
 
                 # Appends everything else that hasn't been appended yet
-                uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+                uwu_append = text[uwued_max + 1:].replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W').replace('no', 'nyo').replace('NO', 'NYO').replace('nO', 'nYO').replace('No', 'Nyo')
                 faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
                 for key in faces.keys():
                     uwu_append = uwu_append.replace(' ' + key, ' ' + faces[key])
@@ -492,10 +492,14 @@ class JadieClient(discord.Client):
                     uwu_append = uwu_append.replace(key, constants.UWU_OWO_FIND_AND_REPLACE[key])
                 text_uwued += uwu_append
 
+                # If there isn't a face on the end, we add an uwu.
+                if not any([text_uwued.endswith(fac) for fac in faces] + [text_uwued.endswith(fac + '.') for fac in faces] + [text_uwued.endswith(fac + '!') for fac in faces]):
+                    text_uwued += random.choice([' owo' if use_owo else ' uwu', ' >w<'])
+
                 return text_uwued
 
             # If there is no emote, we just return the basics.
-            replaced_text = text.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W')
+            replaced_text = text.replace('r', 'w').replace('R', 'W').replace('l', 'w').replace('L', 'W').replace('no', 'nyo').replace('NO', 'NYO').replace('nO', 'nYO').replace('No', 'Nyo')
             faces = constants.OWO_FACES if use_owo else constants.UWU_FACES
             for key in faces.keys():
                 replaced_text = replaced_text.replace(' ' + key, ' ' + faces[key])
@@ -503,6 +507,11 @@ class JadieClient(discord.Client):
                     replaced_text = faces[key] + replaced_text[len(key):]
             for key in constants.UWU_OWO_FIND_AND_REPLACE.keys():
                 replaced_text = replaced_text.replace(key, constants.UWU_OWO_FIND_AND_REPLACE[key])
+
+            # If there isn't a face on the end, we add an uwu.
+            if not any([replaced_text.endswith(fac) for fac in faces] + [replaced_text.endswith(fac + '.') for fac in faces] + [replaced_text.endswith(fac + '!') for fac in faces]):
+                replaced_text+= random.choice([' owo' if use_owo else ' uwu', ' >w<'])
+
             return replaced_text
 
         # If an argument was provided, we uwuify it.
