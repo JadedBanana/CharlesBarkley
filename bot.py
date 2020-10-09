@@ -90,7 +90,9 @@ class JadieClient(discord.Client):
             'weather': self.weather,
             'uwu': self.uwuify, 'uwuify': self.uwuify,
             'owo': self.owoify, 'owoify': self.owoify,
-            'business': self.business_only, 'businessonly': self.business_only
+            'business': self.business_only, 'businessonly': self.business_only,
+            'ultimate': self.ultimate, 'talent': self.ultimate,
+            'shsl': self.shsl,
         }
 
         # Sets the developer command_dict
@@ -560,6 +562,39 @@ class JadieClient(discord.Client):
             # If we got a little error, we pass.
             except FirstMessageInChannelError:
                 pass
+
+    async def ultimate(self, message, argument, is_in_guild, shsl=False):
+        """
+        Assigns the user an ultimate talent, like in Danganronpa.
+        """
+        # Gets the user from the argument.
+        try:
+            student = self.__get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
+        except (UnableToFindUserError, ArgumentTooShortError):
+            log.debug(self.__get_comm_start(message, is_in_guild) + 'requested ultimate for user ' + argument + ', invalid')
+            await message.channel.send('Invalid user.')
+            return
+        except NoUserSpecifiedError:
+            student = None
+
+        # Gets the talent.
+        talent = random.choice([key for key in constants.ULTIMATE_TITLES.keys()])
+
+        # Creates the title string.
+        title_str = ((student.nick if student.nick else str(student.name)) + ' is ' if student else 'You are ') + 'the ' + ('SHSL' if shsl else 'Ultimate') + ' {}'.format(talent) + constants.ULTIMATE_TITLES[talent]
+        for i in range(len(constants.ULTIMATE_PRONOUNS)):
+            title_str = title_str.replace('{' + str(i) + '}', constants.ULTIMATE_PRONOUNS[i][1 if student else 0])
+        title_str.replace('{14}', (student.nick if student.nick else str(student.name)) if student else (message.author.nick if message.author.nick else str(message.author.name)))
+
+        # Creates the embed.
+        embed = discord.Embed(title=title_str, colour=((221 << 16) + (115 << 8) + 215))
+        #file = discord.File(current_ship_filepath, filename='ship_image.png')
+        #embed.set_image(url='attachment://ship_image.png')
+
+        await message.channel.send(embed=embed)
+
+    async def shsl(self, message, argument, is_in_guild):
+        await self.ultimate(message, argument, is_in_guild, True)
 
 
     # ===============================================================

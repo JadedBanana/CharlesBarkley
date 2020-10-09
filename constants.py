@@ -5,7 +5,9 @@ VERSION = '0.3.3'
 # Developer stuff
 DEVELOPER_DISCORD_IDS = [
     110194551586570240,   # Jade
-    158429528874680320    # Jabe
+    158429528874680320,   # Jabe
+    444250440801189891,   # Alex
+    620226160328179722    # Megu-Nee
 ]
 ON_WINDOWS_ONLY_RESPOND_TO_DEV = True
 IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX = True
@@ -73,10 +75,10 @@ ULTIMATE_TITLES = {
     'Animator': '! Don\'t forget! Anime is art!',
     'Anthropologist': '. {7} know more about the Salem Witch Trials than anyone else on Earth.',
     'Archer': '! {9} like Hawkeye up in here!',
-    'Architect': '. {7} can build you a nice house... for a small fee, of course.',
+    'Architect': '. {8} houses are absolutely exquisite.',
     'Artist': '! Pretty colors and lifelike statues are {1} whole deal!',
     'Assassin': '. Here\'s the target. You have 24 hours.',
-    'Astronaut': '! {7} can reach the stars for sure! If anyone can, it\'s {0}!',
+    'Astronaut': '! {7} can reach the stars for sure! If anyone can, it\'s {6}!',
     'Baseball Player': '! Batter up!',
     'Beatboxer': '! Boots and cats and boots and cats...',
     'Blacksmith': '! Daggers and knives and swords, oh my!',
@@ -95,22 +97,20 @@ ULTIMATE_TITLES = {
     'Child Caregiver': '. {9} basically like a goblin herder.',
     'Clairvoyant': '! {7} and {1} 30% accuracy rate can predict ANY crime that probably won\'t happen!',
     'Clown': '! {9} a clown! Honk honk! :o)',
-    'Composer': '. Popping out songs one after another ain\'t easy, but it\'s a way of life for {6}.',
+    'Composer': '. Popping out songs one after another ain\'t easy, but it\'s {1} way of life.',
     'Con Artist': '{9} a slimy bastard who can convince anyone anything is a good idea.',
     'Confectioner': '! How sweet of {0}!',
     'Conspiracy Theorist': '. So you think the moon landing was faked, huh? Well, have you heard the MOON is fake, too?',
-    'Cook': '',
+    'Cook': '! Bon Appetit!',
     'Curator': '. {8} collection is far more impressive than the Smithsonian.',
-    'Despair': '',
+    'Despair': '. Despair is not a goal, or a set of principles, or a lifestyle, or even an instinct... It\'s what defines {6} as {14}!',
     'Detective': '! And the killer is... you!',
     'Drug Dealer': '. {11} stuck some stuff in some pretty gross places to get to the top, but {0} don\'t regret it.',
-    'Drummer': '',
+    'Drummer': '! Any band is only as good as its drummer!',
     'DJ': '! Lay down some beats, man!',
-    'Electrical Engineer': '',
     'Entomologist': '... so, if I find a spider, do I bring it to you?',
     'Entrepreneur': '',
-    'Epidemiologist': '',
-    'Exorcist': '',
+    'Exorcist': '. The power of Christ compels you!',
     'Fanfic Creator': '! So, what next? Maybe a slow-burn coffee shop AU with some self-inserts, a handful of OC\'s, F/F and M/M, a little OOC if necessary, but all in all just fanservice fic for Danganronpa?',
     'Farmer': '! Do {1} have a dog named Bingo? Or... just Ingo? Or Ngo?',
     'Fashionista': '! Looking cool, {9}!',
@@ -124,13 +124,12 @@ ULTIMATE_TITLES = {
     'Hacker': '. {7} didn\'t actually get {1} title from some school official, {0} got it by hacking into the servers and giving it to {3}.',
     'Hairstylist': '',
     'Hope': '',
-    'Housekeeper': '',
+    'Housekeeper': '! You\'re the ultimate cleaning machine!',
     'Hypnotist': '. People ought to be cautious around {6} -- let down your guard for even a second and you can no longer think for yourself.',
     'Idol': '',
     'Impostor': '. No one truly knows who {0} are beneath the mask... or that {2} even wearing one at all.',
     'Internet Troll': '. {9} really good at pissing people off online.',
     'Inventor': '',
-    'Landscaper': '',
     'Lawyer': '',
     'Lucky Student': '',
     'Magician': '! Prepare to be amazed!',
@@ -141,7 +140,6 @@ ULTIMATE_TITLES = {
     'Mechanic': '. Every tractor {0} work on is sexy.',
     'Medium': '',
     'Merchant': '. No one knows supply and demand better than {6}, and {0} always have just enough stock to match what the public desires.',
-    'Meteorologist': '',
     'Model': '',
     'Moral Compass': '. {7} are the best at telling other people how to act.',
     'Musician': '',
@@ -155,30 +153,26 @@ ULTIMATE_TITLES = {
     'Prisoner': '',
     'Puppeteer': '. No strings on {1} puppets, no sir!',
     'Psychologist': '',
-    'Physicist': '',
     'Pianist': '',
-    'Pilot': '',
-    'Policeman': '',
+    'Pilot': '. Do a barrel roll!',
+    'Police Officer': '',
     'Priest': '. With just a wave of {1} hand, {0} can enlighten hundreds at a time.',
     'Princess': '',
     'Programmer': '! Did you know this bot is written in Python using the discord.py API?',
-    'Pyrotechnician': '',
-    'Researcher': '',
+    'Pyrotechnician': '. \'Cause baby, you\'re a firework!',
     'Robot': '! Beep boop bop beep!',
     'Sailor': '',
     'Scout': '. Though high adventure may be fun, there is nothing quite like giving back to one\'s community.',
-    'Secret Agent': '. {11} got a license to kill and {0} aren\'t afraid to use it.',
-    'Secretary': '',
+    'Secret Agent': '. {7} have a license to kill and {0} aren\'t afraid to use it.',
     'Serial Killer': '',
     'SFX Artist': '',
     'Skiier': '',
     'Soccer Player': '',
     'Soldier': '',
-    'Sniper': '',
+    'Sniper': '. Headshot.',
     'Snowboarder': '. It\'s like being a skiier, but way cooler.',
     'Surgeon': '',
     'Street Fighter': '',
-    'Student Council President': '',
     'Stunt Double': '',
     'Superhero': '',
     'Supervillain': '! What separates a regular villain from a super one? Why, presentation, of course!',
@@ -187,18 +181,16 @@ ULTIMATE_TITLES = {
     'Swimmer': '! {7} swear {0} could swim across the ocean if it was legal!',
     'Swordsman': '. While most others spend their time playing video games or watching TV, {0} study the blade.',
     'Tailor': '. Capes aren\'t usually fashionable, but the way {0} make it, anyone can rock that shit.',
-    'Team Manager': '! ',
+    'Team Manager': '',
     'Tennis Pro': '',
-    'Test Subject': '',
+    'Test Subject': 'The Enrichment Center is committed to the well being of all participants. Cake and grief counseling will be available at the conclusion of the test.',
     'Therapist': '. Of course, {0} can\'t talk about it that much, since patient confidentiality is {1} number 1 priority.',
     'Traditional Dancer': '',
     'Translator': '. {8} ability to be fluent in so many language baffles scientists.',
-    'Vegabond': '',
     'VFX Artist': '. {7} had it better in the 80\'s.',
     'Violinist': '',
     'Voice Actor': '. {9} able to switch voices on a dime, and none of them sound anything alike.',
-    'Watchmaker': '',
-    'Wrestler': '',
+    'Wrestler': '! Let\'s settle this in the ring!',
     'Writer': '',
     'Yakuza': '',
     'Yoga Guru': '. All {1} chakras are open and flowing the sweet nectar of the soul.'
@@ -278,42 +270,16 @@ SHIP_MESSAGES = [
 ]
 
 # Uwu
-EMOTE_CHARACTERS = '0123456789_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
+EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
 UWU_FACES = {
-    ':3': 'uwu', '>:)': '>w<', '>:(': '>m<', '>:]': '>w<', '>:[': '>m<', ':]': 'uwu', ':[': 'umu',
     ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
     '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
-    'D:': 'umu', '):': 'umu', ':O': 'u.u', ':o': 'u.u', 'O:': 'u.u', 'o:': 'u.u', ';)': 'uwo'
+    'D:': 'umu', '):': 'umu'
 }
 OWO_FACES = {
-    ':3': 'owo', '>:)': '>w<', '>:(': '>m<', '>:]': '>w<', '>:[': '>m<', ':]': 'owo', ':[': 'omo',
     ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
     '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
-    'D:': 'omo', '):': 'omo', ':O': 'o.o', ':o': 'o.o', 'O:': 'o.o', 'o:': 'o.o', ';)': 'owu'
-}
-
-UWU_OWO_FIND_AND_REPLACE = {
-    'fuck': 'yiff', 'FUCK': 'YIFF', 'Fuck': 'Yiff', 'fUCK': 'yIFF',
-    'shitting': 'scritching', 'SHITTING': 'SCRITCHING', 'Shitting': 'Scritching', 'sHITTING': 'sCRITCHING'
-}
-
-# Business-speak
-BUSINESS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-BUSINESS_EMOTE_FIND_AND_REPLACE = {
-    ':3': 'This is most profitable.', '>:)': 'Our competitors won\'t know what hit them.', '>:(': 'This spells bad news for our stock price.',
-    '>:]': 'Our competitors won\'t know what hit them.', '>:[': 'This spells bad news for our stock price.', ':]': 'This is most profitable.',
-    ':[': 'Our investors were expecting more.', ':)': 'This is most profitable.', ':(': 'Our investors were expecting more.',
-    ':|': 'Business as usual.', ':-)': 'This is most profitable.', ':-(': 'Our investors were expecting more.',
-    ':-|': 'Business as usual.', '^_^': 'This is most profitable.', '^w^': 'This is most profitable.', 'O_o': 'This is an unexpected development.',
-    'o_o': 'This is an unexpected development.', '(:': 'This is most profitable.', ':D': 'This is most_profitable.',
-    'D:': 'Our investors were expecting more.', '):': 'Our investors were expecting more.', ':O': 'This is an unexpected development.',
-    ':o': 'This is an unexpected development.', 'O:': 'This is an unexpected development.', 'o:': 'This is an unexpected development.', ';)': '',
-    'B)': 'This is most profitable.', 'owo': 'This is most profitable.', 'Owo': 'This is unexpected, but will still turn us a profit.', 'uwu': 'This is most profitable.',
-    'Uwu': 'This is most profitable.', '>w<': 'This is most profitable.', 'uwo': '', 'owu': '', 'Owu': '', 'Uwo': '',
-    '>m<': 'Our current plan needs modification to stay ahead of the market.', 'umu': 'Our investors were expecting more.',
-    'Umu': 'Our investors were expecting more.', 'Omo': 'Our investors were expecting more.', 'omo': 'Our investors were expecting more.',
-    'u_u': 'Our investors were expecting more.', ':P': 'Our competitors won\'t know what hit them.', ':p': 'Our competitors won\'t know what hit them.',
-    'T_t': 'The stock price is tanking, gentlemen.', '._.': 'Our investors were expecting more.', '>.<': 'Our current plan needs modification to stay ahead of the market.'
+    'D:': 'omo', '):': 'omo'
 }
 
 # Conversion chars
@@ -345,7 +311,6 @@ HELP_MSG = '''```
 - copy: Mention someone to start copying their every word
 - stopcopying: Stop copying everyone in this server
 - uwu: Convert a message to uwu-speak.
-- owo: Convert a message to owo-speak.
 - ship: Ship two random users together. Tag another user to ship them with a random someone else.
 - randomyt / randomyoutube: Generate a random YouTube video
 - randomwiki / randomwikipedia: Generate a random English Wikipedia page
@@ -379,7 +344,6 @@ HELP_MSG_DEV_ADDENDUM = '''
 - toggleignoredev: Toggles whether or not to ignore developer on Linux side
 - loglist: Sends a list of all the log files in the logs folder
 - sendlog: Sends the log for today, or a specific date (YYYY-MM-DD)
-- bash: Runs a bash script on the raspberry Pi from the Jadi3Pi directory
 - update: Trigger remote update (pull from Git master branch)
 - reboot: Trigger remote reboot
 ```'''
