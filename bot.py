@@ -38,6 +38,9 @@ class JadieClient(discord.Client):
     # Keeps track of who we're copying by server and then id (hehehe)
     copied_users = {}
 
+    # Keeps track of Hunger Games.
+    curr_hg = {}
+
     # Time since last disconnect.
     bot_uptime = None
 
@@ -93,6 +96,7 @@ class JadieClient(discord.Client):
             'business': self.business_only, 'businessonly': self.business_only,
             'ultimate': self.ultimate, 'talent': self.ultimate,
             'shsl': self.shsl,
+            'hungergames': self.hunger_games, 'hg': self.hunger_games, 'hunger': self.hunger_games
         }
 
         # Sets the developer command_dict
@@ -595,6 +599,43 @@ class JadieClient(discord.Client):
 
     async def shsl(self, message, argument, is_in_guild):
         await self.ultimate(message, argument, is_in_guild, True)
+
+    async def hunger_games(self, message, argument, is_in_guild):
+        """
+        Creates a hunger games simulator right inside the bot.
+        """
+        hg_key = str(message.channel)
+
+        # If a game is already in progress, we forward this message.
+        if hg_key in self.curr_hg.keys():
+            await self.hunger_games_update(hg_key)
+
+        else:
+            # Get the user list. If user list is < 24 people, we add bots as well.
+            user_list = self.__get_applicable_users(message, is_in_guild, True)
+            if len(user_list) < 24:
+                user_list = self.__get_applicable_users(message, is_in_guild, False)
+            # If there still aren't enough users, we send error.
+            if len(user_list) < 2:
+                await message.channel.send('Not enough users in server.')
+                log.debug(self.__get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+
+            # Otherwise, we generate the entire game.
+            else:
+                # Get the players.
+                hg_players = []
+                for i in range(min(24, len(user_list))):
+                    next_player = random.choice(user_list)
+                    hg_players.append(next_player)
+                    user_list.remove(next_player)
+
+                await message.channel.send(str([u.name for u in hg_players]))
+
+                # Set in players and actions.
+                hg_full_game = {'players': hg_players, 'generated': False}
+
+    async def hunger_games_update(self, channel):
+        pass
 
 
     # ===============================================================
@@ -1498,17 +1539,22 @@ class JadieClient(discord.Client):
         """
         Gets the profile picture for a user.
         """
+        # The path for the image.
+        image_locale = os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
+        # If the image exists, we just open that.
+        if os.path.isfile(image_locale):
+            return Image.open(image_locale), image_locale
         # Gets the url.
         pfp_url = user.avatar_url
         # Downloads image in bytes
         image_bytes = requests.get(pfp_url).content
         # Writes image to disk
-        with open(os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE), 'wb') as w:
+        with open(image_locale, 'wb') as w:
             w.write(image_bytes)
         # Opens as image
-        img_return = Image.open(os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE))
+        img_return = Image.open(image_locale)
         # Returns image.
-        return img_return, os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
+        return img_return, image_locale
 
     @staticmethod
     async def __get_secondmost_recent_message(channel):
