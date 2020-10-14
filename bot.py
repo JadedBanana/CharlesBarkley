@@ -2,13 +2,13 @@
 
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
+from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
 from datetime import datetime, timedelta
 from dateutil.tz import tzoffset
 from iso3166 import countries
 from textblob import TextBlob
 from exceptions import *
 from math import fabs
-from PIL import Image
 import constants
 import wikipedia
 import platform
@@ -582,20 +582,91 @@ class JadieClient(discord.Client):
             student = None
 
         # Gets the talent.
-        talent = random.choice([key for key in constants.ULTIMATE_TITLES.keys()])
+        talent = random.choice([key for key in constants.ULTIMATE_TALENTS.keys()])
+        talent_dict = constants.ULTIMATE_TALENTS[talent]
 
         # Creates the title string.
-        title_str = ((student.nick if student.nick else str(student.name)) + ' is ' if student else 'You are ') + 'the ' + ('SHSL' if shsl else 'Ultimate') + ' {}'.format(talent) + constants.ULTIMATE_TITLES[talent]
+        title_str = ((student.nick if student.nick else str(student.name)) + ' is ' if student else 'You are ') + 'the ' + ('SHSL' if shsl else 'Ultimate') + ' {}'.format(talent) + talent_dict['desc']
         for i in range(len(constants.ULTIMATE_PRONOUNS)):
             title_str = title_str.replace('{' + str(i) + '}', constants.ULTIMATE_PRONOUNS[i][1 if student else 0])
         title_str.replace('{14}', (student.nick if student.nick else str(student.name)) if student else (message.author.nick if message.author.nick else str(message.author.name)))
 
+        # Creates the image layers.
+        background_bottom = Image.open(constants.ULTIMATE_BACKGROUND_BOTTOM)
+        background_middle = Image.open(constants.ULTIMATE_BACKGROUND_MIDDLE)
+        background_top = Image.open(constants.ULTIMATE_BACKGROUND_TOP)
+        student_sprite = Image.open(os.path.join('assets/danganronpa_chars', random.choice(os.listdir('assets/danganronpa_chars'))))
+        user_name = Image.new('L', (1280, 720))
+        user_colorchar = Image.new('L', (1280, 720))
+        user_border = Image.new('L', (1280, 720))
+        talent_text = Image.new('L', (1280, 720))
+
+        # Creates user name without emoji.
+        student_name = (student.nick if student.nick else str(student.name)) if student else (message.author.nick if message.author.nick else str(message.author.name)); i = 0
+        while i < len(student_name):
+            if ord(student_name[i]) > constants.ULTIMATE_NAME_MAX_ORD:
+                student_name = student_name.strip(student_name[i])
+            else:
+                i+= 1
+        student_name = self.__normalize_string(student_name, remove_double_spaces=True)
+
+        # Creates standard user name (white).
+        user_writer = ImageDraw.Draw(user_name)
+        user_font = ImageFont.truetype(constants.ULTIMATE_NAME_FONT, size=100)
+        user_writer.text((835 - int(user_font.getsize(student_name)[0] / 2), 0), student_name, font=user_font, fill=255)
+        user_name = user_name.rotate(-12.5, center=(-8, 200), resample=Image.BILINEAR, translate=(0, 154))
+
+        # Creates colored user letter.
+        user_writer = ImageDraw.Draw(user_colorchar)
+        user_writer.text((835 - int(user_font.getsize(student_name)[0] / 2), 0), student_name[0], font=user_font, fill=255)
+        user_colorchar = user_colorchar.rotate(-12.5, center=(-8, 200), resample=Image.BILINEAR, translate=(0, 154))
+
+        # Creates user border.
+        user_writer = ImageDraw.Draw(user_border)
+        user_writer.text((831 - int(user_font.getsize(student_name)[0] / 2), 0), student_name, font=user_font, stroke_width=5, fill=255)
+        user_border = user_border.rotate(-12.5, center=(-8, 200), resample=Image.BILINEAR, translate=(0, 150))
+
+        # Creates talent text.
+        talent_writer = ImageDraw.Draw(talent_text)
+        talent_font = ImageFont.truetype(constants.ULTIMATE_TALENT_FONT, size=54)
+        talent_writer.text((835 - int(talent_font.getsize(('SHSL ' if shsl else 'Ultimate ') + talent)[0] / 2), 0), ('SHSL ' if shsl else 'Ultimate ') + talent, font=talent_font, fill=255)
+        talent_text = talent_text.rotate(-12.5, center=(0, 200), resample=Image.BILINEAR, translate=(-40, 279))
+
+        # Creates talent blur.
+        talent_blur = talent_text.filter(ImageFilter.GaussianBlur(10))
+
+        # Modifying / customizing the ultimate colors to better fit the talent.
+        background_bottom = ImageOps.colorize(background_bottom.convert('L'), black=(0, 0, 0), white=(0, 0, 255))
+        background_middle_2 = ImageOps.colorize(background_middle.convert('L'), black=(0, 0, 0), white=(0, 255, 0))
+        background_top_2 = ImageOps.colorize(background_top.convert('L'), black=(0, 0, 0), white=(255, 255, 255), mid=(255, 0, 0))
+        student_sprite_black = ImageOps.colorize(student_sprite.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
+        user_colorchar_c = ImageOps.colorize(user_colorchar.convert('L'), black=(0, 0, 0), white=(255, 0, 255))
+        user_border_c = ImageOps.colorize(user_border.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
+        talent_text_c = ImageOps.colorize(talent_text.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
+        talent_blur_c = ImageOps.colorize(talent_blur.convert('L'), black=(255, 0, 255), white=(255, 0, 255))
+
+        # Merges the image layers.
+        ultimate_image = background_bottom
+        ultimate_image.paste(background_middle_2, (0, 0), background_middle)
+        ultimate_image.paste(background_top_2, (0, 0), background_top)
+        ultimate_image.paste(user_border_c, (0, 0), user_border)
+        ultimate_image.paste(user_name, (0, 0), user_name)
+        ultimate_image.paste(user_colorchar_c, (0, 0), user_colorchar)
+        ultimate_image.paste(talent_blur_c, (0, 0), talent_blur)
+        ultimate_image.paste(talent_text_c, (0, 0), talent_text)
+        ultimate_image.paste(student_sprite_black, (constants.ULTIMATE_SPRITE_X - int(student_sprite.size[0] / 2) - 75, ultimate_image.size[1] - student_sprite.size[1]), student_sprite)
+        ultimate_image.paste(student_sprite, (constants.ULTIMATE_SPRITE_X - int(student_sprite.size[0] / 2), ultimate_image.size[1] - student_sprite.size[1] + 30), student_sprite)
+
+        # Saves the image to disk
+        current_ultimate_filepath = os.path.join(constants.TEMP_DIR, 'current_ultimate.png')
+        ultimate_image.save(current_ultimate_filepath)
+
         # Creates the embed.
         embed = discord.Embed(title=title_str, colour=((221 << 16) + (115 << 8) + 215))
-        #file = discord.File(current_ship_filepath, filename='ship_image.png')
-        #embed.set_image(url='attachment://ship_image.png')
+        file = discord.File(current_ultimate_filepath, filename='ultimate_image.png')
+        embed.set_image(url='attachment://ultimate_image.png')
 
-        await message.channel.send(embed=embed)
+        await message.channel.send(file=file, embed=embed)
 
     async def shsl(self, message, argument, is_in_guild):
         await self.ultimate(message, argument, is_in_guild, True)
