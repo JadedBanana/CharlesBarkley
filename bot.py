@@ -585,6 +585,12 @@ class JadieClient(discord.Client):
         talent = random.choice([key for key in constants.ULTIMATE_TALENTS.keys()])
         talent_dict = constants.ULTIMATE_TALENTS[talent]
 
+        # Gets the character.
+        character = random.choice(talent_dict['char'])
+        character_dict = constants.ULTIMATE_CHARACTER_ATTRIBUTES[character]
+        if 'colors' not in character_dict:
+            character_dict.update({'colors': {'bottom': (255, 255, 255), 'middle': (255, 255, 255), 'top': (255, 255, 255), 'name': (128, 128, 128)}})
+
         # Creates the title string.
         title_str = ((student.nick if student.nick else str(student.name)) + ' is ' if student else 'You are ') + 'the ' + ('SHSL' if shsl else 'Ultimate') + ' {}'.format(talent) + talent_dict['desc']
         for i in range(len(constants.ULTIMATE_PRONOUNS)):
@@ -595,11 +601,13 @@ class JadieClient(discord.Client):
         background_bottom = Image.open(constants.ULTIMATE_BACKGROUND_BOTTOM)
         background_middle = Image.open(constants.ULTIMATE_BACKGROUND_MIDDLE)
         background_top = Image.open(constants.ULTIMATE_BACKGROUND_TOP)
-        student_sprite = Image.open(os.path.join('assets/danganronpa_chars', random.choice(os.listdir('assets/danganronpa_chars'))))
+        # student_sprite = Image.open(os.path.join(constants.ULTIMATE_CHARACTER_FOLDER, random.choice(talent_dict['char']) + constants.ULTIMATE_SPRITE_FILETYPE))
+        student_sprite = Image.open(os.path.join(constants.ULTIMATE_CHARACTER_FOLDER, character + constants.ULTIMATE_SPRITE_FILETYPE))
         user_name = Image.new('L', (1280, 720))
         user_colorchar = Image.new('L', (1280, 720))
         user_border = Image.new('L', (1280, 720))
         talent_text = Image.new('L', (1280, 720))
+        talent_blur = Image.new('L', (1280, 720))
 
         # Creates user name without emoji.
         student_name = (student.nick if student.nick else str(student.name)) if student else (message.author.nick if message.author.nick else str(message.author.name)); i = 0
@@ -629,21 +637,24 @@ class JadieClient(discord.Client):
         # Creates talent text.
         talent_writer = ImageDraw.Draw(talent_text)
         talent_font = ImageFont.truetype(constants.ULTIMATE_TALENT_FONT, size=54)
-        talent_writer.text((835 - int(talent_font.getsize(('SHSL ' if shsl else 'Ultimate ') + talent)[0] / 2), 0), ('SHSL ' if shsl else 'Ultimate ') + talent, font=talent_font, fill=255)
-        talent_text = talent_text.rotate(-12.5, center=(0, 200), resample=Image.BILINEAR, translate=(-40, 279))
+        talent_writer.text((855 - int(talent_font.getsize(('SHSL ' if shsl else 'Ultimate ') + talent)[0] / 2), 0), ('SHSL ' if shsl else 'Ultimate ') + talent, font=talent_font, fill=255)
+        talent_text = talent_text.rotate(-12.5, center=(0, 205), resample=Image.BILINEAR, translate=(-40, 279))
 
         # Creates talent blur.
-        talent_blur = talent_text.filter(ImageFilter.GaussianBlur(10))
+        talent_writer = ImageDraw.Draw(talent_blur)
+        talent_writer.text((855 - int(talent_font.getsize(('SHSL ' if shsl else 'Ultimate ') + talent)[0] / 2), 0), ('SHSL ' if shsl else 'Ultimate ') + talent, font=talent_font, stroke_width=2, fill=255)
+        talent_blur = talent_blur.rotate(-12.5, center=(0, 202), resample=Image.BILINEAR, translate=(-40, 279))
+        talent_blur = talent_blur.filter(ImageFilter.GaussianBlur(10))
 
         # Modifying / customizing the ultimate colors to better fit the talent.
-        background_bottom = ImageOps.colorize(background_bottom.convert('L'), black=(0, 0, 0), white=(0, 0, 255))
-        background_middle_2 = ImageOps.colorize(background_middle.convert('L'), black=(0, 0, 0), white=(0, 255, 0))
-        background_top_2 = ImageOps.colorize(background_top.convert('L'), black=(0, 0, 0), white=(255, 255, 255), mid=(255, 0, 0))
+        background_bottom = ImageOps.colorize(background_bottom.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['bottom'] if 'colors' in talent_dict else character_dict['colors']['bottom'])
+        background_middle_2 = ImageOps.colorize(background_middle.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['middle'] if 'colors' in talent_dict else character_dict['colors']['middle'])
+        background_top_2 = ImageOps.colorize(background_top.convert('L'), black=(0, 0, 0), white=(255, 255, 255), mid=talent_dict['colors']['top'] if 'colors' in talent_dict else character_dict['colors']['top'])
         student_sprite_black = ImageOps.colorize(student_sprite.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
-        user_colorchar_c = ImageOps.colorize(user_colorchar.convert('L'), black=(0, 0, 0), white=(255, 0, 255))
+        user_colorchar_c = ImageOps.colorize(user_colorchar.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['name'] if 'colors' in talent_dict else character_dict['colors']['name'])
         user_border_c = ImageOps.colorize(user_border.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
         talent_text_c = ImageOps.colorize(talent_text.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
-        talent_blur_c = ImageOps.colorize(talent_blur.convert('L'), black=(255, 0, 255), white=(255, 0, 255))
+        talent_blur_c = ImageOps.colorize(talent_blur.convert('L'), black=(255, 255, 255), white=talent_dict['colors']['name'] if 'colors' in talent_dict else character_dict['colors']['name'])
 
         # Merges the image layers.
         ultimate_image = background_bottom
@@ -653,6 +664,7 @@ class JadieClient(discord.Client):
         ultimate_image.paste(user_name, (0, 0), user_name)
         ultimate_image.paste(user_colorchar_c, (0, 0), user_colorchar)
         ultimate_image.paste(talent_blur_c, (0, 0), talent_blur)
+        ultimate_image.paste(talent_blur_c, (-12, -4), talent_blur)
         ultimate_image.paste(talent_text_c, (0, 0), talent_text)
         ultimate_image.paste(student_sprite_black, (constants.ULTIMATE_SPRITE_X - int(student_sprite.size[0] / 2) - 75, ultimate_image.size[1] - student_sprite.size[1]), student_sprite)
         ultimate_image.paste(student_sprite, (constants.ULTIMATE_SPRITE_X - int(student_sprite.size[0] / 2), ultimate_image.size[1] - student_sprite.size[1] + 30), student_sprite)
