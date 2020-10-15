@@ -96,158 +96,6 @@ async def stop_copying(self, message, argument, is_in_guild):
         await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
 
 
-async def randomyt(self, message, argument, is_in_guild):
-    """
-    Generates a random youtube link.
-    """
-    # Rolls the random chance for a rick roll...
-    if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
-        log.info(util.get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
-        await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
-        return
-
-    # Otherwise...
-    search_results = {'items': []}
-    while not search_results['items']:
-        # Gets random search term and searches
-        random_search = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(random.choices(constants.YOUTUBE_SEARCH_LENGTHS, weights=constants.YOUTUBE_SEARCH_WEIGHTS)[0]))
-        url_data = constants.YOUTUBE_SEARCH_URL.format(constants.YOUTUBE_API_KEY, constants.YOUTUBE_SEARCH_COUNT, random_search)
-
-        # Opens url
-        try:
-            url_data = urllib.request.urlopen(url_data)
-            data = url_data.read()
-
-        # The only reason we would have an error is if quota has been reached. We tell the user that here.
-        except urllib.error.HTTPError:
-            # First, we get the time delta between now and when the quota should be reset.
-            current_time = datetime.today()
-            target_time = datetime.today()
-
-            # If we are beyond the quota reset time, we add 1 to the target date.
-            if current_time.hour >= constants.YOUTUBE_QUOTA_RESET_HOUR:
-                target_time = target_time + timedelta(days=1)
-
-            # Then we create a new date from the target_time.
-            target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=constants.YOUTUBE_QUOTA_RESET_HOUR)
-
-            # Get time until quota and return that.
-            quota_str = util.calculate_time_passage(target_time - current_time)
-            await message.channel.send('Youtube quota of 100 videos reached. Try again in {}'.format(quota_str))
-            # We only put out the quota if it's the first time doing so today.
-            if not self.quota_blocked_last_time:
-                log.warning(util.get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
-                self.quota_blocked_last_time = True
-            return
-
-        # Decodes data and makes it into a dict
-        encoding = url_data.info().get_content_charset('utf-8')
-        search_results = json.loads(data.decode(encoding))
-
-    # Create list of video id's
-    video_ids = [video['id']['videoId'] for video in search_results['items']]
-
-    # Pick one
-    choice = random.randint(0, len(video_ids) - 1)
-
-    # Return selected video.
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
-    await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
-    self.quota_blocked_last_time = False
-
-
-async def randomwiki(self, message, argument, is_in_guild):
-    """
-    Generates a random youtube link.
-    """
-    # Simple call.
-    wiki_page = wikipedia.page(wikipedia.random(1))
-
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
-    await message.channel.send(wiki_page.url)
-
-
-async def ship(self, message, argument, is_in_guild):
-    """
-    Ships 2 or more users together.
-    If a user isn't tagged, it ships the author and a random user.
-    If a user IS tagged, it ships them with someone random.
-    """
-    # Gets the user from the argument.
-    try:
-        partner_1 = util.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
-    except (UnableToFindUserError, ArgumentTooShortError):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
-        await message.channel.send('Invalid user.')
-        return
-    except NoUserSpecifiedError:
-        partner_1 = None
-
-    # If an argument wasn't passed, we do BOTH the shipping ourselves.
-    if not partner_1:
-        try:
-            # Gets valid users.
-            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=True)
-            # Getting the two users.
-            partner_1 = random.choice(users_choices)
-            users_choices.remove(partner_1)
-            partner_2 = random.choice(users_choices)
-        except IndexError:
-            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
-            await message.channel.send('There aren\'t enough users in here to form a ship!')
-            return
-
-    else:
-        try:
-            # Gets valid users.
-            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot, exclude_users=[partner_1])
-            # Getting the second user.
-            partner_2 = random.choice(users_choices)
-        except IndexError:
-            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
-            await message.channel.send('There aren\'t enough users in here to form a ship!')
-            return
-
-    # Log this ship
-    log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
-
-    # Gets the PFP for partner 1 and 2. Also resizes them
-    partner_1_img, partner_1_filepath = util.get_profile_picture(partner_1)
-    partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_1_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
-    partner_2_img, partner_2_filepath = util.get_profile_picture(partner_2)
-    partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_2_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
-
-    # Gets the image for the heart (aww!)
-    heart_img = Image.open(constants.SHIP_HEART_IMG)
-
-    # Creates the ultra-wide canvas
-    together_canvas = Image.new('RGBA', (constants.SHIP_ICON_SIZE * 3, constants.SHIP_ICON_SIZE))
-
-    # Pastes the images onto the canvas in order
-    together_canvas.paste(partner_1_img, (0, 0))
-    together_canvas.paste(heart_img, (constants.SHIP_ICON_SIZE, 0))
-    together_canvas.paste(partner_2_img, (constants.SHIP_ICON_SIZE * 2, 0))
-
-    # Saves the canvas to disk
-    current_ship_filepath = os.path.join(constants.TEMP_DIR, 'current_ship.png')
-    together_canvas.save(current_ship_filepath)
-
-    embed = discord.Embed(title=random.choice(constants.SHIP_MESSAGES).format(partner_1.nick if partner_1.nick else partner_1.name, partner_2.nick if partner_2.nick else partner_2.name), colour=((221 << 16) + (115 << 8) + 215))
-    file = discord.File(current_ship_filepath, filename='ship_image.png')
-    embed.set_image(url='attachment://ship_image.png')
-
-    await message.channel.send(file=file, embed=embed)
-
-    # Cleanup -- closing Images and deleting them off disk.
-    partner_1_img.close()
-    partner_2_img.close()
-    heart_img.close()
-    together_canvas.close()
-    os.remove(partner_1_filepath)
-    os.remove(partner_2_filepath)
-    os.remove(current_ship_filepath)
-
-
 async def uwuify(self, message, argument, is_in_guild, use_owo=False):
     """
     Weplaces all the r's in a message with w's.
@@ -390,6 +238,87 @@ async def business_only(self, message, argument, is_in_guild):
             pass
 
 
+async def ship(self, message, argument, is_in_guild):
+    """
+    Ships 2 or more users together.
+    If a user isn't tagged, it ships the author and a random user.
+    If a user IS tagged, it ships them with someone random.
+    """
+    # Gets the user from the argument.
+    try:
+        partner_1 = util.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
+    except (UnableToFindUserError, ArgumentTooShortError):
+        log.debug(util.get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
+        await message.channel.send('Invalid user.')
+        return
+    except NoUserSpecifiedError:
+        partner_1 = None
+
+    # If an argument wasn't passed, we do BOTH the shipping ourselves.
+    if not partner_1:
+        try:
+            # Gets valid users.
+            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=True)
+            # Getting the two users.
+            partner_1 = random.choice(users_choices)
+            users_choices.remove(partner_1)
+            partner_2 = random.choice(users_choices)
+        except IndexError:
+            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+            await message.channel.send('There aren\'t enough users in here to form a ship!')
+            return
+
+    else:
+        try:
+            # Gets valid users.
+            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot, exclude_users=[partner_1])
+            # Getting the second user.
+            partner_2 = random.choice(users_choices)
+        except IndexError:
+            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+            await message.channel.send('There aren\'t enough users in here to form a ship!')
+            return
+
+    # Log this ship
+    log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
+
+    # Gets the PFP for partner 1 and 2. Also resizes them
+    partner_1_img, partner_1_filepath = util.get_profile_picture(partner_1)
+    partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_1_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
+    partner_2_img, partner_2_filepath = util.get_profile_picture(partner_2)
+    partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_2_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
+
+    # Gets the image for the heart (aww!)
+    heart_img = Image.open(constants.SHIP_HEART_IMG)
+
+    # Creates the ultra-wide canvas
+    together_canvas = Image.new('RGBA', (constants.SHIP_ICON_SIZE * 3, constants.SHIP_ICON_SIZE))
+
+    # Pastes the images onto the canvas in order
+    together_canvas.paste(partner_1_img, (0, 0))
+    together_canvas.paste(heart_img, (constants.SHIP_ICON_SIZE, 0))
+    together_canvas.paste(partner_2_img, (constants.SHIP_ICON_SIZE * 2, 0))
+
+    # Saves the canvas to disk
+    current_ship_filepath = os.path.join(constants.TEMP_DIR, 'current_ship.png')
+    together_canvas.save(current_ship_filepath)
+
+    embed = discord.Embed(title=random.choice(constants.SHIP_MESSAGES).format(partner_1.nick if partner_1.nick else partner_1.name, partner_2.nick if partner_2.nick else partner_2.name), colour=((221 << 16) + (115 << 8) + 215))
+    file = discord.File(current_ship_filepath, filename='ship_image.png')
+    embed.set_image(url='attachment://ship_image.png')
+
+    await message.channel.send(file=file, embed=embed)
+
+    # Cleanup -- closing Images and deleting them off disk.
+    partner_1_img.close()
+    partner_2_img.close()
+    heart_img.close()
+    together_canvas.close()
+    os.remove(partner_1_filepath)
+    os.remove(partner_2_filepath)
+    os.remove(current_ship_filepath)
+
+
 async def ultimate(self, message, argument, is_in_guild, shsl=False):
     """
     Assigns the user an ultimate talent, like in Danganronpa.
@@ -507,6 +436,77 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
 
 async def shsl(self, message, argument, is_in_guild):
     await self.ultimate(message, argument, is_in_guild, True)
+
+
+async def randomyt(self, message, argument, is_in_guild):
+    """
+    Generates a random youtube link.
+    """
+    # Rolls the random chance for a rick roll...
+    if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
+        log.info(util.get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
+        await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
+        return
+
+    # Otherwise...
+    search_results = {'items': []}
+    while not search_results['items']:
+        # Gets random search term and searches
+        random_search = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(random.choices(constants.YOUTUBE_SEARCH_LENGTHS, weights=constants.YOUTUBE_SEARCH_WEIGHTS)[0]))
+        url_data = constants.YOUTUBE_SEARCH_URL.format(constants.YOUTUBE_API_KEY, constants.YOUTUBE_SEARCH_COUNT, random_search)
+
+        # Opens url
+        try:
+            url_data = urllib.request.urlopen(url_data)
+            data = url_data.read()
+
+        # The only reason we would have an error is if quota has been reached. We tell the user that here.
+        except urllib.error.HTTPError:
+            # First, we get the time delta between now and when the quota should be reset.
+            current_time = datetime.today()
+            target_time = datetime.today()
+
+            # If we are beyond the quota reset time, we add 1 to the target date.
+            if current_time.hour >= constants.YOUTUBE_QUOTA_RESET_HOUR:
+                target_time = target_time + timedelta(days=1)
+
+            # Then we create a new date from the target_time.
+            target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=constants.YOUTUBE_QUOTA_RESET_HOUR)
+
+            # Get time until quota and return that.
+            quota_str = util.calculate_time_passage(target_time - current_time)
+            await message.channel.send('Youtube quota of 100 videos reached. Try again in {}'.format(quota_str))
+            # We only put out the quota if it's the first time doing so today.
+            if not self.quota_blocked_last_time:
+                log.warning(util.get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
+                self.quota_blocked_last_time = True
+            return
+
+        # Decodes data and makes it into a dict
+        encoding = url_data.info().get_content_charset('utf-8')
+        search_results = json.loads(data.decode(encoding))
+
+    # Create list of video id's
+    video_ids = [video['id']['videoId'] for video in search_results['items']]
+
+    # Pick one
+    choice = random.randint(0, len(video_ids) - 1)
+
+    # Return selected video.
+    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
+    await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
+    self.quota_blocked_last_time = False
+
+
+async def randomwiki(self, message, argument, is_in_guild):
+    """
+    Generates a random youtube link.
+    """
+    # Simple call.
+    wiki_page = wikipedia.page(wikipedia.random(1))
+
+    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
+    await message.channel.send(wiki_page.url)
 
 
 async def hunger_games(self, message, argument, is_in_guild):

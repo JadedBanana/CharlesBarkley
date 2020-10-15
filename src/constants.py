@@ -40,7 +40,7 @@ GLOBAL_PREFIX = 'j!'
 YOUTUBE_API_KEY = 'AIzaSyAHuBNRF1Ts5VKoqPnln57ojnrUVGUXINU'
 YOUTUBE_QUOTA_RESET_HOUR = 3
 YOUTUBE_RICKROLL_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-YOUTUBE_RICKROLL_CHANCE = 0.0002
+YOUTUBE_RICKROLL_CHANCE = 0.002
 YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search?key={}&maxResults={}&part=snippet&type=video&q={}'
 YOUTUBE_SEARCH_COUNT = 100
 YOUTUBE_SEARCH_LENGTHS = [1, 2, 3, 4, 5]
@@ -126,7 +126,7 @@ ULTIMATE_TALENTS = {
     '???': {'desc': '! Guess {0} don\'t remember, huh? Well, better hope it\'s a good one.', 'char': ['hinata_hajime', 'kirigiri_kyoko', 'amami_rantaro']},
     'Actress': {'desc': '! Try as they might, no one could ever hope to emulate the passion {0} put into {1} performances!', 'char': ['enoshima_mukuro']},
     'Adventurer': {'desc': '! Well, who doesn\'t love discovering lands unknown?', 'char': ['amami_rantaro']}, # PLACEHOLDER UNTIL ALEX BEATS DRV3
-    'Affluent Progeny': {'desc': '. Heir to the world\'s elite, {0} are destined to rule the world from the shadows.', 'char': ['togami_byakuya', 'imposter']},
+    'Affluent Progeny': {'desc': '. Heir to the world\'s elite, {0} are destined to rule the world from the shadows.', 'char': ['togami_byakuya', 'imposter'],  'colors': {'bottom': (255, 245, 107), 'middle': (222, 175, 35), 'top': (223, 163, 32), 'name': (194, 120, 39)}},
     'Akido Master': {'desc': '! Hi-yah!', 'char': ['chabashira_tenko']},
     'Analyst': {'desc': '. {7} can dissect any situation and see things most other people can\'t.', 'char': ['kiibo', 'nanami_chiaki', 'saihara_shuichi']},
     'Angler': {'desc': '. No one really gets how to gut a fish quite like {0}.', 'char': ['yonaga_angie', 'owari_akane']},
