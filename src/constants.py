@@ -482,7 +482,7 @@ WEATHER_WIND_DIRECTIONS = {
 
 # Globals for the eval function
 import math
-import util
+from src import util
 
 EVAL_GLOBALS = {
     # Math overall
@@ -558,6 +558,13 @@ LINUX_IP_PREFIXES = ['lo', 'eth0']
 PFP_SIZE_PREFIX = '?size='
 PFP_FILETYPE = '.webp'
 PFP_DEFAULT_SIZE = 1024
+
+NONDECIMAL_BASES = {
+    '0x': [16, 'hexadecimal'],
+    '0d': [12, 'duodecimal'],
+    '0o': [8, 'octal'],
+    '0b': [2, 'binary']
+}
 
 # Help message
 HELP_MSG = '''```

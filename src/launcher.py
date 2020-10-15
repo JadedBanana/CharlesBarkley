@@ -13,7 +13,6 @@ else:
     os.chdir('/home/pi/Jadi3Pi')
 
 # Next, import cron and get the current cronstring.
-import cron
 cronstr_1 = cron.get_cronstring()
 
 # If there isn't a cronstr, we try again a second later.
@@ -35,5 +34,6 @@ if cronstr_1:
         exit(0)
 
 # If it passed, we continue.
-import bot
+from src import bot
+
 bot.launch(on_windows)

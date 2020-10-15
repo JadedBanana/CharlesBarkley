@@ -1,7 +1,7 @@
 # Utility logging file
 # Imports
 from datetime import datetime
-import constants
+from src import constants
 import threading
 import os
 

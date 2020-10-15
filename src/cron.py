@@ -1,5 +1,5 @@
 import os.path as path
-import constants
+from src import constants
 import threading
 import random
 
