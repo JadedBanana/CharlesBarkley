@@ -586,7 +586,8 @@ class JadieClient(discord.Client):
         talent_dict = constants.ULTIMATE_TALENTS[talent]
 
         # Gets the character.
-        character = random.choice(talent_dict['char'])
+        # character = random.choice(talent_dict['char'])
+        character = 'imposter'
         character_dict = constants.ULTIMATE_CHARACTER_ATTRIBUTES[character]
         if 'colors' not in character_dict:
             character_dict.update({'colors': {'bottom': (255, 255, 255), 'middle': (255, 255, 255), 'top': (255, 255, 255), 'name': (128, 128, 128)}})
@@ -601,7 +602,6 @@ class JadieClient(discord.Client):
         background_bottom = Image.open(constants.ULTIMATE_BACKGROUND_BOTTOM)
         background_middle = Image.open(constants.ULTIMATE_BACKGROUND_MIDDLE)
         background_top = Image.open(constants.ULTIMATE_BACKGROUND_TOP)
-        # student_sprite = Image.open(os.path.join(constants.ULTIMATE_CHARACTER_FOLDER, random.choice(talent_dict['char']) + constants.ULTIMATE_SPRITE_FILETYPE))
         student_sprite = Image.open(os.path.join(constants.ULTIMATE_CHARACTER_FOLDER, character + constants.ULTIMATE_SPRITE_FILETYPE))
         user_name = Image.new('L', (1280, 720))
         user_colorchar = Image.new('L', (1280, 720))
@@ -648,7 +648,7 @@ class JadieClient(discord.Client):
 
         # Modifying / customizing the ultimate colors to better fit the talent.
         background_bottom = ImageOps.colorize(background_bottom.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['bottom'] if 'colors' in talent_dict else character_dict['colors']['bottom'])
-        background_middle_2 = ImageOps.colorize(background_middle.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['middle'] if 'colors' in talent_dict else character_dict['colors']['middle'])
+        background_middle_2 = ImageOps.colorize(background_middle.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['middle'] if 'colors' in talent_dict else character_dict['colors']['middle']).convert('RGB')
         background_top_2 = ImageOps.colorize(background_top.convert('L'), black=(0, 0, 0), white=(255, 255, 255), mid=talent_dict['colors']['top'] if 'colors' in talent_dict else character_dict['colors']['top'])
         student_sprite_black = ImageOps.colorize(student_sprite.convert('L'), black=(0, 0, 0), white=(0, 0, 0))
         user_colorchar_c = ImageOps.colorize(user_colorchar.convert('L'), black=(0, 0, 0), white=talent_dict['colors']['name'] if 'colors' in talent_dict else character_dict['colors']['name'])
