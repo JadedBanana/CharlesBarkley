@@ -87,7 +87,7 @@ class JadieClient(discord.Client):
             'business': fun_commands.business_only, 'businessonly': fun_commands.business_only,
             'ultimate': fun_commands.ultimate, 'talent': fun_commands.ultimate,
             'shsl': fun_commands.shsl,
-            'hungergames': fun_commands.hunger_games, 'hg': fun_commands.hunger_games, 'hunger': fun_commands.hunger_games, 'hungry': fun_commands.hunger_games
+            'hungergames': fun_commands.hunger_games_start, 'hg': fun_commands.hunger_games_start, 'hunger': fun_commands.hunger_games_start, 'hungry': fun_commands.hunger_games_start
         }
 
         # Sets the developer command_dict
@@ -168,9 +168,12 @@ class JadieClient(discord.Client):
 
         # Reactive commands (will return True if method should return now)
         # =================================================================
-        if await fun_commands.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict
+        if str(message.channel) in self.curr_hg:
+            if await fun_commands.hunger_games_update(self, message, is_in_guild): # Hunger games
+                return
+        elif await fun_commands.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
             return
-        if author_is_developer and self.reboot_confirmation:
+        if author_is_developer and self.reboot_confirmation: # Reboot confirmation is dev-only
             await dev_commands.confirm_reboot(self, message, is_in_guild)
 
         # Prompted commands

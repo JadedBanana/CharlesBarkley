@@ -69,17 +69,17 @@ ULTIMATE_CHARACTER_ATTRIBUTES = {
     'hinata_hajime': {'colors': {'bottom': (154, 160, 108), 'middle': (195, 183, 134), 'top': (128, 128, 0), 'name': (103, 111, 46)}},
     'hoshi_ryoma': {'colors': {'bottom': (27, 27, 34), 'middle': (42, 33, 204), 'top': (92, 113, 168), 'name': (23, 83, 244)}},
     'ikusaba_mukuro': {'colors': {'bottom': (235, 210, 192), 'middle': (106, 88, 66), 'top': (76, 53, 78), 'name': (130, 79, 134)}},
-    'imposter': {'colors': {'bottom': (255, 245, 107), 'middle': (222, 175, 35), 'top': (223, 163, 32), 'name': (194, 120, 39)}},
-    'iruma_miu': {},
-    'ishimaru_kiyotaka': {},
-    'kiibo': {},
-    'kirigiri_kyoko': {},
-    'koizumi_mahiru': {},
-    'komaeda_nagito': {},
-    'kuwata_leon': {},
-    'kuzuryu_fuyuhiko': {},
-    'ludenberg_celestia': {},
-    'maizono_sayaka': {},
+    'imposter': {'colors': {'bottom': (249, 235, 174), 'middle': (222, 175, 35), 'top': (68, 108, 108), 'name': (61, 132, 132)}},
+    'iruma_miu': {'colors': {'bottom': (255, 56, 228), 'middle': (245, 222, 242), 'top': (65, 249, 248), 'name': (233, 1, 182)}},
+    'ishimaru_kiyotaka': {'colors': {'bottom': (0, 70, 177), 'middle': (3, 26, 59), 'top': (228, 228, 228), 'name': (156, 121, 119)}},
+    'kiibo': {'colors': {'bottom': (128, 128, 128), 'middle': (99, 224, 101), 'top': (51, 51, 50), 'name': (34, 250, 54)}},
+    'kirigiri_kyoko': {'colors': {'bottom': (157, 107, 160), 'middle': (192, 128, 196), 'top': (89, 73, 90), 'name': (193, 81, 200)}},
+    'koizumi_mahiru': {'colors': {'bottom': (227, 89, 30), 'middle': (233, 149, 74), 'top': (236, 142, 109), 'name': (227, 89, 30)}},
+    'komaeda_nagito': {'colors': {'bottom': (246, 255, 239), 'middle': (46, 54, 40), 'top': (100, 186, 42), 'name': (94, 143, 61)}},
+    'kuwata_leon': {'colors': {'bottom': (213, 75, 26), 'middle': (233, 149, 74), 'top': (206, 100, 63), 'name': (227, 89, 30)}},
+    'kuzuryu_fuyuhiko': {'colors': {'bottom': (192, 192, 192), 'middle': (59, 59, 59), 'top': (191, 171, 114), 'name': (137, 137, 137)}},
+    'ludenberg_celestia': {'colors': {'bottom': (215, 215, 215), 'middle': (59, 59, 59), 'top': (216, 30, 11), 'name': (199, 49, 34)}},
+    'maizono_sayaka': {'colors': {'bottom': (255, 153, 222), 'middle': (243, 121, 183), 'top': (214, 62, 139), 'name': (214, 62, 127)}},
     'mioda_ibuki': {},
     'momota_kaito': {},
     'naegi_makoto': {},
@@ -97,7 +97,7 @@ ULTIMATE_CHARACTER_ATTRIBUTES = {
     'shirogane_tsumugi': {},
     'soda_kazuichi': {},
     'tanaka_gundham': {},
-    'togami_byakuya': {},
+    'togami_byakuya': {'colors': {'bottom': (65, 86, 53), 'middle': (69, 115, 43), 'top': (223, 163, 32), 'name': (194, 120, 39)}},
     'tojo_kirumi': {},
     'tsumiki_mikan': {},
     'yamada_hifumi': {},
@@ -128,11 +128,11 @@ ULTIMATE_TALENTS = {
     'Adventurer': {'desc': '! Well, who doesn\'t love discovering lands unknown?', 'char': ['amami_rantaro']}, # PLACEHOLDER UNTIL ALEX BEATS DRV3
     'Affluent Progeny': {'desc': '. Heir to the world\'s elite, {0} are destined to rule the world from the shadows.', 'char': ['togami_byakuya', 'imposter'],  'colors': {'bottom': (255, 245, 107), 'middle': (222, 175, 35), 'top': (223, 163, 32), 'name': (194, 120, 39)}},
     'Akido Master': {'desc': '! Hi-yah!', 'char': ['chabashira_tenko']},
-    'Analyst': {'desc': '. {7} can dissect any situation and see things most other people can\'t.', 'char': ['kiibo', 'nanami_chiaki', 'saihara_shuichi']},
+    'Analyst': {'desc': '. {7} can dissect any situation and see things most other people can\'t.', 'char': ['kiibo', 'nanami_chiaki', 'saihara_shuichi', 'kirigiri_kyoko']},
     'Angler': {'desc': '. No one really gets how to gut a fish quite like {0}.', 'char': ['yonaga_angie', 'owari_akane']},
     'Animator': {'desc': '! Don\'t forget! Anime is art!', 'char': ['imposter']},
     'Anthropologist': {'desc': '. {7} know more about the Salem Witch Trials than anyone else on Earth.', 'char': ['shinguji_korekiyo']},
-    'Archer': {'desc': '! {9} like Hawkeye up in here!', 'char': ['pekoyama_peko', 'ikusaba_mukuro']},
+    'Archer': {'desc': '! {9} like Hawkeye up in here!', 'char': ['pekoyama_peko']},
     'Architect': {'desc': '. {8} houses are absolutely exquisite.', 'char': ['ludenberg_celestia']},
     'Artist': {'desc': '! Pretty colors and lifelike statues are {1} whole deal!', 'char': ['yonaga_angie']},
     'Assassin': {'desc': '. Here\'s the target. You have 24 hours.', 'char': ['pekoyama_peko', 'ikusaba_mukuro']}, # PLACEHOLDER UNTIL ALEX BEATS DRV3
@@ -456,6 +456,17 @@ HG_TORNADO_EVENT = {
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
+HG_MIN_GAMESIZE = 2
+HG_MAX_GAMESIZE = 48
+HG_PLAYERNAME_FONT = 'assets/arial_bold.ttf'
+HG_NORMAL_FONT = 'assets/arial.ttf'
+HG_BACKGROUND_COLOR = (93, 80, 80)
+HG_EMBED_COLOR = (251 << 16) + (130 << 8)
+HG_ICON_SIZE = 128
+HG_ICON_BUFFER = 25
+HG_PREGAME_TITLE = 'The Reaping'
+HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed\t\tC: Cancel'
 
 # Weather constants
 WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'

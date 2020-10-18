@@ -153,7 +153,7 @@ def get_multi_index(source, arg):
     # Returns.
     return all_indexes
 
-def get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=None):
+def get_closest_users(message, argument, is_in_guild, exclude_bots=False, exclude_users=None, limit=None):
     """
     Gets the closest user to the given argument. Returns list of users.
     """
@@ -175,7 +175,7 @@ def get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=
 
     # Otherwise, we search through the users and try to find matching strings.
     # First, we get a list of all users.
-    all_users = get_applicable_users(message, is_in_guild, exclude_bots=exclude_bots)
+    all_users = get_applicable_users(message, is_in_guild, exclude_bots, exclude_users)
 
     # Then, we iterate through each argument and find the closest user.
     # This is prioritized as:

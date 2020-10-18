@@ -3,8 +3,8 @@
 # =================================================================
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
 from datetime import datetime, timedelta
-from src.exceptions import *
 from src import constants, util
+from src.exceptions import *
 import wikipedia
 import datetime
 import discord
@@ -68,7 +68,7 @@ async def copy_user(self, message, argument, is_in_guild):
             continue
 
         # Other.
-        await message.channel.send('Now copying user ' + (user.nick if user.nick else str(user)))
+        await message.channel.send('Now copying user ' + (user.nick if user.nick else user.name))
         if user not in self.copied_users[copied_key]:
             self.copied_users[copied_key].append(user)
             log.info(util.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', now copying')
@@ -101,7 +101,6 @@ async def uwuify(self, message, argument, is_in_guild, use_owo=False):
     Weplaces all the r's in a message with w's.
     Lol.
     """
-
     def do_uwu_replace(text):
         """
         Method for advanced replacement, so that we avoid replacing characters in emotes.
@@ -339,7 +338,7 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
 
     # Gets the character.
     # character = random.choice(talent_dict['char'])
-    character = 'imposter'
+    character = 'maizono_sayaka'
     character_dict = constants.ULTIMATE_CHARACTER_ATTRIBUTES[character]
     if 'colors' not in character_dict:
         character_dict.update({'colors': {'bottom': (255, 255, 255), 'middle': (255, 255, 255), 'top': (255, 255, 255), 'name': (128, 128, 128)}})
@@ -435,7 +434,7 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
 
 
 async def shsl(self, message, argument, is_in_guild):
-    await self.ultimate(message, argument, is_in_guild, True)
+    await ultimate(self, message, argument, is_in_guild, True)
 
 
 async def randomyt(self, message, argument, is_in_guild):
@@ -509,40 +508,303 @@ async def randomwiki(self, message, argument, is_in_guild):
     await message.channel.send(wiki_page.url)
 
 
-async def hunger_games(self, message, argument, is_in_guild):
+def hunger_games_generate_player_statuses(players):
+    """
+    Generates a player status image.
+    The players should be a 2-dimensional list with each entry as:
+    1. User (user class)
+    2. Status (bool, alive = True, dead = False)
+    """
+    # Splits all the players into their own rows.
+    players_split = []
+    current_split = []
+    for player in players:
+        if len(current_split) == constants.HG_PLAYERSTATUS_WIDTHS[len(players)]:
+            players_split.append(current_split)
+            current_split = []
+        current_split.append(player)
+    players_split.append(current_split)
+
+    # Preps to draw.
+    image_width = constants.HG_ICON_SIZE * len(players_split[0]) + constants.HG_ICON_BUFFER * (len(players_split[0]) + 1)
+    image_height = 172 * len(players_split) + constants.HG_ICON_BUFFER * (len(players_split) + 1)
+    player_statuses = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
+    player_drawer = ImageDraw.Draw(player_statuses)
+    player_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=16)
+
+    # Draws each row, one after another.
+    current_y = constants.HG_ICON_BUFFER
+    for split in players_split:
+        current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
+        for player in split:
+            # Gets pfp, pastes onto image.
+            player_pfp = util.get_profile_picture(player[0])[0]
+            player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
+            player_statuses.paste(player_pfp, (current_x, current_y))
+
+            # Writes name and status.
+            player_name = player[0].nick if player[0].nick else player[0].name
+            # If the name is too long, we put a ... at the end (thx alex!!!!!)
+            if player_font.getsize(player_name)[0] > constants.HG_ICON_SIZE:
+                while player_font.getsize(player_name + '...')[0] > constants.HG_ICON_SIZE:
+                    player_name = player_name[:-1]
+                player_name+= '...'
+            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2), current_y + constants.HG_ICON_SIZE + 6), player_name, font=player_font, fill=(255, 255, 255))
+            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize('Alive' if player[1] else 'Deceased')[0] / 2), current_y + constants.HG_ICON_SIZE + 28), 'Alive' if player[1] else 'Deceased', font=player_font, fill=(0, 255, 0))
+
+            # Draws border around player icons.
+            player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
+
+            # Adds to current_x.
+            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
+
+        # Adds to current_y.
+        current_y+= 172 + constants.HG_ICON_BUFFER
+
+    return player_statuses
+
+
+async def hunger_games_send_pregame(message, players, title, uses_bots):
+    """
+    Sends the pregame roster thing.
+    """
+    # Creates embed.
+    embed = discord.Embed(title=title, colour=constants.HG_EMBED_COLOR)
+    embed.set_footer(text=constants.HG_PREGAME_DESCRIPTION.format('Disallow' if uses_bots else 'Allow'))
+
+    # Has image created.
+    player_statuses = hunger_games_generate_player_statuses([(player, True) for player in players])
+    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'player_statuses.png')
+    player_statuses.save(current_playerstatus_filepath)
+    file = discord.File(current_playerstatus_filepath, filename='player_statuses.png')
+
+    # Sends image, logs.
+    embed.set_image(url='attachment://player_statuses.png')
+    await message.channel.send(file=file, embed=embed)
+
+
+async def hunger_games_shuffle(self, message, is_in_guild, player_count, uses_bots):
+    """
+    Shuffles a pregame hunger games cast.
+    """
+    # Get the user list.
+    user_list = util.get_applicable_users(message, is_in_guild, not uses_bots)
+    if len(user_list) < constants.HG_MIN_GAMESIZE:
+        self.curr_hg.pop(str(message.channel))
+        await message.channel.send('Not enough users in server.')
+        log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+
+    # Otherwise, we generate the players and ask if we should proceed.
+    else:
+        # Get the players.
+        hg_players = []
+        for i in range(min(player_count, len(user_list))):
+            next_player = random.choice(user_list)
+            hg_players.append(next_player)
+            user_list.remove(next_player)
+
+        # Set in players and actions.
+        hg_full_game = {'players': hg_players, 'generated': False, 'uses_bots': uses_bots}
+        self.curr_hg[str(message.channel)] = hg_full_game
+
+        # Send the updated cast
+        await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
+        log.debug(util.get_comm_start(message, is_in_guild) + 'shuffled Hunger Games instance with {} players'.format(player_count))
+
+
+async def hunger_games_update(self, message, is_in_guild):
+    """
+    Updates a hunger games dict.
+    """
+    hg_dict = self.curr_hg[str(message.channel)]
+    response = message.content.lower()
+
+    # If the game is already generated.
+    if hg_dict['generated']:
+        pass
+
+    # The game is not yet generated.
+    else:
+        # Shuffle command (but of a different size).
+        if any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ', 's ', 'shuffle ']]):
+            try:
+                player_count = int(response.split(' ')[1])
+                if player_count > constants.HG_MAX_GAMESIZE:
+                    player_count = constants.HG_MAX_GAMESIZE
+                elif player_count < constants.HG_MIN_GAMESIZE:
+                    player_count = constants.HG_MIN_GAMESIZE
+            except ValueError:
+                player_count = len(hg_dict['players'])
+            await hunger_games_shuffle(self, message, is_in_guild, player_count, uses_bots=hg_dict['uses_bots'])
+
+        # Shuffle command.
+        elif any([response == 's', response == 'shuffle', response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
+            await hunger_games_shuffle(self, message, is_in_guild, len(hg_dict['players']), uses_bots=hg_dict['uses_bots'])
+
+        # Replace command.
+        elif any([response == 'r', response == 'replace', response.startswith('r '), response.startswith('replace ')]):
+            pass
+
+        # Add command.
+        elif any([response == 'a', response == 'add']):
+            # Cancels if the game is already max size.
+            if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
+                await message.channel.send('Max size already reached.')
+                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
+            else:
+                # Cancels if no more members to add to game.
+                able_users = util.get_applicable_users(message, is_in_guild, hg_dict['uses_bots'], hg_dict['players'])
+                if not able_users:
+                    await message.channel.send('No more users not already in the game.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, no more users')
+                # Otherwise, goes on.
+                else:
+                    added_player = random.choice(able_users)
+                    hg_dict['players'].append(added_player)
+                    await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
+
+        # Add command, but specific user
+        elif any([response.startswith('a '), response.startswith('add ')]):
+            # Cancels if the game is already max size.
+            if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
+                await message.channel.send('Max size already reached.')
+                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
+            else:
+                # Attempts to add a player.
+                try:
+                    added_player = util.get_closest_users(message, response[2:] if response.startswith('a ') else response[4:], is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
+                except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
+                    await message.channel.send('Invalid user.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
+                    return
+                if added_player in hg_dict['players']:
+                    await message.channel.send('User already in the game.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, already there')
+                else:
+                    hg_dict['players'].append(added_player)
+                    await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
+
+        # Delete command.
+        elif any([response == 'd', response == 'del', response == 'delete']):
+            # Cancels if the game is already min size.
+            if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
+                await message.channel.send('Min size already reached.')
+                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
+            else:
+                # Removes player on the end.
+                removed_player = hg_dict['players'].pop(-1)
+                await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
+                log.debug(util.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
+
+        # Delete command, but specific user
+        elif any([response.startswith('d '), response.startswith('del '), response.startswith('delete ')]):
+            # Cancels if the game is already min size.
+            if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
+                await message.channel.send('Min size already reached.')
+                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
+            else:
+                # Attempts to find player.
+                try:
+                    removed_player = util.get_closest_users(message, response[2:] if response.startswith('a ') else response[4:], is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
+                except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
+                    await message.channel.send('Invalid user.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, invalid')
+                    return
+                if removed_player in hg_dict['players']:
+                    hg_dict['players'].remove(removed_player)
+                    await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'removed a player from Hunger Games instance')
+                else:
+                    await message.channel.send('User not in the game.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, not there')
+
+        # Allow / disallow bots command.
+        elif any([response == 'b', response == 'disallow bots', response == 'allow bots', response == 'allow', response == 'disallow']):
+            if hg_dict['uses_bots']:
+                # Cancels if not enough non-bots
+                hg_players_no_bots = hg_dict['players'].copy()
+                while any([player.bot for player in hg_players_no_bots]):
+                    for player in hg_players_no_bots:
+                        if player.bot:
+                            hg_players_no_bots.remove(player)
+                while len(hg_players_no_bots) < constants.HG_MIN_GAMESIZE:
+                    other_players = util.get_applicable_users(message, is_in_guild, True, hg_players_no_bots)
+                    if other_players:
+                        hg_players_no_bots.append(random.choice(other_players))
+                    else:
+                        await message.channel.send('Not enough non-bots to disallow bots.')
+                        log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove bots from Hunger Games instance, not enough users')
+                        return
+                # Allows it.
+                hg_dict['uses_bots'] = False
+                hg_dict['players'] = hg_players_no_bots
+                await hunger_games_send_pregame(message, hg_dict['players'], 'Removed bots from the game.', hg_dict['uses_bots'])
+                log.debug(util.get_comm_start(message, is_in_guild) + 'removed bots from Hunger Games instance')
+            else:
+                hg_dict['uses_bots'] = True
+                await hunger_games_send_pregame(message, hg_dict['players'], 'Allowed bots into the game.', hg_dict['uses_bots'])
+                log.debug(util.get_comm_start(message, is_in_guild) + 'added bots to Hunger Games instance')
+
+        # Proceed command.
+        elif any([response == 'p', response == 'proceed']):
+            pass
+
+        # Cancel command.
+        elif any([response == 'c', response == 'cancel']):
+            pass
+    pass
+
+
+async def hunger_games_start(self, message, argument, is_in_guild):
     """
     Creates a hunger games simulator right inside the bot.
     """
     hg_key = str(message.channel)
 
     # If a game is already in progress, we forward this message.
-    if hg_key in self.curr_hg.keys():
-        await self.hunger_games_update(hg_key)
+    if hg_key in self.curr_hg.keys() and not self.curr_hg[hg_key]['generated']:
+        await hunger_games_update(message)
 
     else:
-        # Get the user list. If user list is < 24 people, we add bots as well.
+        # Gets argument for how many users to start hg with.
+        if argument:
+            try:
+                player_count = int(argument)
+                if player_count > constants.HG_MAX_GAMESIZE:
+                    player_count = constants.HG_MAX_GAMESIZE
+                elif player_count < constants.HG_MIN_GAMESIZE:
+                    player_count = constants.HG_MIN_GAMESIZE
+            except ValueError:
+                player_count = 24
+        else:
+            player_count = 24
+
+        # Get the user list. If user list is < player_count people, we add bots as well.
         user_list = util.get_applicable_users(message, is_in_guild, True)
-        if len(user_list) < 24:
+        uses_bots = False
+        if len(user_list) < player_count:
             user_list = util.get_applicable_users(message, is_in_guild, False)
+            uses_bots = True
         # If there still aren't enough users, we send error.
-        if len(user_list) < 2:
+        if len(user_list) < constants.HG_MIN_GAMESIZE:
             await message.channel.send('Not enough users in server.')
             log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
 
-        # Otherwise, we generate the entire game.
+        # Otherwise, we generate the players and ask if we should proceed.
         else:
             # Get the players.
             hg_players = []
-            for i in range(min(24, len(user_list))):
+            for i in range(min(player_count, len(user_list))):
                 next_player = random.choice(user_list)
                 hg_players.append(next_player)
                 user_list.remove(next_player)
 
-            await message.channel.send(str([u.name for u in hg_players]))
-
             # Set in players and actions.
-            hg_full_game = {'players': hg_players, 'generated': False}
+            hg_full_game = {'players': hg_players, 'generated': False, 'uses_bots': uses_bots}
+            self.curr_hg.update({hg_key: hg_full_game})
 
-
-async def hunger_games_update(self, channel):
-    pass
+            # Send the initial cast
+            await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
+            log.debug(util.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
