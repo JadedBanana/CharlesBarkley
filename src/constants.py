@@ -80,9 +80,9 @@ ULTIMATE_CHARACTER_ATTRIBUTES = {
     'kuzuryu_fuyuhiko': {'colors': {'bottom': (192, 192, 192), 'middle': (59, 59, 59), 'top': (191, 171, 114), 'name': (137, 137, 137)}},
     'ludenberg_celestia': {'colors': {'bottom': (215, 215, 215), 'middle': (59, 59, 59), 'top': (216, 30, 11), 'name': (199, 49, 34)}},
     'maizono_sayaka': {'colors': {'bottom': (255, 153, 222), 'middle': (243, 121, 183), 'top': (214, 62, 139), 'name': (214, 62, 127)}},
-    'mioda_ibuki': {},
-    'momota_kaito': {},
-    'naegi_makoto': {},
+    'mioda_ibuki': {'colors': {'bottom': (207, 240, 255), 'middle': (44, 103, 131), 'top': (206, 95, 199), 'name': (157, 82, 152)}},
+    'momota_kaito': {'colors': {'bottom': (92, 91, 92), 'middle': (254, 245, 255), 'top': (206, 95, 199), 'name': (157, 82, 152)}},
+    'naegi_makoto': {'colors': {'bottom': (255, 207, 189), 'middle': (254, 245, 255), 'top': (115, 126, 93), 'name': (128, 156, 72)}},
     'nanami_chiaki': {},
     'nevermind_sonia': {},
     'nidai_nekomaru': {},
@@ -260,7 +260,6 @@ ULTIMATE_SPRITE_X = 265
 # Hunger Games
 # =================DEBUG==================
 # 0: nothing
-# 1000: any item (for triggers)
 # 3000: 1 - 3 random items
 # 4000: 1 weapon, 1 food item, 1 health item
 # 8888: make net from rope, give food
@@ -278,6 +277,8 @@ ULTIMATE_SPRITE_X = 265
 # 10: net
 # 11: molotov cocktail
 # 12: bow
+# 13: poison
+# 14: scissors
 # ==================FOOD=================
 # 101: clean water
 # 102: river water
@@ -292,20 +293,30 @@ ULTIMATE_SPRITE_X = 265
 # 302: camouflage
 # 303: cave
 # 304: high ground
-HG_BEGINNING_ACTIONS = [
+HG_WEAPON_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+HG_FOOD_ITEMS = [101, 102, 103, 104]
+HG_HEALTH_ITEMS = [201, 202, 203]
+HG_ALL_ITEMS = HG_WEAPON_ITEMS + HG_FOOD_ITEMS + HG_HEALTH_ITEMS
+HG_BLOODBATH_ACTIONS = [
+    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
     {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
     {'players': 0, 'act': '{0} grabs a sword.', 'give': [2]},
     {'players': 0, 'act': '{0} takes a spear from the Cornucopia.', 'give': [3]},
     {'players': 0, 'act': '{0} finds a bag full of explosives.', 'give': [4]},
     {'players': 0, 'act': '{0} grabs a backpack and retreats.', 'give': [4000]},
+    {'players': 0, 'act': '{0} takes only a pair of scissors.', 'give': [14]},
     {'players': 0, 'act': '{0} takes a handful of throwing knives.', 'give': [5]},
     {'players': 0, 'act': '{0} accidentally steps on a landmine and explodes.', 'kill': [0]},
     {'players': 0, 'act': '{0} grabs a bottle of alcohol and a rag.', 'give': [11]},
     {'players': 0, 'act': '{0} grabs a first aid kit and runs away.', 'give': [203]},
     {'players': 0, 'act': '{0} grabs a bow and makes a getaway.', 'give': [12]},
+    {'players': 0, 'act': '{0} stubs their toe on a grenade. It explodes, killing them.', 'kill': [0]},
+    {'players': 0, 'act': '{0} escapes with a lighter and some rope.', 'give': [8]},
     {'players': 1, 'act': '{0} rips a mace out of {1}\'s hands.', 'give': [1, 0]},
     {'players': 1, 'act': '{0} throws a knife into {1}\'s head.', 'kill': [1]},
     {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1]},
+    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1]},
+    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1]},
     {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.', 'give': [3000, 3000, 3000]},
     {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2]},
     {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2]}
@@ -318,11 +329,12 @@ HG_NORMAL_DAY_ACTIONS = {
         {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with a sword.', 'kill': [1]}, {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
         {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]}, {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'give': [-3, 0]}]},
         {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. An hour later, {1} steps on it and explodes.', 'kill': [1], 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from their explosives.'}, {'players': 0, 'act': '{0} attempts to create a landmine from their explosives, but blows themselves up in the process.', 'kill': [0]}]},
-        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.', 'kill': [1], 'give': [-5, 0]}, {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and throws it back at {0}, killing them.', 'kill': [0], 'give': [-5, 0], 'injure': [1]}]},
+        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.', 'kill': [1], 'give': [-5, 0]}, {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and throws it back at {0}, killing them.', 'kill': [0], 'give': [-5, 0], 'hurt': [1]}]},
         {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.', 'kill': [1]}]},
         {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a tree, killing them.', 'kill': [1]}]},
         {'needs': 8, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a net from their rope, which they use to catch food.', 'give': [8888]}]},
         {'needs': 12, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [{'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1]}, {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.', 'give': [-12, 0]}]},
+        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and die.', 'give': [-13, 0]}]},
         {'needs': 301, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.', 'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
         {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.', 'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
         {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food to get {1} to kill {2}.', 'kill': [2], 'give': [-103, 0, 0]}]}
@@ -344,16 +356,17 @@ HG_NORMAL_DAY_ACTIONS = {
         {'players': 0, 'act': '{0} eats some berries.'},
         {'players': 0, 'act': '{0} makes a wooden spear.', 'give': [3]},
         {'players': 0, 'act': '{0} picks flowers.'},
-        {'players': 0, 'act': '{0} is stung by bees.', 'injure': [0]},
-        {'players': 0, 'act': '{0} is pricked by thorns while picking berries.', 'injure': [0]},
+        {'players': 0, 'act': '{0} is stung by bees.', 'hurt': [0]},
+        {'players': 0, 'act': '{0} is pricked by thorns while picking berries.', 'hurt': [0]},
         {'players': 0, 'act': '{0} finds some rope.', 'give': [8]},
+        {'players': 0, 'act': '{0} receives a bottle of poison from an unknown sponsor.', 'give': [13]},
         {'players': 0, 'act': '{0} eats some poisonous berries by accident.', 'kill': [0]},
-        {'players': 1, 'act': '{0} uses a rock to break {1}\'s arm.', 'injure': [1]},
+        {'players': 1, 'act': '{0} uses a rock to break {1}\'s arm.', 'hurt': [1]},
         {'players': 1, 'act': '{0} and {1} split up to look for resources.'},
-        {'players': 1, 'act': '{0} sprains their ankle while running away from {1}.', 'injure': [0]},
+        {'players': 1, 'act': '{0} sprains their ankle while running away from {1}.', 'hurt': [0]},
         {'players': 1, 'act': '{0} and {1} work together for the day.'},
         {'players': 1, 'act': '{0} tracks down and kills {1}.', 'kill': [1]},
-        {'players': 1, 'act': '{0} defeats {1} in a fight, but spares their life.', 'injure': [1]},
+        {'players': 1, 'act': '{0} defeats {1} in a fight, but spares their life.', 'hurt': [1]},
         {'players': 1, 'act': '{0} begs for {1} to kill them. They refuse, keeping {0} alive.'},
         {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1]},
         {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.', 'kill': [0, 1]},
@@ -367,12 +380,13 @@ HG_NORMAL_DAY_ACTIONS = {
 HG_NORMAL_NIGHT_ACTIONS = {
     'trigger': [
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'}, {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}], 'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
-        {'wounded': True, 'needs': 203, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'unwound': [0], 'give': [-203]}]},
-        {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'unwound': [0], 'give': [-201]}]},
-        {'wounded': True, 'needs': 202, 'chance': 0.5, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'unwound': [0], 'give': [-202]}]},
-        {'wounded': True, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'unwound': [0], 'give': [-202]}], 'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
+        {'wounded': True, 'needs': 203, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
+        {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-201]}]},
+        {'wounded': True, 'needs': 202, 'chance': 0.5, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}]},
+        {'wounded': True, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}], 'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
         {'needs': 303, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} is mauled to death by a bear that was living in the cave they found.', 'kill': [0]}, {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0]}], 'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': -301}]},
         {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.', 'kill': [1]}]},
+        {'needs': 14, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1]}]},
         {'needs': 104, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]}
     ],
     'normal': [
@@ -456,17 +470,25 @@ HG_TORNADO_EVENT = {
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
+# Pregame
 HG_MIN_GAMESIZE = 2
 HG_MAX_GAMESIZE = 48
+HG_PREGAME_TITLE = 'The Reaping'
+HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed\t\tC: Cancel'
+# Graphics
+HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+HG_PLAYERSTATUS_ROWHEIGHT = 172
 HG_PLAYERNAME_FONT = 'assets/arial_bold.ttf'
-HG_NORMAL_FONT = 'assets/arial.ttf'
-HG_BACKGROUND_COLOR = (93, 80, 80)
-HG_EMBED_COLOR = (251 << 16) + (130 << 8)
+HG_ACTION_ROWHEIGHT = 175
+HG_FONT_SIZE = 16
 HG_ICON_SIZE = 128
 HG_ICON_BUFFER = 25
-HG_PREGAME_TITLE = 'The Reaping'
-HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
-HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed\t\tC: Cancel'
+HG_TEXT_BUFFER = 6
+HG_BACKGROUND_COLOR = (93, 80, 80)
+HG_ACTION_PLAYER_COLOR = (251, 130, 0)
+HG_EMBED_COLOR = (251 << 16) + (130 << 8)
+# Chances
+HG_EVENT_DEFAULT_CHANCE = 0.15
 
 # Weather constants
 WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'
@@ -526,6 +548,7 @@ EVAL_GLOBALS = {
 }
 
 # Shipping
+SHIP_EMBED_COLOR = (221 << 16) + (115 << 8) + 215
 SHIP_HEART_IMG = 'assets/heart.png'
 SHIP_ICON_SIZE = 128
 SHIP_MESSAGES = [

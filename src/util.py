@@ -318,12 +318,15 @@ def get_closest_users(message, argument, is_in_guild, exclude_bots=False, exclud
 
     return pointed_users
 
-def get_profile_picture(user):
+def get_profile_picture(user, already_id=False):
     """
     Gets the profile picture for a user.
     """
     # The path for the image.
-    image_locale = os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
+    if already_id:
+        image_locale = os.path.join(constants.TEMP_DIR, str(user) + constants.PFP_FILETYPE)
+    else:
+        image_locale = os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
     # If the image exists, we just open that.
     if os.path.isfile(image_locale):
         return Image.open(image_locale), image_locale
