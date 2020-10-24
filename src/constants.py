@@ -414,7 +414,10 @@ HG_NORMAL_NIGHT_ACTIONS = {
         {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5]}
     ]
 }
-HG_RESTOCK_ACTIONS = {
+HG_RESTOCK_EVENT = {
+    'trigger': [
+
+    ],
     'normal': [
         {'players': 0, 'act': '{0} decides not to go to the feast.'},
         {'players': 0, 'act': '{0} grabs a bundle of dry clothes and runs.'},
@@ -433,6 +436,7 @@ HG_FIRE_EVENT = {
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': 'A fireball strikes {0}, killing them.', 'kill': [0]},
+        {'players': 0, 'act': '{0} is singed by the flames, but survives.', 'hurt': [0]},
         {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
         {'players': 1, 'act': '{0} pushes {1} into a river, sacrificing themselves.', 'kill': [0]},
         {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.', 'kill': [0, 1]},
@@ -487,8 +491,16 @@ HG_TEXT_BUFFER = 6
 HG_BACKGROUND_COLOR = (93, 80, 80)
 HG_ACTION_PLAYER_COLOR = (251, 130, 0)
 HG_EMBED_COLOR = (251 << 16) + (130 << 8)
-# Chances
-HG_EVENT_DEFAULT_CHANCE = 0.15
+# Descriptions
+HG_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nC: Cancel Game'
+HG_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nC: Cancel Game'
+HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\tN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+# Events
+HG_EVENT_DEFAULT_CHANCE = 0.2
+HG_EVENTS = [(HG_FLOOD_EVENT, 'The Flood', 'A vicious flood suddenly appears out of nowhere and sweeps through the Arena.'), (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide forest fire.'), (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the Arena.'), (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')]
 
 # Weather constants
 WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'
