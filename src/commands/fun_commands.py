@@ -572,6 +572,8 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     """
     Displays count number of actions at once.
     """
+
+    print(action_text)
     # Makes the font
     action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
 
@@ -584,12 +586,15 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
         if ind == len(actions):
             break
+        # Tests for text boundaries
         full_action_text = actions[ind]['act']
         for ind2 in range(len(actions[ind]['players'])):
             full_action_text = full_action_text.replace('{' + str(ind2) + '}', actions[ind]['players'][ind2][1])
         text_width = action_font.getsize(full_action_text)[0]
         image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
         text_sizes.append(text_width)
+        # Tests for image boundaries
+        image_width = max(image_width, constants.HG_ICON_SIZE * len(actions[ind]['players']) + constants.HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
 
     # Preps to draw.
     action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
@@ -729,11 +734,14 @@ def hunger_games_generate_bloodbath(hg_dict):
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.'})
 
 
-def hunger_games_generate_normal_statuses(hg_dict, action_dict, title, desc=None):
+def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None):
     """
     Generates all the actions for each player in the a normal action round.
     """
-    player_actions = [uid for uid in hg_dict['statuses']]
+    player_actions = []
+    for uid in hg_dict['statuses']:
+        if not hg_dict['statuses'][uid]['dead']:
+            player_actions.append(uid)
     actions = []
 
     # Iterates through triggers.
@@ -815,13 +823,13 @@ async def hunger_games_generate_full_game(hg_dict, message):
         # Test for event.
         if daynight >= 4 and turns_since_event > 1 and random.random() < 1 - (1 - constants.HG_EVENT_DEFAULT_CHANCE)**turns_since_event:
             the_event = random.choice(constants.HG_EVENTS)
-            hunger_games_generate_normal_statuses(hg_dict, the_event[0], the_event[1], the_event[2])
+            hunger_games_generate_normal_actions(hg_dict, the_event[0], the_event[1], the_event[2])
             turns_since_event = 0
 
         # Otherwise, do day and night.
         else:
             # Day.
-            hunger_games_generate_normal_statuses(hg_dict, constants.HG_NORMAL_DAY_ACTIONS, 'Day {}'.format(daynight))
+            hunger_games_generate_normal_actions(hg_dict, constants.HG_NORMAL_DAY_ACTIONS, 'Day {}'.format(daynight))
 
             # Test for dead people.
             tie, continue_game = hunger_games_generate_detect_dead(hg_dict)
@@ -829,7 +837,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
                 break
 
             # Night.
-            hunger_games_generate_normal_statuses(hg_dict, constants.HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(daynight))
+            hunger_games_generate_normal_actions(hg_dict, constants.HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(daynight))
             daynight+= 1
 
             # Test for dead people.
@@ -847,13 +855,13 @@ async def hunger_games_generate_full_game(hg_dict, message):
     embed = discord.Embed(title='The Bloodbath, Action 1', colour=constants.HG_EMBED_COLOR)
     embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
 
-    action_image = hunger_games_makeimage_action(hg_dict['phases'][0]['act'], 0, 1)
-    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'player_statuses.png')
+    action_image = hunger_games_makeimage_action(hg_dict['phases'][0]['act'], 0, 1, False, hg_dict['phases'][0]['desc'])
+    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_statuses.png')
     action_image.save(current_playerstatus_filepath)
-    file = discord.File(current_playerstatus_filepath, filename='player_statuses.png')
+    file = discord.File(current_playerstatus_filepath, filename='hg_player_statuses.png')
 
     # Sends image, logs.
-    embed.set_image(url='attachment://player_statuses.png')
+    embed.set_image(url='attachment://hg_player_statuses.png')
     await message.channel.send(file=file, embed=embed)
 
     # Updates hunger games dict.
@@ -882,12 +890,12 @@ async def hunger_games_send_pregame(message, players, title, uses_bots):
 
     # Has image created.
     player_statuses = hunger_games_makeimage_player_statuses([(player.id, player.nick if player.nick else player.name, 0) for player in players])
-    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'player_statuses.png')
+    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_statuses.png')
     player_statuses.save(current_playerstatus_filepath)
-    file = discord.File(current_playerstatus_filepath, filename='player_statuses.png')
+    file = discord.File(current_playerstatus_filepath, filename='hg_player_statuses.png')
 
     # Sends image, logs.
-    embed.set_image(url='attachment://player_statuses.png')
+    embed.set_image(url='attachment://hg_player_statuses.png')
     await message.channel.send(file=file, embed=embed)
 
 
@@ -920,12 +928,11 @@ async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False
         action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])), colour=constants.HG_EMBED_COLOR)
         embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-        player_statuses = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous)
+        player_statuses = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
         current_hg_action_filepath = os.path.join(constants.TEMP_DIR, 'hg_action.png')
         player_statuses.save(current_hg_action_filepath)
         file = discord.File(current_hg_action_filepath, filename='hg_action.png')
         embed.set_image(url='attachment://hg_action.png')
-
     # Creates embed for other pages.
     else:
         embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
