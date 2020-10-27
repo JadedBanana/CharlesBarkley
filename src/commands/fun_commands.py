@@ -255,6 +255,7 @@ async def ship(self, message, argument, is_in_guild):
         partner_1 = None
 
     # If an argument wasn't passed, we do BOTH the shipping ourselves.
+    users_choices = []
     if not partner_1:
         try:
             # Gets valid users.
@@ -264,8 +265,12 @@ async def ship(self, message, argument, is_in_guild):
             users_choices.remove(partner_1)
             partner_2 = random.choice(users_choices)
         except IndexError:
-            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
-            await message.channel.send('There aren\'t enough users in here to form a ship!')
+            if len(users_choices) <= 1:
+                await message.channel.send('There was an error accessing userlist.')
+                log.error(util.get_comm_start(message, is_in_guild) + ' requested shop, bugged userlist')
+            else:
+                log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+                await message.channel.send('There aren\'t enough users in here to form a ship!')
             return
 
     else:
@@ -603,7 +608,8 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
 
     # Draw the description, if any.
     if action_desc:
-        player_drawer.text() # todo
+        current_x = int((image_width - action_font.getsize(full_action_text)[0]) / 2)
+        player_drawer.text((current_x, constants.HG_ICON_BUFFER), 'Worm', font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
 
     # Draw the icons.
     num = 0

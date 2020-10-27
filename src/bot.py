@@ -84,10 +84,7 @@ class JadieClient(discord.Client):
             'weather': utility_commands.weather,
             'uwu': fun_commands.uwuify, 'uwuify': fun_commands.uwuify,
             'owo': fun_commands.owoify, 'owoify': fun_commands.owoify,
-            'business': fun_commands.business_only, 'businessonly': fun_commands.business_only,
-            'ultimate': fun_commands.ultimate, 'talent': fun_commands.ultimate,
-            'shsl': fun_commands.shsl,
-            'hungergames': fun_commands.hunger_games_start, 'hg': fun_commands.hunger_games_start, 'hunger': fun_commands.hunger_games_start, 'hungry': fun_commands.hunger_games_start
+            'business': fun_commands.business_only, 'businessonly': fun_commands.business_only
         }
 
         # Sets the developer command_dict
@@ -99,7 +96,10 @@ class JadieClient(discord.Client):
             'update': dev_commands.update_remote,
             'sendlog': dev_commands.send_log,
             'loglist': dev_commands.log_list, 'logs': dev_commands.log_list,
-            'bash': dev_commands.bash
+            'bash': dev_commands.bash,
+            'ultimate': fun_commands.ultimate, 'talent': fun_commands.ultimate,
+            'shsl': fun_commands.shsl,
+            'hungergames': fun_commands.hunger_games_start, 'hg': fun_commands.hunger_games_start, 'hunger': fun_commands.hunger_games_start, 'hungry': fun_commands.hunger_games_start
         }
 
     async def on_ready(self):
