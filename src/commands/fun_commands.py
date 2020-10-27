@@ -572,8 +572,6 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     """
     Displays count number of actions at once.
     """
-
-    print(action_text)
     # Makes the font
     action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
 
@@ -731,7 +729,7 @@ def hunger_games_generate_bloodbath(hg_dict):
         hunger_games_generate_statuses(hg_dict['statuses'], curr_action, chosen_players)
 
     # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.'})
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
 def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None):
@@ -772,7 +770,7 @@ def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None)
 
     # Adds to the phases.
     random.shuffle(actions)
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'next': 0, 'prev': -1, 'desc': desc})
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'next': 0, 'prev': -1, 'desc': desc, 'done': False})
 
 
 def hunger_games_generate_detect_dead(hg_dict):
@@ -814,6 +812,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
     # Then we cycle through stuff until one person survives or EVERYONE is dead.
     daynight = 1
     turns_since_event = 0
+    dead_last_loop = []
     while True:
         # Test for dead people.
         tie, continue_game = hunger_games_generate_detect_dead(hg_dict)
@@ -845,8 +844,18 @@ async def hunger_games_generate_full_game(hg_dict, message):
             if not continue_game:
                 break
 
-        # Do player statuses.
+            if daynight >= 4:
+                turns_since_event+= 1
 
+        # Do player statuses.
+        player_statuses = []
+        new_deaths = 0
+        for player in hg_dict['statuses']:
+            player_statuses.append((player, hg_dict['statuses'][player]['name'], (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
+            if player not in dead_last_loop and hg_dict['statuses'][player]['dead']:
+                dead_last_loop.append(player)
+                new_deaths+= 1
+        hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
 
         # Increase chances of encountering disaster next time.
         if daynight >= 4:
@@ -913,6 +922,7 @@ async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False
             current_phase = hg_dict['phases'][hg_dict['current_phase']]
         elif not do_previous and current_phase['next'] >= len(current_phase['act']):
             current_phase['prev'] = len(current_phase['act']) - 1
+            current_phase['done'] = True
             hg_dict['current_phase']+= 1
             current_phase = hg_dict['phases'][hg_dict['current_phase']]
     else:
@@ -926,13 +936,22 @@ async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
         action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
-        embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])), colour=constants.HG_EMBED_COLOR)
+        embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-        player_statuses = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
+        player_actions = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
         current_hg_action_filepath = os.path.join(constants.TEMP_DIR, 'hg_action.png')
-        player_statuses.save(current_hg_action_filepath)
+        player_actions.save(current_hg_action_filepath)
         file = discord.File(current_hg_action_filepath, filename='hg_action.png')
         embed.set_image(url='attachment://hg_action.png')
+    # Creates embed for status pages.
+    elif current_phase['type'] == 'status':
+        embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
+        embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
+        current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_statuses.png')
+        player_statuses.save(current_playerstatus_filepath)
+        file = discord.File(current_playerstatus_filepath, filename='hg_player_statuses.png')
+        embed.set_image(url='attachment://hg_player_statuses.png')
     # Creates embed for other pages.
     else:
         embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
@@ -1214,8 +1233,12 @@ async def hunger_games_start(self, message, argument, is_in_guild):
             uses_bots = True
         # If there still aren't enough users, we send error.
         if len(user_list) < constants.HG_MIN_GAMESIZE:
-            await message.channel.send('Not enough users in server.')
-            log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+            if len(user_list) == 1:
+                await message.channel.send('There was an error accessing userlist.')
+                log.error(util.get_comm_start(message, is_in_guild) + ' requested hunger games, bugged userlist')
+            else:
+                await message.channel.send('Not enough users in server.')
+                log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
 
         # Otherwise, we generate the players and ask if we should proceed.
         else:
