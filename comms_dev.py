@@ -2,10 +2,11 @@
 #                     DEV-ONLY COMMANDS
 # ===============================================================
 from datetime import datetime, timedelta
-from src import constants, util
+import constants
 import discord
 import socket
 import string
+import util
 import os
 
 # Logging

@@ -3,8 +3,8 @@
 # =================================================================
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
 from datetime import datetime, timedelta
-from src import constants, util
-from src.exceptions import *
+from exceptions import *
+import constants
 import wikipedia
 import datetime
 import requests
@@ -13,6 +13,7 @@ import random
 import string
 import urllib
 import json
+import util
 import os
 
 # Logger

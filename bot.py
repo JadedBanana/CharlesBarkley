@@ -1,22 +1,28 @@
 # Jadi3Pi bot file
 
 # Imports
-from src.commands import fun_commands, utility_commands, other_commands, dev_commands
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime
-from src import constants, cron, logger, util
+import comms_other
+import comms_util
+import comms_dev
+import comms_fun
+import constants
 import platform
 import discord
+import logger
 import socket
+import cron
+import util
 import os
 
 # Outer-level crap
 # Establishes logger
 log = logger.JLogger()
-fun_commands.log = log
-utility_commands.log = log
-other_commands.log = log
-dev_commands.log = log
+comms_fun.log = log
+comms_util.log = log
+comms_other.log = log
+comms_dev.log = log
 
 # Gets start time
 bot_start_time = datetime.today()
@@ -67,39 +73,39 @@ class JadieClient(discord.Client):
 
         # Sets the public_command_dict!
         self.public_command_dict = {
-            'help': other_commands.help_command,
-            'runtime': other_commands.runtime,
-            'copy': fun_commands.copy_user,
-            'stopcopying': fun_commands.stop_copying,
-            'uptime': other_commands.uptime,
-            'hex': utility_commands.hexadecimal, 'hexadecimal': utility_commands.hexadecimal,
-            'duo': utility_commands.duodecimal, 'duodec': utility_commands.duodecimal, 'duodecimal': utility_commands.duodecimal,
-            'dec': utility_commands.decimal, 'decimal': utility_commands.decimal,
-            'oct': utility_commands.octal, 'octal': utility_commands.octal,
-            'bin': utility_commands.binary, 'binary': utility_commands.binary,
-            'randomyt': fun_commands.randomyt, 'randomyoutube': fun_commands.randomyt, 'ytroulette': fun_commands.randomyt, 'youtuberoulette': fun_commands.randomyt,
-            'calc': utility_commands.evaluate, 'eval': utility_commands.evaluate, 'calculate': utility_commands.evaluate, 'evaluate': utility_commands.evaluate,
-            'randomwiki': fun_commands.randomwiki, 'randomwikipedia': fun_commands.randomwiki, 'wikiroulette': fun_commands.randomwiki, 'wikipediaroulette': fun_commands.randomwiki,
-            'ship': fun_commands.ship,
-            'weather': utility_commands.weather,
-            'uwu': fun_commands.uwuify, 'uwuify': fun_commands.uwuify,
-            'owo': fun_commands.owoify, 'owoify': fun_commands.owoify,
-            'business': fun_commands.business_only, 'businessonly': fun_commands.business_only
+            'help': comms_other.help_command,
+            'runtime': comms_other.runtime,
+            'copy': comms_fun.copy_user,
+            'stopcopying': comms_fun.stop_copying,
+            'uptime': comms_other.uptime,
+            'hex': comms_util.hexadecimal, 'hexadecimal': comms_util.hexadecimal,
+            'duo': comms_util.duodecimal, 'duodec': comms_util.duodecimal, 'duodecimal': comms_util.duodecimal,
+            'dec': comms_util.decimal, 'decimal': comms_util.decimal,
+            'oct': comms_util.octal, 'octal': comms_util.octal,
+            'bin': comms_util.binary, 'binary': comms_util.binary,
+            'randomyt': comms_fun.randomyt, 'randomyoutube': comms_fun.randomyt, 'ytroulette': comms_fun.randomyt, 'youtuberoulette': comms_fun.randomyt,
+            'calc': comms_util.evaluate, 'eval': comms_util.evaluate, 'calculate': comms_util.evaluate, 'evaluate': comms_util.evaluate,
+            'randomwiki': comms_fun.randomwiki, 'randomwikipedia': comms_fun.randomwiki, 'wikiroulette': comms_fun.randomwiki, 'wikipediaroulette': comms_fun.randomwiki,
+            'ship': comms_fun.ship,
+            'weather': comms_util.weather,
+            'uwu': comms_fun.uwuify, 'uwuify': comms_fun.uwuify,
+            'owo': comms_fun.owoify, 'owoify': comms_fun.owoify,
+            'business': comms_fun.business_only, 'businessonly': comms_fun.business_only
         }
 
         # Sets the developer command_dict
         self.developer_command_dict = {
-            'localip': dev_commands.get_local_ip,
-            'toggleignoredev': dev_commands.toggle_ignore_dev,
-            'getpid': dev_commands.get_pid, 'localpid': dev_commands.get_pid, 'pid': dev_commands.get_pid,
-            'reboot': dev_commands.remote_reboot, 'restart': dev_commands.remote_reboot,
-            'update': dev_commands.update_remote,
-            'sendlog': dev_commands.send_log,
-            'loglist': dev_commands.log_list, 'logs': dev_commands.log_list,
-            'bash': dev_commands.bash,
-            'ultimate': fun_commands.ultimate, 'talent': fun_commands.ultimate,
-            'shsl': fun_commands.shsl,
-            'hungergames': fun_commands.hunger_games_start, 'hg': fun_commands.hunger_games_start, 'hunger': fun_commands.hunger_games_start, 'hungry': fun_commands.hunger_games_start
+            'localip': comms_dev.get_local_ip,
+            'toggleignoredev': comms_dev.toggle_ignore_dev,
+            'getpid': comms_dev.get_pid, 'localpid': comms_dev.get_pid, 'pid': comms_dev.get_pid,
+            'reboot': comms_dev.remote_reboot, 'restart': comms_dev.remote_reboot,
+            'update': comms_dev.update_remote,
+            'sendlog': comms_dev.send_log,
+            'loglist': comms_dev.log_list, 'logs': comms_dev.log_list,
+            'bash': comms_dev.bash,
+            'ultimate': comms_fun.ultimate, 'talent': comms_fun.ultimate,
+            'shsl': comms_fun.shsl,
+            'hungergames': comms_fun.hunger_games_start, 'hg': comms_fun.hunger_games_start, 'hunger': comms_fun.hunger_games_start, 'hungry': comms_fun.hunger_games_start
         }
 
     async def on_ready(self):
@@ -169,12 +175,12 @@ class JadieClient(discord.Client):
         # Reactive commands (will return True if method should return now)
         # =================================================================
         if str(message.channel) in self.curr_hg:
-            if await fun_commands.hunger_games_update(self, message, is_in_guild): # Hunger games
+            if await comms_fun.hunger_games_update(self, message, is_in_guild): # Hunger games
                 return
-        elif await fun_commands.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
+        elif await comms_fun.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
             return
         if author_is_developer and self.reboot_confirmation: # Reboot confirmation is dev-only
-            await dev_commands.confirm_reboot(self, message, is_in_guild)
+            await comms_dev.confirm_reboot(self, message, is_in_guild)
 
         # Prompted commands
         # ==================

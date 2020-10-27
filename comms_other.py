@@ -1,8 +1,9 @@
 # =================================================================
 #                        OTHER COMMANDS
 # =================================================================
-from src import constants, util
 from datetime import datetime
+import constants
+import util
 
 # Logging
 log = None

@@ -1,6 +1,6 @@
-from src.exceptions import *
+from exceptions import *
 from math import factorial
-from src import constants
+import constants
 from PIL import Image
 import requests
 import discord
