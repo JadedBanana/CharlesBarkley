@@ -421,6 +421,7 @@ HG_RESTOCK_EVENT = {
     'normal': [
         {'players': 0, 'act': '{0} decides not to go to the feast.'},
         {'players': 0, 'act': '{0} grabs a bundle of dry clothes and runs.'},
+        {'players': 1, 'act': '{0} destroys {1}\'s memoirs out of spite.'},
         {'players': 0, 'act': '{0} steps on a landmine near the Cornucopia.', 'kill': [0]},
         {'players': 1, 'act': '{0} and {1} fight over raw meat, but {1} gives up and flees.', 'give': [104, 0]}
     ]

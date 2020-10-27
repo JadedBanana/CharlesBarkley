@@ -568,7 +568,7 @@ def hunger_games_makeimage_player_statuses(players):
     return player_statuses
 
 
-def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, action_text=None):
+def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, action_desc=None):
     """
     Displays count number of actions at once.
     """
@@ -579,6 +579,8 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     # Also makes the full action text while we're at it.
     image_width = -1
     image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER
+    if action_desc:
+        image_height+= 0 # todo
     text_sizes = []
 
     for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
@@ -597,9 +599,13 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     # Preps to draw.
     action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(action_image)
+    current_y = constants.HG_ICON_BUFFER
+
+    # Draw the description, if any.
+    if action_desc:
+        player_drawer.text() # todo
 
     # Draw the icons.
-    current_y = constants.HG_ICON_BUFFER
     num = 0
     for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
