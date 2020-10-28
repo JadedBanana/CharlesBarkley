@@ -33,7 +33,7 @@ COMM_LOG_PREFIX = '{} ({}): '
 
 # Bot stuff
 # Global crap
-BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.8jBguEMXHXFmZvXOY5UAdXu4FE0'
+BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'
 GLOBAL_PREFIX = 'j!'
 
 # YouTube
