@@ -2,7 +2,7 @@
 
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
-from datetime import datetime
+from datetime import datetime, timedelta
 import comms_other
 import comms_util
 import comms_dev
@@ -134,7 +134,7 @@ class JadieClient(discord.Client):
             log.info(f'{self.user} has reconnected to Discord')
         else:
             self.connected_before = True
-        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row 
+        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
         # Marks ONLY when a reconnect has happened since the last disconnect
         self.reconnected_since = True
 
@@ -142,7 +142,7 @@ class JadieClient(discord.Client):
         """
         Whenever the bot disconnects from discord.
         """
-        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row 
+        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
         # Marks ONLY when a reconnect has happened since the last disconnect
         if self.reconnected_since:
             log.info(f'{self.user} has disconnected from Discord')
@@ -176,7 +176,13 @@ class JadieClient(discord.Client):
         # =================================================================
         if str(message.channel) in self.curr_hg:
             if await comms_fun.hunger_games_update(self, message, is_in_guild): # Hunger games
+                log.info(self.curr_hg['updated'])
                 return
+            else:
+                if self.curr_hg[str(message.channel)]['updated'] < datetime.now() - timedelta(hours=1):
+                    del self.curr_hg[str(message.channel)]
+                    await message.channel.send('Hunger Games canceled due to inactivity.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'triggered Hunger Games expiration')
         elif await comms_fun.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
             return
         if author_is_developer and self.reboot_confirmation: # Reboot confirmation is dev-only
