@@ -174,13 +174,12 @@ class JadieClient(discord.Client):
 
         # Reactive commands (will return True if method should return now)
         # =================================================================
-        if str(message.channel) in self.curr_hg:
+        if str(message.channel.id) in self.curr_hg:
             if await comms_fun.hunger_games_update(self, message, is_in_guild): # Hunger games
-                log.info(self.curr_hg['updated'])
                 return
             else:
-                if self.curr_hg[str(message.channel)]['updated'] < datetime.now() - timedelta(hours=1):
-                    del self.curr_hg[str(message.channel)]
+                if self.curr_hg[str(message.channel.id)]['updated'] < datetime.now() - timedelta(hours=1):
+                    del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Hunger Games canceled due to inactivity.')
                     log.debug(util.get_comm_start(message, is_in_guild) + 'triggered Hunger Games expiration')
         elif await comms_fun.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games

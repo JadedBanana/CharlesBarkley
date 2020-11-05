@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from exceptions import *
 import constants
 import wikipedia
-import datetime
 import requests
 import discord
 import random
@@ -581,10 +580,13 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     # Makes the font
     action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
 
+    # Gets action desc width, if any.
+    action_desc_width = action_font.getsize(action_desc)[0] if action_desc else 0
+
     # Gets the image width.
     # Also makes the full action text while we're at it.
-    image_width = -1
-    image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER
+    image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
+    image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
     if action_desc:
         image_height+= 0 # todo
     text_sizes = []
@@ -609,8 +611,15 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
 
     # Draw the description, if any.
     if action_desc:
-        current_x = int((image_width - action_font.getsize(full_action_text)[0]) / 2)
-        player_drawer.text((current_x, constants.HG_ICON_BUFFER), 'Worm', font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
+        current_x = int((image_width - action_desc_width) / 2)
+        player_drawer.rectangle(
+            [(current_x - constants.HG_HEADER_BORDER_BUFFER, current_y - constants.HG_HEADER_BORDER_BUFFER),
+             (current_x + action_desc_width + constants.HG_HEADER_BORDER_BUFFER, current_y + constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER)],
+            constants.HG_HEADER_BACKGROUND_COLOR,
+            constants.HG_HEADER_BORDER_COLOR
+        )
+        player_drawer.text((current_x, constants.HG_ICON_BUFFER), action_desc, font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
+        current_y+= constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3
 
     # Draw the icons.
     num = 0
@@ -668,6 +677,8 @@ def hunger_games_generate_statuses(hg_statuses, action, players):
     if 'kill' in action:
         for ind in action['kill']:
             hg_statuses[players[ind]]['dead'] = True
+        for ind in action['kill']:
+            hg_statuses[players[ind]]['dead_num'] = [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
 
     # Next, injuries.
     if 'hurt' in action:
@@ -783,6 +794,8 @@ def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None)
 
     # Adds to the phases.
     random.shuffle(actions)
+    if not desc:
+        desc = title
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'next': 0, 'prev': -1, 'desc': desc, 'done': False})
 
 
@@ -873,6 +886,22 @@ async def hunger_games_generate_full_game(hg_dict, message):
         # Increase chances of encountering disaster next time.
         if daynight >= 4:
             turns_since_event+= 1
+
+    # Now that the loop is broken, display cannon shots and declare winner.
+    player_statuses = []
+    new_deaths = 0
+    for player in hg_dict['statuses']:
+        player_statuses.append((player, hg_dict['statuses'][player]['name'], (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
+        if player not in dead_last_loop and hg_dict['statuses'][player]['dead']:
+            dead_last_loop.append(player)
+            new_deaths+= 1
+    hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
+
+    for player in hg_dict['statuses']:
+        try:
+            print(hg_dict['statuses'][player]['name'] + ': ' + str(hg_dict['statuses'][player]['dead_num']))
+        except KeyError:
+            pass
 
     embed = discord.Embed(title='The Bloodbath, Action 1', colour=constants.HG_EMBED_COLOR)
     embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
@@ -995,7 +1024,7 @@ async def hunger_games_shuffle(self, message, is_in_guild, player_count, uses_bo
     # Get the user list.
     user_list = util.get_applicable_users(message, is_in_guild, not uses_bots)
     if len(user_list) < constants.HG_MIN_GAMESIZE:
-        self.curr_hg.pop(str(message.channel))
+        self.curr_hg.pop(str(message.channel.id))
         await message.channel.send('Not enough users in server.')
         log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
 
@@ -1010,7 +1039,7 @@ async def hunger_games_shuffle(self, message, is_in_guild, player_count, uses_bo
 
         # Set in players and actions.
         hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots}
-        self.curr_hg[str(message.channel)] = hg_full_game
+        self.curr_hg[str(message.channel.id)] = hg_full_game
 
         # Send the updated cast
         await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
@@ -1021,7 +1050,7 @@ async def hunger_games_update(self, message, is_in_guild):
     """
     Updates a hunger games dict.
     """
-    hg_dict = self.curr_hg[str(message.channel)]
+    hg_dict = self.curr_hg[str(message.channel.id)]
     response = message.content.lower()
 
     # If the game is already generated.
@@ -1244,7 +1273,7 @@ async def hunger_games_update(self, message, is_in_guild):
         elif any([response == 'c', response == 'cancel']):
             await message.channel.send('Hunger Games canceled.')
             log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
-            del self.curr_hg[str(message.channel)]
+            del self.curr_hg[str(message.channel.id)]
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1253,7 +1282,7 @@ async def hunger_games_start(self, message, argument, is_in_guild):
     """
     Creates a hunger games simulator right inside the bot.
     """
-    hg_key = str(message.channel)
+    hg_key = str(message.channel.id)
 
     # If a game is already in progress, we forward this message.
     if hg_key in self.curr_hg.keys():
