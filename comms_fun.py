@@ -573,7 +573,7 @@ def hunger_games_makeimage_player_statuses(players):
     return player_statuses
 
 
-def hunger_games_makeimage_winner(win_action, desc=None):
+def hunger_games_makeimage_winner(win_action, desc=None, dead=False):
     """
     Displays the winner.
     Like the makeimage_action method, but without all the previous and count and whatnot.
@@ -625,6 +625,9 @@ def hunger_games_makeimage_winner(win_action, desc=None):
     for player in win_action['players']:
         player_pfp = util.get_profile_picture(player[0], True)[0]
         player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
+        # If the player is dead, recolors the pfp.
+        if dead:
+            player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
         action_image.paste(player_pfp, (current_x, current_y))
         # Draws border around player icons.
         player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
@@ -659,6 +662,100 @@ def hunger_games_makeimage_winner(win_action, desc=None):
         remaining_text = remaining_text[next_bracket + 3:]
 
     return action_image
+
+
+def hunger_games_makeimage_tie(players, desc=None):
+    """
+    Displays the winner(s).
+    Like the makeimage_action method, but without all the previous and count and whatnot.
+    """
+    # Makes the font
+    action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
+
+    # Gets action desc width, if any.
+    action_desc_width = action_font.getsize(desc)[0]
+
+    # Gets the image width.
+    # Also makes the full action text while we're at it.
+    image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if desc else -1
+    image_height = constants.HG_ACTION_ROWHEIGHT + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if desc else -1)
+    if desc:
+        image_height+= 0 # todo
+    text_sizes = []
+
+    # Tests for text boundaries
+    full_action_text = constants.HG_TIE_EVENT[0]
+    if len(players) > 2:
+        for player in players[:-1]:
+            full_action_text+= player[1] + constants.HG_TIE_EVENT[1]
+    else:
+        full_action_text+= players[0][1] + ' '
+    full_action_text+= constants.HG_TIE_EVENT[2] + players[-1][1] + constants.HG_TIE_EVENT[3]
+    text_width = action_font.getsize(full_action_text)[0]
+    image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
+    text_sizes.append(text_width)
+    # Tests for image boundaries
+    image_width = max(image_width, constants.HG_ICON_SIZE * len(players) + constants.HG_ICON_BUFFER * (len(players) + 1))
+
+    # Preps to draw.
+    action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
+    player_drawer = ImageDraw.Draw(action_image)
+    current_y = constants.HG_ICON_BUFFER
+
+    # Draw the description, if any.
+    if desc:
+        current_x = int((image_width - action_desc_width) / 2)
+        player_drawer.rectangle(
+            [(current_x - constants.HG_HEADER_BORDER_BUFFER, current_y - constants.HG_HEADER_BORDER_BUFFER),
+             (current_x + action_desc_width + constants.HG_HEADER_BORDER_BUFFER, current_y + constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER)],
+            constants.HG_HEADER_BACKGROUND_COLOR,
+            constants.HG_HEADER_BORDER_COLOR
+        )
+        player_drawer.text((current_x, constants.HG_ICON_BUFFER), desc, font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
+        current_y+= constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3
+
+    # Draw the icons.
+    current_x = int(image_width / 2) - int(len(players) / 2 * constants.HG_ICON_SIZE) - int((len(players) - 1) / 2 * constants.HG_ICON_BUFFER)
+    # Gets each player's pfp and pastes it onto the image.
+    for player in players:
+        player_pfp = util.get_profile_picture(player[0], True)[0]
+        player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
+        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
+        action_image.paste(player_pfp, (current_x, current_y))
+        # Draws border around player icons.
+        player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
+        # Adds to current_x.
+        current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
+
+    # Draws each part of the text.
+    current_x = int((image_width - text_sizes[0]) / 2)
+    current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
+    remaining_text = [constants.HG_TIE_EVENT[0]]
+    if len(players) > 2:
+        for player in players[:-1]:
+            remaining_text.append(player[1])
+            remaining_text.append(constants.HG_TIE_EVENT[1])
+        remaining_text[-1]+= constants.HG_TIE_EVENT[2]
+    else:
+        remaining_text.append(players[0][1] + ' ')
+        remaining_text.append(constants.HG_TIE_EVENT[2])
+    remaining_text.append(players[-1][1])
+    remaining_text.append(constants.HG_TIE_EVENT[3])
+    while remaining_text:
+        # Draw the text up to the next bracket.
+        player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=(255, 255, 255))
+        current_x += action_font.getsize(remaining_text[0])[0]
+        remaining_text.remove(remaining_text[0])
+        if not remaining_text:
+            break
+
+        # Draw the next player name.
+        player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+        current_x += action_font.getsize(remaining_text[0])[0]
+        remaining_text.remove(remaining_text[0])
+
+    return action_image
+
 
 
 def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, action_desc=None):
@@ -923,10 +1020,12 @@ async def hunger_games_generate_full_game(hg_dict, message):
     # First, we have the bloodbath.
     hunger_games_generate_bloodbath(hg_dict)
 
-    # Then we cycle through stuff until one person survives or EVERYONE is dead.
+    # Loop variables.
     daynight = 1
     turns_since_event = 0
     dead_last_loop = []
+
+    # Then we cycle through stuff until one person survives or EVERYONE is dead.
     while True:
         # Test for dead people.
         tie, continue_game = hunger_games_generate_detect_dead(hg_dict)
@@ -986,7 +1085,22 @@ async def hunger_games_generate_full_game(hg_dict, message):
     hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
 
     if tie:
-        pass
+        # Determine who tied
+        tiees = []
+        max_deathnum = -1
+        for player in hg_dict['statuses']:
+            if hg_dict['statuses'][player]['dead_num'] > max_deathnum:
+                max_deathnum = hg_dict['statuses'][player]['dead_num']
+        for player in hg_dict['statuses']:
+            if max_deathnum == hg_dict['statuses'][player]['dead_num']:
+                tiees.append(player)
+        # Add tie phase to phases ONLY if there's more than one.
+        if len(tiees) > 1:
+            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name']) for tienum in tiees], 'title': constants.HG_TIE_TITLE, 'desc': constants.HG_TIE_TITLE, 'done': False})
+        # Otherwise, it's a victory, but dead.
+        else:
+            hg_dict['phases'].append({'type': 'win', 'act': {'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'])], 'act': constants.HG_WINNER_DEAD_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'done': False, 'dead': True})
+
     else:
         # Determine winner
         winner = None
@@ -994,7 +1108,8 @@ async def hunger_games_generate_full_game(hg_dict, message):
             if not 'dead_num' in hg_dict['statuses'][player]:
                 winner = player
                 break
-        hg_dict['phases'].append({'type': 'win', 'act': {'players': [(winner, hg_dict['statuses'][player]['name'])], 'act': constants.HG_WINNER_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'done': False})
+        # Add win phase to phases
+        hg_dict['phases'].append({'type': 'win', 'act': {'players': [(winner, hg_dict['statuses'][winner]['name'])], 'act': constants.HG_WINNER_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'done': False, 'dead': False})
 
     # Sends the first message.
     # Creates the embed.
@@ -1084,7 +1199,16 @@ async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False
     elif current_phase['type'] == 'win':
         embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
         embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-        player_actions = hunger_games_makeimage_winner(current_phase['act'], current_phase['desc'])
+        player_actions = hunger_games_makeimage_winner(current_phase['act'], current_phase['desc'], current_phase['dead'])
+        current_hg_action_filepath = os.path.join(constants.TEMP_DIR, 'hg_action.png')
+        player_actions.save(current_hg_action_filepath)
+        file = discord.File(current_hg_action_filepath, filename='hg_action.png')
+        embed.set_image(url='attachment://hg_action.png')
+    # Creates embed for tie pages.
+    elif current_phase['type'] == 'tie':
+        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
+        embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
+        player_actions = hunger_games_makeimage_tie(current_phase['players'], current_phase['desc'])
         current_hg_action_filepath = os.path.join(constants.TEMP_DIR, 'hg_action.png')
         player_actions.save(current_hg_action_filepath)
         file = discord.File(current_hg_action_filepath, filename='hg_action.png')
