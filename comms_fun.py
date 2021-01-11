@@ -1437,3 +1437,11 @@ async def hunger_games_start(self, message, argument, is_in_guild):
             # Send the initial cast
             await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
             log.debug(util.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
+
+async def thank_you(self, message, argument, is_in_guild):
+    """
+    Thanks the bot!
+    :D
+    """
+    log.debug(util.get_comm_start(message, is_in_guild) + 'thanked the bot')
+    await message.channel.send(random.choice(constants.THANKYOU_RESPONSES))

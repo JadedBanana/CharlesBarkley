@@ -620,6 +620,17 @@ NONDECIMAL_BASES = {
     '0b': [2, 'binary']
 }
 
+# Thank you
+THANKYOU_RESPONSES = [
+    ':)',
+    ':D',
+    'You\'re welcome!',
+    'It\'s my pleasure.',
+    'I aim to please!',
+    'Hehe, I\'m just doing my job!',
+    ':blush:'
+]
+
 # Help message
 HELP_MSG = '''```
 ======================
