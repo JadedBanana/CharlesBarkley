@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from exceptions import *
 import constants
 import wikipedia
-import datetime
 import requests
 import discord
 import random
@@ -469,8 +468,8 @@ async def randomyt(self, message, argument, is_in_guild):
         # The only reason we would have an error is if quota has been reached. We tell the user that here.
         except urllib.error.HTTPError:
             # First, we get the time delta between now and when the quota should be reset.
-            current_time = datetime.now()
-            target_time = datetime.now()
+            current_time = datetime.today()
+            target_time = datetime.today()
 
             # If we are beyond the quota reset time, we add 1 to the target date.
             if current_time.hour >= constants.YOUTUBE_QUOTA_RESET_HOUR:
@@ -1168,7 +1167,7 @@ async def hunger_games_update(self, message, is_in_guild):
             # Next command.
             elif any([response == 'n', 'response' == 'next']):
                 await hunger_games_send_midgame(message, hg_dict)
-                hg_dict['updated'] = datetime.now()
+                hg_dict['updated'] = datetime.today()
                 return True
 
             # Previous command (custom size).
@@ -1176,7 +1175,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
                     return
                 else:
-                    hg_dict['updated'] = datetime.now()
+                    hg_dict['updated'] = datetime.today()
                     return True
 
             # Previous command.
@@ -1185,12 +1184,12 @@ async def hunger_games_update(self, message, is_in_guild):
                     return
                 else:
                     await hunger_games_send_midgame(message, hg_dict, do_previous=True)
-                    hg_dict['updated'] = datetime.now()
+                    hg_dict['updated'] = datetime.today()
                     return True
 
         elif any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ']] + [response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
             await message.channel.send('Still generating, be patient.')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
     # The game is not yet generated.
@@ -1206,19 +1205,19 @@ async def hunger_games_update(self, message, is_in_guild):
             except ValueError:
                 player_count = len(hg_dict['players'])
             await hunger_games_shuffle(self, message, is_in_guild, player_count, uses_bots=hg_dict['uses_bots'])
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Shuffle command.
         elif any([response == 's', response == 'shuffle', response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
             await hunger_games_shuffle(self, message, is_in_guild, len(hg_dict['players']), uses_bots=hg_dict['uses_bots'])
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Replace command (improper use).
         elif any([response == 'r', response == 'replace']):
             await message.channel.send('Mention two users to replace one with the other.')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         elif any([response.startswith('r '), response.startswith('replace ')]):
@@ -1228,7 +1227,7 @@ async def hunger_games_update(self, message, is_in_guild):
             except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                 await message.channel.send('Invalid user(s).')
                 log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
-                hg_dict['updated'] = datetime.now()
+                hg_dict['updated'] = datetime.today()
                 return True
             # Conditional
             if modified_players[0] in hg_dict['players']:
@@ -1246,7 +1245,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 # First player not in game
                 await message.channel.send('{} isn\'t in the game.'.format(modified_players[0]))
                 log.debug(util.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, first isn\'t there')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Add command.
@@ -1267,7 +1266,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     hg_dict['players'].append(added_player)
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
                     log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Add command, but specific user
@@ -1283,7 +1282,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                     await message.channel.send('Invalid user.')
                     log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
-                    hg_dict['updated'] = datetime.now()
+                    hg_dict['updated'] = datetime.today()
                     return True
                 if added_player in hg_dict['players']:
                     await message.channel.send('{} is already in the game.'.format(added_player))
@@ -1292,7 +1291,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     hg_dict['players'].append(added_player)
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
                     log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Delete command.
@@ -1306,7 +1305,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 removed_player = hg_dict['players'].pop(-1)
                 await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
                 log.debug(util.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Delete command, but specific user
@@ -1322,7 +1321,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                     await message.channel.send('Invalid user.')
                     log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, invalid')
-                    hg_dict['updated'] = datetime.now()
+                    hg_dict['updated'] = datetime.today()
                     return True
                 if removed_player in hg_dict['players']:
                     hg_dict['players'].remove(removed_player)
@@ -1331,7 +1330,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 else:
                     await message.channel.send('{} isn\'t in the game.'.format(removed_player))
                     log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, not there')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Allow / disallow bots command.
@@ -1350,7 +1349,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     else:
                         await message.channel.send('Not enough non-bots to disallow bots.')
                         log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove bots from Hunger Games instance, not enough users')
-                        hg_dict['updated'] = datetime.now()
+                        hg_dict['updated'] = datetime.today()
                         return True
                 # Allows it.
                 hg_dict['uses_bots'] = False
@@ -1361,7 +1360,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 hg_dict['uses_bots'] = True
                 await hunger_games_send_pregame(message, hg_dict['players'], 'Allowed bots into the game.', hg_dict['uses_bots'])
                 log.debug(util.get_comm_start(message, is_in_guild) + 'added bots to Hunger Games instance')
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Proceed command.
@@ -1371,7 +1370,7 @@ async def hunger_games_update(self, message, is_in_guild):
             hg_dict['past_pregame'] = True
             hg_dict['generated'] = False
             await hunger_games_generate_full_game(hg_dict, message)
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
         # Cancel command.
@@ -1379,7 +1378,7 @@ async def hunger_games_update(self, message, is_in_guild):
             await message.channel.send('Hunger Games canceled.')
             log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
             del self.curr_hg[str(message.channel.id)]
-            hg_dict['updated'] = datetime.now()
+            hg_dict['updated'] = datetime.today()
             return True
 
 
@@ -1432,7 +1431,7 @@ async def hunger_games_start(self, message, argument, is_in_guild):
                 user_list.remove(next_player)
 
             # Set in players and actions.
-            hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots, 'updated': datetime.now()}
+            hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots, 'updated': datetime.today()}
             self.curr_hg.update({hg_key: hg_full_game})
 
             # Send the initial cast
