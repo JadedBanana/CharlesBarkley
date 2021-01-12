@@ -854,26 +854,26 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     return action_image
 
 
-def hunger_games_generate_statuses(hg_statuses, action, players):
+def hunger_games_generate_statuses(hg_statuses, action):
     """
     Updates the statuses of players post-action in the hg_dict.
     """
     # First, we handle deaths.
-    if 'kill' in action:
-        for ind in action['kill']:
-            hg_statuses[players[ind]]['dead'] = True
-        for ind in action['kill']:
-            hg_statuses[players[ind]]['dead_num'] = [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
+    if 'kill' in action['full']:
+        for ind in action['full']['kill']:
+            hg_statuses[action['players'][ind][0]]['dead'] = True
+        for ind in action['full']['kill']:
+            hg_statuses[action['players'][ind][0]]['dead_num'] = [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
 
     # Next, injuries.
-    if 'hurt' in action:
-        for ind in action['hurt']:
-            hg_statuses[players[ind]]['hurt'] = True
+    if 'hurt' in action['full']:
+        for ind in action['full']['hurt']:
+            hg_statuses[action['players'][ind][0]]['hurt'] = True
 
     # Healing.
-    if 'heal' in action:
-        for ind in action['heal']:
-            hg_statuses[players[ind]]['hurt'] = False
+    if 'heal' in action['full']:
+        for ind in action['full']['heal']:
+            hg_statuses[action['players'][ind][0]]['hurt'] = False
 
     # Items.
     if 'give' in action:
@@ -882,31 +882,33 @@ def hunger_games_generate_statuses(hg_statuses, action, players):
             if action['give'][ind] == 0:
                 continue
             elif action['give'][ind] < 0:
-                hg_statuses[players[ind]]['inv'].remove(-action['give'][ind])
+                hg_statuses[action['players'][ind][0]]['inv'].remove(-action['give'][ind])
             else:
                 # Special items
                 # 3000, 1 - 3 random items
-                if action['give'][ind] == 3000:
+                if action['full']['give'][ind] == 3000:
                     for i in range(random.randint(1, 3)):
-                        hg_statuses[players[ind]]['inv'].append(random.choice(constants.HG_ALL_ITEMS))
-                elif action['give'][ind] == 4000:
-                    hg_statuses[players[ind]]['inv'].append(random.choice(constants.HG_WEAPON_ITEMS))
-                    hg_statuses[players[ind]]['inv'].append(random.choice(constants.HG_HEALTH_ITEMS))
-                    hg_statuses[players[ind]]['inv'].append(random.choice(constants.HG_FOOD_ITEMS))
-                elif action['give'][ind] == 8888:
-                    hg_statuses[players[ind]]['inv'].remove(8)
-                    hg_statuses[players[ind]]['inv'].append(10)
-                    hg_statuses[players[ind]]['inv'].append(104)
-                elif action['give'][ind] == 9999:
+                        hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_ALL_ITEMS))
+                elif action['full']['give'][ind] == 4000:
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_WEAPON_ITEMS))
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_HEALTH_ITEMS))
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_FOOD_ITEMS))
+                elif action['full']['give'][ind] == 8888:
+                    hg_statuses[action['players'][ind][0]]['inv'].remove(8)
+                    hg_statuses[action['players'][ind][0]]['inv'].append(10)
+                    hg_statuses[action['players'][ind][0]]['inv'].append(104)
+                elif action['full']['give'][ind] == 9999:
                     ind2 = 0
-                    for item in hg_statuses[players[ind]]['inv']:
-                        hg_statuses[players[ind]]['inv'].remove(item)
-                        if ind2 % len(players) == ind:
+                    for item in hg_statuses[action['players'][ind][0]]['inv']:
+                        hg_statuses[action['players'][ind][0]]['inv'].remove(item)
+                        if ind2 % len(action['players']) == ind:
                             ind2+= 1
-                        hg_statuses[players[ind2]]['inv'].append(item)
+                        hg_statuses[action['players'][ind2][0]]['inv'].append(item)
                         ind2+= 1
                 else:
-                    hg_statuses[players[ind]]['inv'].append(action['give'][ind])
+                    hg_statuses[action['players'][ind][0]]['inv'].append(action['give'][ind])
+
+    del action['full']
 
 def hunger_games_generate_bloodbath(hg_dict):
     """
@@ -932,10 +934,10 @@ def hunger_games_generate_bloodbath(hg_dict):
             player_actions.remove(chosen_players[-1])
 
         # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act']})
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'], 'full': curr_action})
 
         # Generate statuses
-        hunger_games_generate_statuses(hg_dict['statuses'], curr_action, chosen_players)
+        hunger_games_generate_statuses(hg_dict['statuses'], actions[-1])
 
     # Adds to the phases.
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
@@ -972,13 +974,14 @@ def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None)
             player_actions.remove(chosen_players[-1])
 
         # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act']})
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'], 'full': curr_action})
 
-        # Generate statuses
-        hunger_games_generate_statuses(hg_dict['statuses'], curr_action, chosen_players)
+    # Shuffles the actions and generates statuses.
+    random.shuffle(actions)
+    for curr_action in actions:
+        hunger_games_generate_statuses(hg_dict['statuses'], curr_action)
 
     # Adds to the phases.
-    random.shuffle(actions)
     if not desc:
         desc = title
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'next': 0, 'prev': -1, 'desc': desc, 'done': False})
@@ -1110,6 +1113,25 @@ async def hunger_games_generate_full_game(hg_dict, message):
                 break
         # Add win phase to phases
         hg_dict['phases'].append({'type': 'win', 'act': {'players': [(winner, hg_dict['statuses'][winner]['name'])], 'act': constants.HG_WINNER_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'done': False, 'dead': False})
+
+    # Makes the placement screen
+    pre_placement_players = [k for k in hg_dict['statuses']]
+    while pre_placement_players:
+        min_placement = len(hg_dict['statuses'])
+        current_placement_players = []
+        for player in pre_placement_players:
+            if 'dead_num' in hg_dict['statuses'][player]:
+                if min_placement > hg_dict['statuses'][player]['dead_num']:
+                    current_placement_players = [player]
+                    min_placement = hg_dict['statuses'][player]['dead_num']
+                elif min_placement == hg_dict['statuses'][player]['dead_num']:
+                    current_placement_players.append(player)
+        if min_placement == len(hg_dict['statuses']):
+            current_placement_players = pre_placement_players
+        print(min_placement)
+        print([hg_dict['statuses'][player]['name'] for player in current_placement_players])
+        for player in current_placement_players:
+            pre_placement_players.remove(player)
 
     # Sends the first message.
     # Creates the embed.

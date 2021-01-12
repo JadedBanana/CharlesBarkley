@@ -35,6 +35,7 @@ COMM_LOG_PREFIX = '{} ({}): '
 # Global crap
 BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'
 GLOBAL_PREFIX = 'j!'
+NTH_SUFFIXES = ['th' 'st', 'nd', 'rd', 'th' 'th' 'th' 'th' 'th']
 
 # YouTube
 YOUTUBE_API_KEY = 'AIzaSyAHuBNRF1Ts5VKoqPnln57ojnrUVGUXINU'
@@ -374,7 +375,7 @@ HG_NORMAL_DAY_ACTIONS = {
         {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2]},
         {'players': 2, 'act': '{0} overhears {1} and {2} talking in the distance.'},
         {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2]},
-        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [2]}
+        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [3]}
     ]
 }
 HG_NORMAL_NIGHT_ACTIONS = {
