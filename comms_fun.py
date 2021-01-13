@@ -737,31 +737,33 @@ def hunger_games_makeimage_winner(players, desc=None):
         current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
 
     # Draws each part of the text.
-    current_x = int((image_width - text_sizes[0]) / 2)
-    current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
-    remaining_text = [constants.HG_TIE_EVENT[0]]
-    if len(players) > 2:
-        for player in players[:-1]:
-            remaining_text.append(player[1])
-            remaining_text.append(constants.HG_TIE_EVENT[1])
-        remaining_text[-1]+= constants.HG_TIE_EVENT[2]
-    else:
-        remaining_text.append(players[0][1] + ' ')
-        remaining_text.append(constants.HG_TIE_EVENT[2])
-    remaining_text.append(players[-1][1])
-    remaining_text.append(constants.HG_TIE_EVENT[3])
-    while remaining_text:
-        # Draw the text up to the next bracket.
-        player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=(255, 255, 255))
-        current_x += action_font.getsize(remaining_text[0])[0]
-        remaining_text.remove(remaining_text[0])
-        if not remaining_text:
-            break
+    # Text varies depending on how many winners there are.
+    if len(players) > 1:
+        current_x = int((image_width - text_sizes[0]) / 2)
+        current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
+        remaining_text = [constants.HG_TIE_EVENT[0]]
+        if len(players) > 2:
+            for player in players[:-1]:
+                remaining_text.append(player[1])
+                remaining_text.append(constants.HG_TIE_EVENT[1])
+            remaining_text[-1]+= constants.HG_TIE_EVENT[2]
+        else:
+            remaining_text.append(players[0][1] + ' ')
+            remaining_text.append(constants.HG_TIE_EVENT[2])
+        remaining_text.append(players[-1][1])
+        remaining_text.append(constants.HG_TIE_EVENT[3])
+        while remaining_text:
+            # Draw the text up to the next bracket.
+            player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=(255, 255, 255))
+            current_x += action_font.getsize(remaining_text[0])[0]
+            remaining_text.remove(remaining_text[0])
+            if not remaining_text:
+                break
 
-        # Draw the next player name.
-        player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-        current_x += action_font.getsize(remaining_text[0])[0]
-        remaining_text.remove(remaining_text[0])
+            # Draw the next player name.
+            player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+            current_x += action_font.getsize(remaining_text[0])[0]
+            remaining_text.remove(remaining_text[0])
 
     return action_image
 
