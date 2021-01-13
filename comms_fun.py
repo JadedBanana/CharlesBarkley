@@ -561,7 +561,7 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
         current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
         for player in split:
             # Gets pfp, pastes onto image.
-            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2])
+            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2] and not placement)
 
             # Writes name and status / placement.
             player_name = player[1]
@@ -588,7 +588,7 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
     return player_statuses
 
 
-def hunger_games_makeimage_winner(win_action, desc=None, dead=False):
+def hunger_games_makeimage_win_old(win_action, desc=None, dead=False):
     """
     Displays the winner.
     Like the makeimage_action method, but without all the previous and count and whatnot.
@@ -679,7 +679,7 @@ def hunger_games_makeimage_winner(win_action, desc=None, dead=False):
     return action_image
 
 
-def hunger_games_makeimage_tie(players, desc=None):
+def hunger_games_makeimage_winner(players, desc=None):
     """
     Displays the winner(s).
     Like the makeimage_action method, but without all the previous and count and whatnot.
@@ -733,13 +733,7 @@ def hunger_games_makeimage_tie(players, desc=None):
     current_x = int(image_width / 2) - int(len(players) / 2 * constants.HG_ICON_SIZE) - int((len(players) - 1) / 2 * constants.HG_ICON_BUFFER)
     # Gets each player's pfp and pastes it onto the image.
     for player in players:
-        player_pfp = util.get_profile_picture(player[0], True)[0]
-        player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
-        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
-        action_image.paste(player_pfp, (current_x, current_y))
-        # Draws border around player icons.
-        player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
-        # Adds to current_x.
+        hunger_games_makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y, player[2])
         current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
 
     # Draws each part of the text.
@@ -1107,10 +1101,10 @@ async def hunger_games_generate_full_game(hg_dict, message):
                 tiees.append(player)
         # Add tie phase to phases ONLY if there's more than one.
         if len(tiees) > 1:
-            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name']) for tienum in tiees], 'title': constants.HG_TIE_TITLE, 'desc': constants.HG_TIE_TITLE})
+            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name'], True) for tienum in tiees], 'title': constants.HG_TIE_TITLE, 'desc': constants.HG_TIE_TITLE})
         # Otherwise, it's a victory, but dead.
         else:
-            hg_dict['phases'].append({'type': 'win', 'act': {'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'])], 'act': constants.HG_WINNER_DEAD_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'dead': True})
+            hg_dict['phases'].append({'type': 'win', 'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)], 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE})
 
     else:
         # Determine winner
@@ -1120,7 +1114,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
                 winner = player
                 break
         # Add win phase to phases
-        hg_dict['phases'].append({'type': 'win', 'act': {'players': [(winner, hg_dict['statuses'][winner]['name'])], 'act': constants.HG_WINNER_EVENT}, 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE, 'dead': False})
+        hg_dict['phases'].append({'type': 'win', 'players': [(winner, hg_dict['statuses'][winner]['name'], False)], 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE})
 
     # Makes the placement screen
     pre_placement_players = [k for k in hg_dict['statuses']]
@@ -1207,6 +1201,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     """
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
+    print(hg_dict)
+
     # Brings us to a different phase if we're at the end or beginning of one.
     if current_phase['type'] == 'act':
         if do_previous and current_phase['prev'] < 0:
@@ -1232,15 +1228,10 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         player_actions = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
         file = hunger_games_set_embed_image(player_actions, embed)
-    # Creates embed for win pages.
-    elif current_phase['type'] == 'win':
+    # Creates embed for win AND tie pages.
+    elif current_phase['type'] in ['win', 'tie']:
         embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-        player_actions = hunger_games_makeimage_winner(current_phase['act'], current_phase['desc'], current_phase['dead'])
-        file = hunger_games_set_embed_image(player_actions, embed)
-    # Creates embed for tie pages.
-    elif current_phase['type'] == 'tie':
-        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-        player_actions = hunger_games_makeimage_tie(current_phase['players'], current_phase['desc'])
+        player_actions = hunger_games_makeimage_winner(current_phase['players'], current_phase['desc'])
         file = hunger_games_set_embed_image(player_actions, embed)
     # Creates embed for status pages.
     elif current_phase['type'] == 'status':
