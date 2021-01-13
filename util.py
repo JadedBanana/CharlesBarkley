@@ -357,9 +357,10 @@ def multiply_color_tuple(color, factor):
     """
     Multiplies the values in the tuple by the factor.
     """
+    color2 = []
     for i in range(len(color)):
-        color[i] = int(color[i] * factor + 0.5)
-    return color
+        color2.append(int(color[i] * factor + 0.5))
+    return tuple(color2)
 
 
 def upper_per_word(input_str):
