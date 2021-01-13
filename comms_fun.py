@@ -546,8 +546,9 @@ def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, t
         # Draw the next player name.
         if next_bracket == len(remaining_text):
             break
-        drawer.text((txt_x, txt_y), players[1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-        txt_x+= action_font.getsize(players[1])[0]
+        ind2 = int(remaining_text[next_bracket + 1])
+        drawer.text((txt_x, txt_y), players[ind2][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+        txt_x+= action_font.getsize(players[ind2][1])[0]
 
         # Trim remaining_text.
         remaining_text = remaining_text[next_bracket + 3:]
