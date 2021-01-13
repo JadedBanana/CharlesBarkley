@@ -826,7 +826,8 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
-            hunger_games_makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y, player[2])
+            hunger_games_makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y)
+            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
 
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
