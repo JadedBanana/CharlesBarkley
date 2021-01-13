@@ -514,7 +514,7 @@ async def randomwiki(self, message, argument, is_in_guild):
     await message.channel.send(wiki_page.url)
 
 
-def hunger_games_makeimage_pfp(playerid, image, pfp_x, pfp_y, dead=False):
+def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False):
     """
     Draws a player's pfp at the given x and y.
     """
@@ -526,7 +526,7 @@ def hunger_games_makeimage_pfp(playerid, image, pfp_x, pfp_y, dead=False):
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=util.multiply_color_tuple((255, 255, 255), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR), mid=util.multiply_color_tuple((128, 128, 128), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR))
     image.paste(player_pfp, (pfp_x, pfp_y))
     # Draws border around player icons.
-    image.line([(pfp_x - 1, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
+    drawer.line([(pfp_x - 1, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
 
 
 def hunger_games_makeimage_player_statuses(players, placement=False):
@@ -561,7 +561,7 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
         current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
         for player in split:
             # Gets pfp, pastes onto image.
-            hunger_games_makeimage_pfp(player[0], player_statuses, current_x, current_y, player[2])
+            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2])
 
             # Writes name and status / placement.
             player_name = player[1]
