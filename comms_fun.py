@@ -529,6 +529,30 @@ def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False
     drawer.line([(pfp_x - 1, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
 
 
+def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_font):
+    while remaining_text:
+        # Get the index of the NEXT {n}.
+        next_bracket = len(remaining_text)
+        for ind2 in range(len(players)):
+            bracket_pos = remaining_text.find('{' + str(ind2) + '}')
+            if not bracket_pos + 1:
+                continue
+            next_bracket = min(next_bracket, bracket_pos)
+
+        # Draw the text up to the next bracket.
+        drawer.text((txt_x, txt_y), remaining_text[:next_bracket], font=action_font, fill=(255, 255, 255))
+        txt_x+= action_font.getsize(remaining_text[:next_bracket])[0]
+
+        # Draw the next player name.
+        if next_bracket == len(remaining_text):
+            break
+        drawer.text((txt_x, txt_y), players[1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+        txt_x+= action_font.getsize(players[1])[0]
+
+        # Trim remaining_text.
+        remaining_text = remaining_text[next_bracket + 3:]
+
+
 def hunger_games_makeimage_player_statuses(players, placement=False):
     """
     Generates a player status image.
@@ -588,97 +612,6 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
     return player_statuses
 
 
-def hunger_games_makeimage_win_old(win_action, desc=None, dead=False):
-    """
-    Displays the winner.
-    Like the makeimage_action method, but without all the previous and count and whatnot.
-    """
-    # Makes the font
-    action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
-
-    # Gets action desc width, if any.
-    action_desc_width = action_font.getsize(desc)[0]
-
-    # Gets the image width.
-    # Also makes the full action text while we're at it.
-    image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if desc else -1
-    image_height = constants.HG_ACTION_ROWHEIGHT + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if desc else -1)
-    if desc:
-        image_height+= 0 # todo
-    text_sizes = []
-
-    # Tests for text boundaries
-    full_action_text = win_action['act']
-    for ind2 in range(len(win_action['players'])):
-        full_action_text = full_action_text.replace('{' + str(ind2) + '}', win_action['players'][ind2][1])
-    text_width = action_font.getsize(full_action_text)[0]
-    image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
-    text_sizes.append(text_width)
-    # Tests for image boundaries
-    image_width = max(image_width, constants.HG_ICON_SIZE * len(win_action['players']) + constants.HG_ICON_BUFFER * (len(win_action['players']) + 1))
-
-    # Preps to draw.
-    action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(action_image)
-    current_y = constants.HG_ICON_BUFFER
-
-    # Draw the description, if any.
-    if desc:
-        current_x = int((image_width - action_desc_width) / 2)
-        player_drawer.rectangle(
-            [(current_x - constants.HG_HEADER_BORDER_BUFFER, current_y - constants.HG_HEADER_BORDER_BUFFER),
-             (current_x + action_desc_width + constants.HG_HEADER_BORDER_BUFFER, current_y + constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER)],
-            constants.HG_HEADER_BACKGROUND_COLOR,
-            constants.HG_HEADER_BORDER_COLOR
-        )
-        player_drawer.text((current_x, constants.HG_ICON_BUFFER), desc, font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
-        current_y+= constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3
-
-    # Draw the icons.
-    current_x = int(image_width / 2) - int(len(win_action['players']) / 2 * constants.HG_ICON_SIZE) - int((len(win_action['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
-    # Gets each player's pfp and pastes it onto the image.
-    for player in win_action['players']:
-        player_pfp = util.get_profile_picture(player[0], True)[0]
-        player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
-        # If the player is dead, recolors the pfp.
-        if dead:
-            player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
-        action_image.paste(player_pfp, (current_x, current_y))
-        # Draws border around player icons.
-        player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
-        # Adds to current_x.
-        current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
-
-    # Draws each part of the text.
-    current_x = int((image_width - text_sizes[0]) / 2)
-    current_y+= constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
-    remaining_text = win_action['act']
-    while remaining_text:
-        # Get the index of the NEXT {n}.
-        next_bracket = len(remaining_text)
-        for ind2 in range(len(win_action['players'])):
-            bracket_pos = remaining_text.find('{' + str(ind2) + '}')
-            if not bracket_pos + 1:
-                continue
-            next_bracket = min(next_bracket, bracket_pos)
-
-        # Draw the text up to the next bracket.
-        player_drawer.text((current_x, current_y), remaining_text[:next_bracket], font=action_font, fill=(255, 255, 255))
-        current_x+= action_font.getsize(remaining_text[:next_bracket])[0]
-
-        # Draw the next player name.
-        if next_bracket == len(remaining_text):
-            break
-        ind2 = int(remaining_text[next_bracket + 1])
-        player_drawer.text((current_x, current_y), win_action['players'][ind2][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-        current_x+= action_font.getsize(win_action['players'][ind2][1])[0]
-
-        # Trim remaining_text.
-        remaining_text = remaining_text[next_bracket + 3:]
-
-    return action_image
-
-
 def hunger_games_makeimage_winner(players, desc=None):
     """
     Displays the winner(s).
@@ -699,13 +632,18 @@ def hunger_games_makeimage_winner(players, desc=None):
     text_sizes = []
 
     # Tests for text boundaries
-    full_action_text = constants.HG_TIE_EVENT[0]
-    if len(players) > 2:
-        for player in players[:-1]:
-            full_action_text+= player[1] + constants.HG_TIE_EVENT[1]
+    # Text varies depending on how many winners there are.
+    if len(players > 1):
+        full_action_text = constants.HG_TIE_EVENT[0]
+        if len(players) > 2:
+            for player in players[:-1]:
+                full_action_text+= player[1] + constants.HG_TIE_EVENT[1]
+        else:
+            full_action_text+= players[0][1] + ' '
+        full_action_text+= constants.HG_TIE_EVENT[2] + players[-1][1] + constants.HG_TIE_EVENT[3]
     else:
-        full_action_text+= players[0][1] + ' '
-    full_action_text+= constants.HG_TIE_EVENT[2] + players[-1][1] + constants.HG_TIE_EVENT[3]
+        full_action_text = constants.HG_WINNER_DEAD_EVENT if players[0][2] else constants.HG_WINNER_EVENT
+        full_action_text = full_action_text.replace('{0}', players[0][1])
     text_width = action_font.getsize(full_action_text)[0]
     image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
     text_sizes.append(text_width)
@@ -738,6 +676,7 @@ def hunger_games_makeimage_winner(players, desc=None):
 
     # Draws each part of the text.
     # Text varies depending on how many winners there are.
+    # More than 1:
     if len(players) > 1:
         current_x = int((image_width - text_sizes[0]) / 2)
         current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
@@ -764,6 +703,35 @@ def hunger_games_makeimage_winner(players, desc=None):
             player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
             current_x += action_font.getsize(remaining_text[0])[0]
             remaining_text.remove(remaining_text[0])
+
+    # Only 1:
+    else:
+        # Draws each part of the text.
+        current_x = int((image_width - text_sizes[num]) / 2)
+        current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
+        remaining_text = actions[ind]['act']
+        while remaining_text:
+            # Get the index of the NEXT {n}.
+            next_bracket = len(remaining_text)
+            for ind2 in range(len(actions[ind]['players'])):
+                bracket_pos = remaining_text.find('{' + str(ind2) + '}')
+                if not bracket_pos + 1:
+                    continue
+                next_bracket = min(next_bracket, bracket_pos)
+
+            # Draw the text up to the next bracket.
+            player_drawer.text((current_x, current_y), remaining_text[:next_bracket], font=action_font, fill=(255, 255, 255))
+            current_x += action_font.getsize(remaining_text[:next_bracket])[0]
+
+            # Draw the next player name.
+            if next_bracket == len(remaining_text):
+                break
+            ind2 = int(remaining_text[next_bracket + 1])
+            player_drawer.text((current_x, current_y), actions[ind]['players'][ind2][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+            current_x += action_font.getsize(actions[ind]['players'][ind2][1])[0]
+
+            # Trim remaining_text.
+            remaining_text = remaining_text[next_bracket + 3:]
 
     return action_image
 
@@ -827,29 +795,7 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
         current_y+= constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
-        remaining_text = actions[ind]['act']
-        while remaining_text:
-            # Get the index of the NEXT {n}.
-            next_bracket = len(remaining_text)
-            for ind2 in range(len(actions[ind]['players'])):
-                bracket_pos = remaining_text.find('{' + str(ind2) + '}')
-                if not bracket_pos + 1:
-                    continue
-                next_bracket = min(next_bracket, bracket_pos)
-
-            # Draw the text up to the next bracket.
-            player_drawer.text((current_x, current_y), remaining_text[:next_bracket], font=action_font, fill=(255, 255, 255))
-            current_x+= action_font.getsize(remaining_text[:next_bracket])[0]
-
-            # Draw the next player name.
-            if next_bracket == len(remaining_text):
-                break
-            ind2 = int(remaining_text[next_bracket + 1])
-            player_drawer.text((current_x, current_y), actions[ind]['players'][ind2][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-            current_x+= action_font.getsize(actions[ind]['players'][ind2][1])[0]
-
-            # Trim remaining_text.
-            remaining_text = remaining_text[next_bracket + 3:]
+        hunger_games_makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y, action_font)
 
         # Adds to the current_y and num.
         current_y+= constants.HG_FONT_SIZE + constants.HG_ICON_BUFFER
