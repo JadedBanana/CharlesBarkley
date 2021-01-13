@@ -787,8 +787,6 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     # Also makes the full action text while we're at it.
     image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
     image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
-    if action_desc:
-        image_height+= 0 # todo
     text_sizes = []
 
     for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
@@ -798,6 +796,7 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
         full_action_text = actions[ind]['act']
         for ind2 in range(len(actions[ind]['players'])):
             full_action_text = full_action_text.replace('{' + str(ind2) + '}', actions[ind]['players'][ind2][1])
+        # Calculates text widths and appends them to the text_sizes list.
         text_width = action_font.getsize(full_action_text)[0]
         image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
         text_sizes.append(text_width)
@@ -827,13 +826,7 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
-            player_pfp = util.get_profile_picture(player[0], True)[0]
-            player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
-            action_image.paste(player_pfp, (current_x, current_y))
-            # Draws border around player icons.
-            player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
-            # Adds to current_x.
-            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
+            hunger_games_makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y, player[2])
 
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
