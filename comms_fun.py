@@ -533,8 +533,8 @@ def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, t
     while remaining_text:
         # Get the index of the NEXT {n}.
         next_bracket = len(remaining_text)
-        for ind2 in range(len(players)):
-            bracket_pos = remaining_text.find('{' + str(ind2) + '}')
+        for ind in range(len(players)):
+            bracket_pos = remaining_text.find('{' + str(ind) + '}')
             if not bracket_pos + 1:
                 continue
             next_bracket = min(next_bracket, bracket_pos)
@@ -546,9 +546,9 @@ def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, t
         # Draw the next player name.
         if next_bracket == len(remaining_text):
             break
-        ind2 = int(remaining_text[next_bracket + 1])
-        drawer.text((txt_x, txt_y), players[ind2][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-        txt_x+= action_font.getsize(players[ind2][1])[0]
+        ind = int(remaining_text[next_bracket + 1])
+        drawer.text((txt_x, txt_y), players[ind][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+        txt_x+= action_font.getsize(players[ind][1])[0]
 
         # Trim remaining_text.
         remaining_text = remaining_text[next_bracket + 3:]
@@ -1124,8 +1124,6 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     """
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
-    print(hg_dict)
-
     # Brings us to a different phase if we're at the end or beginning of one.
     if current_phase['type'] == 'act':
         if do_previous and current_phase['prev'] < 0:
@@ -1253,6 +1251,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     hg_dict['updated'] = datetime.today()
                     return True
 
+        # If the game isn't generated yet.
         elif any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ']] + [response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
             await message.channel.send('Still generating, be patient.')
             hg_dict['updated'] = datetime.today()
