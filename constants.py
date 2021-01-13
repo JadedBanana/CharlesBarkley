@@ -258,6 +258,39 @@ ULTIMATE_TALENT_FONT = 'assets/times_sans_serif.ttf'
 ULTIMATE_SPRITE_FILETYPE = '.webp'
 ULTIMATE_SPRITE_X = 265
 
+
+# Shipping
+SHIP_EMBED_COLOR = (221 << 16) + (115 << 8) + 215
+SHIP_HEART_IMG = 'assets/heart.png'
+SHIP_ICON_SIZE = 128
+SHIP_MESSAGES = [
+    'I ship {} with {}! Isn\'t it cute?',
+    'If you ask me, {} and {} were meant for each other.',
+    'OTP: {} and {}.',
+    'I ship {} and {}. Cute, right?',
+    'I like {} and {}. Enemies to lovers-sorta thing.',
+    '{} x {}. No further questions.',
+    'Imagine a yandere {} going after {}. Crazy, right?',
+    '{} and {}. Both are huge tsunderes.',
+    '{} and {}. Bakadere relationships are so cute, IMO.',
+    'Say whatever you want. {} and {} is the purest, most amazing ship and I will not stand for any others.',
+    'The fact that there isn\'t a slashfic about {} and {} is an absolute travesty.'
+]
+
+# Uwu
+EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
+UWU_FACES = {
+    ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
+    '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
+    'D:': 'umu', '):': 'umu'
+}
+OWO_FACES = {
+    ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
+    '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
+    'D:': 'omo', '):': 'omo'
+}
+
+
 # Hunger Games
 # =================DEBUG==================
 # 0: nothing
@@ -521,6 +554,8 @@ HG_EVENTS = [
     (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the Arena.'),
     (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')
 ]
+# Files
+HG_IMAGE_PATH = 'current_hg_image.png'
 
 # Weather constants
 WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'
@@ -577,36 +612,6 @@ EVAL_GLOBALS = {
     'sinh': math.sinh, 'tanh': math.tanh,
     # Other
     'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
-}
-
-# Shipping
-SHIP_EMBED_COLOR = (221 << 16) + (115 << 8) + 215
-SHIP_HEART_IMG = 'assets/heart.png'
-SHIP_ICON_SIZE = 128
-SHIP_MESSAGES = [
-    'I ship {} with {}! Isn\'t it cute?',
-    'If you ask me, {} and {} were meant for each other.',
-    'OTP: {} and {}.',
-    'I ship {} and {}. Cute, right?',
-    'I like {} and {}. Enemies to lovers-sorta thing.',
-    '{} x {}. No further questions.',
-    'Imagine a yandere {} going after {}. Crazy, right?',
-    '{} and {}. Both are huge tsunderes.',
-    '{} and {}. Bakadere relationships are so cute, IMO.',
-    'Say whatever you want. {} and {} is the purest, most amazing ship and I will not stand for any others.'
-]
-
-# Uwu
-EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
-UWU_FACES = {
-    ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
-    '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
-    'D:': 'umu', '):': 'umu'
-}
-OWO_FACES = {
-    ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
-    '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
-    'D:': 'omo', '):': 'omo'
 }
 
 # Conversion chars
