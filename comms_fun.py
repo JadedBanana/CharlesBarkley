@@ -631,7 +631,7 @@ def hunger_games_makeimage_winner(players, desc=None):
 
     # Tests for text boundaries
     # Text varies depending on how many winners there are.
-    if len(players > 1):
+    if len(players) > 1:
         full_action_text = constants.HG_TIE_EVENT[0]
         if len(players) > 2:
             for player in players[:-1]:
