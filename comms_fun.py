@@ -514,12 +514,14 @@ async def randomwiki(self, message, argument, is_in_guild):
     await message.channel.send(wiki_page.url)
 
 
-def hunger_games_makeimage_player_statuses(players):
+def hunger_games_makeimage_player_statuses(players, placement=False):
     """
     Generates a player status image.
     The players should be a 2-dimensional list with each entry as:
-    1. User (user class)
-    2. Status (bool, alive = True, dead = False)
+    1. User ID (number)
+    2. User name / nick
+    3. Status (int, 0 = alive, 1 = newly dead, 2 = dead)
+    This can also be used to make player placement images.
     """
     # Splits all the players into their own rows.
     players_split = []
@@ -548,10 +550,10 @@ def hunger_games_makeimage_player_statuses(players):
             player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
             # If player dead, recolor to black and white.
             if player[2]:
-                player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
+                player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=util.multiply_color_tuple((255, 255, 255), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR), mid=util.multiply_color_tuple((128, 128, 128), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR))
             player_statuses.paste(player_pfp, (current_x, current_y))
 
-            # Writes name and status.
+            # Writes name and status / placement.
             player_name = player[1]
             # If the name is too long, we put a ... at the end (thx alex!!!!!)
             if player_font.getsize(player_name)[0] > constants.HG_ICON_SIZE:
@@ -559,67 +561,13 @@ def hunger_games_makeimage_player_statuses(players):
                     player_name = player_name[:-1]
                 player_name+= '...'
             player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER), player_name, font=player_font, fill=(255, 255, 255))
-            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize('Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased'))[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased'), font=player_font, fill=(0, 255, 0) if not player[2] else (255, 102, 102))
-
-            # Draws border around player icons.
-            player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
-
-            # Adds to current_x.
-            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
-
-        # Adds to current_y.
-        current_y+= constants.HG_PLAYERSTATUS_ROWHEIGHT + constants.HG_ICON_BUFFER
-
-    return player_statuses
-
-
-def hunger_games_makeimage_player_placements(players):
-    """
-    Generates a player placement image.
-    The players should be a 2-dimensional list with each entry as:
-    1. User ID (numerical)
-    2. Username / nick
-    3. Placement num
-    """
-    # Splits all the players into their own rows.
-    players_split = []
-    current_split = []
-    for player in players:
-        if len(current_split) == constants.HG_PLAYERSTATUS_WIDTHS[len(players)]:
-            players_split.append(current_split)
-            current_split = []
-        current_split.append(player)
-    players_split.append(current_split)
-
-    # Preps to draw.
-    image_width = constants.HG_ICON_SIZE * len(players_split[0]) + constants.HG_ICON_BUFFER * (len(players_split[0]) + 1)
-    image_height = constants.HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + constants.HG_ICON_BUFFER * (len(players_split) + 1)
-    player_statuses = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(player_statuses)
-    player_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
-
-    # Draws each row, one after another.
-    current_y = constants.HG_ICON_BUFFER
-    for split in players_split:
-        current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
-        for player in split:
-            # Gets pfp, pastes onto image.
-            player_pfp = util.get_profile_picture(player[0], True)[0]
-            player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
-            # If player dead, recolor to black and white.
-            if player[2]:
-                player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=(200, 200, 200), mid=(100, 100, 100))
-            player_statuses.paste(player_pfp, (current_x, current_y))
-
-            # Writes name and status.
-            player_name = player[1]
-            # If the name is too long, we put a ... at the end (thx alex!!!!!)
-            if player_font.getsize(player_name)[0] > constants.HG_ICON_SIZE:
-                while player_font.getsize(player_name + '...')[0] > constants.HG_ICON_SIZE:
-                    player_name = player_name[:-1]
-                player_name+= '...'
-            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER), player_name, font=player_font, fill=(255, 255, 255))
-            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize('{}{}'.format(player[2], constants.NTH_SUFFIXES[player[2]]))[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), '{}{}'.format(player[2], constants.NTH_SUFFIXES[player[2]]), font=player_font, fill=(0, 255, 0) if not player[2] else (255, 102, 102))
+            # Placement
+            if placement:
+                pass
+            # Status
+            else:
+                status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
+                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(status)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), status, font=player_font, fill=constants.HG_STATUS_ALIVE_COLOR if not player[2] else constants.HG_STATUS_DEAD_COLOR)
 
             # Draws border around player icons.
             player_drawer.line([(current_x - 1, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y - 1), (current_x + constants.HG_ICON_SIZE, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y + constants.HG_ICON_SIZE), (current_x - 1, current_y - 1)], width=1, fill=0)
@@ -1248,7 +1196,7 @@ async def hunger_games_send_pregame(message, players, title, uses_bots):
     await message.channel.send(file=file, embed=embed)
 
 
-async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False):
+async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False):
     """
     Sends all midgame embeds, regardless of type.
     """
@@ -1314,20 +1262,14 @@ async def hunger_games_send_midgame(message, hg_dict, count=1, do_previous=False
     elif current_phase['type'] == 'place':
         embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
         embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-        player_statuses = hunger_games_makeimage_player_placements(current_phase['all'])
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=True)
         current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_placements.png')
         player_statuses.save(current_playerstatus_filepath)
         file = discord.File(current_playerstatus_filepath, filename='hg_player_placements.png')
         embed.set_image(url='attachment://hg_player_placements.png')
     # Creates embed for other pages.
     else:
-        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-        embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-        player_statuses = hunger_games_makeimage_action(current_phase['act'], current_phase['next'])
-        current_hg_action_filepath = os.path.join(constants.TEMP_DIR, 'hg_action.png')
-        player_statuses.save(current_hg_action_filepath)
-        file = discord.File(current_hg_action_filepath, filename='hg_action.png')
-        embed.set_image(url='attachment://hg_action.png')
+        log.error(util.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
 
     # Sends image, logs.
     await message.channel.send(file=file, embed=embed)
@@ -1387,7 +1329,7 @@ async def hunger_games_update(self, message, is_in_guild):
 
             # Next command.
             elif any([response == 'n', 'response' == 'next']):
-                await hunger_games_send_midgame(message, hg_dict)
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict)
                 hg_dict['updated'] = datetime.today()
                 return True
 
@@ -1404,7 +1346,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
                     return
                 else:
-                    await hunger_games_send_midgame(message, hg_dict, do_previous=True)
+                    await hunger_games_send_midgame(message, is_in_guild, hg_dict, do_previous=True)
                     hg_dict['updated'] = datetime.today()
                     return True
 

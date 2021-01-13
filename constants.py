@@ -476,14 +476,17 @@ HG_TORNADO_EVENT = {
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
-HG_WINNER_EVENT = 'The winner is {0}!'
-HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
-HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
 # Pregame
 HG_MIN_GAMESIZE = 2
 HG_MAX_GAMESIZE = 48
 HG_PREGAME_TITLE = 'The Reaping'
 HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed\t\tC: Cancel'
+# Winner / Ties
+HG_WINNER_TITLE = 'The Winner'
+HG_TIE_TITLE = 'The Winners'
+HG_WINNER_EVENT = 'The winner is {0}!'
+HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
+HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
 # Graphics
 HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
@@ -496,6 +499,9 @@ HG_TEXT_BUFFER = 6
 HG_HEADER_BORDER_BUFFER = 7
 HG_BACKGROUND_COLOR = (93, 80, 80)
 HG_HEADER_TEXT_COLOR = (255, 207, 39)
+HG_STATUS_ALIVE_COLOR = (0, 255, 0)
+HG_STATUS_DEAD_COLOR = (255, 102, 102)
+HG_STATUS_DEAD_PFP_DARKEN_FACTOR = 0.75
 HG_ACTION_PLAYER_COLOR = (251, 130, 0)
 HG_HEADER_BORDER_COLOR = (255, 255, 255)
 HG_HEADER_BACKGROUND_COLOR = (35, 35, 35)
@@ -507,11 +513,14 @@ HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Acti
 HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\tN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
-HG_WINNER_TITLE = 'The Winner'
-HG_TIE_TITLE = 'The Winners'
 # Events
 HG_EVENT_DEFAULT_CHANCE = 0.2
-HG_EVENTS = [(HG_FLOOD_EVENT, 'The Flood', 'A vicious flood suddenly appears out of nowhere and sweeps through the Arena.'), (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide forest fire.'), (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the Arena.'), (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')]
+HG_EVENTS = [
+    (HG_FLOOD_EVENT, 'The Flood', 'A vicious flood suddenly appears out of nowhere and sweeps through the Arena.'),
+    (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide forest fire.'),
+    (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the Arena.'),
+    (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')
+]
 
 # Weather constants
 WEATHER_API_KEY = 'fbe576aaab00abc563182f75b9725115'

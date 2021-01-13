@@ -352,6 +352,16 @@ async def get_secondmost_recent_message(channel):
     except IndexError:
         raise FirstMessageInChannelError()
 
+
+def multiply_color_tuple(color, factor):
+    """
+    Multiplies the values in the tuple by the factor.
+    """
+    for i in range(len(color)):
+        color[i] = int(color[i] * factor + 0.5)
+    return color
+
+
 def upper_per_word(input_str):
     """
     Makes the beginning of every word an uppercase letter, and all others lowercase.
