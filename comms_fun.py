@@ -720,7 +720,7 @@ def hunger_games_makeimage_winner(players, desc=None):
     return action_image
 
 
-def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, action_desc=None):
+def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
     """
     Displays count number of actions at once.
     """
@@ -736,7 +736,7 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
     image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
     text_sizes = []
 
-    for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
+    for ind in range(start + count):
         if ind == len(actions):
             break
         # Tests for text boundaries
@@ -769,7 +769,7 @@ def hunger_games_makeimage_action(actions, start, count=1, do_previous=False, ac
 
     # Draw the icons.
     num = 0
-    for ind in range(start - count + 1 if do_previous else start, start + 1 if do_previous else start + count):
+    for ind in range(start + count):
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
@@ -879,7 +879,7 @@ def hunger_games_generate_bloodbath(hg_dict):
         hunger_games_generate_statuses(hg_dict['statuses'], actions[-1])
 
     # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': 0, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
 def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None):
@@ -1159,6 +1159,27 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
+        # For previous, we should only ever cancel if the prev is -1.
+        if do_previous:
+            if current_phase['prev'] == -1:
+                print('NFUC')
+                return
+            else:
+                start = max(0, current_phase['prev'] - count + 1)
+                current_phase['prev'] = start - 1
+                current_phase['next'] = start + count
+        else:
+            action_count = len(current_phase['act'])
+            # There is no check for next.
+            if current_phase['next'] == action_count:
+                print('HFDHAU')
+                return
+            else:
+                start = current_phase['next']
+                if start + count > action_count:
+                    count = action_count - start
+                current_phase['prev'] = start - 1
+                current_phase['next'] = start + count
         action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         player_actions = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
