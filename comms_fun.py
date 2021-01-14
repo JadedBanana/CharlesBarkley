@@ -1149,16 +1149,14 @@ async def hunger_games_send_pregame(message, players, title, uses_bots):
     await message.channel.send(file=file, embed=embed)
 
 
-async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False):
+async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False, do_increment=True):
     """
     Sends all midgame embeds, regardless of type.
     """
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
-    do_increment = True
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
-        do_increment = False
         # This section increments the actions in the phase.
         if do_previous:
             # Previous
@@ -1169,7 +1167,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                     return
                 hg_dict['current_phase']-= 1
                 current_phase['next'] = 0
-                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, True)
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, do_previous=True, do_increment=False)
                 return
             else:
                 # Normal increment.
@@ -1185,7 +1183,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
             if current_phase['next'] == action_count:
                 hg_dict['current_phase']+= 1
                 current_phase['prev'] = action_count - 1
-                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count)
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, do_previous=False, do_increment=False)
                 return
             else:
                 # Normal increment.
@@ -1199,30 +1197,50 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         player_actions = hunger_games_makeimage_action(current_phase['act'], start, count, current_phase['desc'] if start == 0 else None)
         file = hunger_games_set_embed_image(player_actions, embed)
-    # Creates embed for win AND tie pages.
-    elif current_phase['type'] in ['win', 'tie']:
-        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-        player_actions = hunger_games_makeimage_winner(current_phase['players'], current_phase['desc'])
-        file = hunger_games_set_embed_image(player_actions, embed)
-    # Creates embed for status pages.
-    elif current_phase['type'] == 'status':
-        embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
-    # Creates embed for placement pages.
-    elif current_phase['type'] == 'place':
-        embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
-    # Creates embed for killcount pages.
-    elif current_phase['type'] == 'kills':
-        embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
-    # Creates embed for other pages.
+
+    # Embeds through everything else act pretty differently.
     else:
-        log.error(util.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
-        return
+        # If we increment, then we increment.
+        if do_increment:
+            if do_previous:
+                hg_dict['current_phase']-= 1
+            else:
+                # We check here to make sure we're not at the end.
+                if current_phase['type'] == 'kills':
+                    return
+                hg_dict['current_phase']+= 1
+            # Check if we're now in an act.
+            if hg_dict['phases'][hg_dict['current_phase']]['type'] == 'act':
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, do_previous=False, do_increment=False)
+
+        # Creates embed for win AND tie pages.
+        if current_phase['type'] in ['win', 'tie']:
+            embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
+            player_actions = hunger_games_makeimage_winner(current_phase['players'], current_phase['desc'])
+            file = hunger_games_set_embed_image(player_actions, embed)
+
+        # Creates embed for status pages.
+        elif current_phase['type'] == 'status':
+            embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
+            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
+            file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Creates embed for placement pages.
+        elif current_phase['type'] == 'place':
+            embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
+            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
+            file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Creates embed for killcount pages.
+        elif current_phase['type'] == 'kills':
+            embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
+            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
+            file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Creates embed for other pages.
+        else:
+            log.error(util.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
+            return
 
     # Sets footer, sends image, logs.
     if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
