@@ -736,7 +736,7 @@ def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
     image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
     text_sizes = []
 
-    for ind in range(start + count):
+    for ind in range(start, start + count):
         # Tests for text boundaries
         full_action_text = actions[ind]['act']
         for ind2 in range(len(actions[ind]['players'])):
@@ -747,7 +747,6 @@ def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
         text_sizes.append(text_width)
         # Tests for image boundaries
         image_width = max(image_width, constants.HG_ICON_SIZE * len(actions[ind]['players']) + constants.HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
-        print(full_action_text)
 
     # Preps to draw.
     action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
@@ -768,7 +767,7 @@ def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
 
     # Draw the icons.
     num = 0
-    for ind in range(start + count):
+    for ind in range(start, start + count):
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
@@ -1165,6 +1164,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                 return
             else:
                 start = max(0, current_phase['prev'] - count + 1)
+                if start + count > current_phase['prev']:
+                    count = current_phase['prev'] - start + 1
                 current_phase['prev'] = start - 1
                 current_phase['next'] = start + count
         else:
@@ -1179,8 +1180,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                     count = action_count - start
                 current_phase['prev'] = start - 1
                 current_phase['next'] = start + count
-        print(current_phase['act'][start])
-        action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
+        action_nums = (start + 1, start + count)
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         player_actions = hunger_games_makeimage_action(current_phase['act'], start, count, current_phase['desc'] if start == 0 else None)
         file = hunger_games_set_embed_image(player_actions, embed)
