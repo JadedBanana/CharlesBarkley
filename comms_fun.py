@@ -1158,7 +1158,10 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
     # Brings us to a different phase if we're at the end or beginning of one.
+    # Since the game begins with an act phase, we only need to check for the beginning of act phases to prevent current_phase indexes of -1.
     if current_phase['type'] == 'act':
+        print(current_phase['next'])
+        print(current_phase['prev'])
         if do_previous and current_phase['prev'] < 0:
             current_phase['next'] = 0
             hg_dict['current_phase']-= 1
@@ -1173,6 +1176,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
             hg_dict['current_phase']-= 1
             current_phase = hg_dict['phases'][hg_dict['current_phase']]
         else:
+            # Since the game ends with a kill count phase, we only need to check for it to see if we're at the end.
             hg_dict['current_phase']+= 1
             current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
