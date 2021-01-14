@@ -211,7 +211,6 @@ async def business_only(self, message, argument, is_in_guild):
     Takes a message and makes the most serious shit out of it.
     Business only.
     """
-
     def do_busy_replace(text):
         # Remove all double spaces.
         while '  ' in input_str:
@@ -1313,7 +1312,16 @@ async def hunger_games_update(self, message, is_in_guild):
         if hg_dict['generated']:
             # Next command (custom size).
             if any([response.startswith(pre) for pre in ['n ', 'next ']]):
-                pass
+                # Gets the first argument after the next.
+                response = response.split(' ')[1]
+                try:
+                    response = int(response)
+                except ValueError:
+                    return
+                # Passes it along to the send_midgame function
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count=max(1, response))
+                hg_dict['updated'] = datetime.today()
+                return True
 
             # Next command.
             elif any([response == 'n', 'response' == 'next']):
@@ -1326,6 +1334,14 @@ async def hunger_games_update(self, message, is_in_guild):
                 if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
                     return
                 else:
+                    # Gets the first argument after the previous.
+                    response = response.split(' ')[1]
+                    try:
+                        response = int(response)
+                    except ValueError:
+                        return
+                    # Passes it along to the send_midgame function
+                    await hunger_games_send_midgame(message, is_in_guild, hg_dict, count=max(1, response))
                     hg_dict['updated'] = datetime.today()
                     return True
 

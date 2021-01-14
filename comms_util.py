@@ -177,9 +177,7 @@ async def weather(self, message, argument, is_in_guild):
         embed.add_field(name='Sunset Time', value='Unavailable \u200b \u200b \u200b', inline=True)
 
     await message.channel.send(embed=embed)
-# ===============================================================
-#                      UTILITY COMMANDS
-# ===============================================================
+
 
 async def evaluate(self, message, argument, is_in_guild):
     """
@@ -223,6 +221,7 @@ async def evaluate(self, message, argument, is_in_guild):
     # Logs evaluated value.
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested eval for expression {}'.format(argument))
 
+
 def convert_num_from_decimal(n, base):
     """
     Converts a number from decimal to another base.
@@ -248,6 +247,7 @@ def convert_num_from_decimal(n, base):
         exp-= 1
 
     return num_str
+
 
 def convert_num_to_decimal(n, base):
     """
@@ -285,6 +285,7 @@ def convert_num_to_decimal(n, base):
 
         return final_num
 
+
 async def get_num_from_argument(message, argument):
     # Gets usages for arguments
     argument = util.normalize_string(argument)
@@ -306,6 +307,7 @@ async def get_num_from_argument(message, argument):
         await message.channel.send(argument + ' is not a valid decimal number')
         return ''
 
+
 async def hexadecimal(self, message, argument, is_in_guild):
     """
     Converts a number to hexadecimal.
@@ -322,6 +324,7 @@ async def hexadecimal(self, message, argument, is_in_guild):
 
     await message.channel.send('0x' + str(num))
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested hex conversion for {}, responded 0x{}'.format(argument, num))
+
 
 async def duodecimal(self, message, argument, is_in_guild):
     """
@@ -340,6 +343,7 @@ async def duodecimal(self, message, argument, is_in_guild):
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested duodec conversion for {}, responded 0d{}'.format(argument, num))
     await message.channel.send('0d' + str(num))
 
+
 async def decimal(self, message, argument, is_in_guild):
     """
     Converts a number to decimal.
@@ -354,6 +358,7 @@ async def decimal(self, message, argument, is_in_guild):
 
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested decimal conversion for {}, responded {}'.format(argument, int(num) if num % 1 == 0 else num))
     await message.channel.send(int(num) if num % 1 == 0 else num)
+
 
 async def octal(self, message, argument, is_in_guild):
     """
@@ -371,6 +376,7 @@ async def octal(self, message, argument, is_in_guild):
 
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested octal conversion for {}, responded 0o{}'.format(argument, num))
     await message.channel.send('0o' + str(num))
+
 
 async def binary(self, message, argument, is_in_guild):
     """
