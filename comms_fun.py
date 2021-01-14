@@ -554,14 +554,14 @@ def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, t
         remaining_text = remaining_text[next_bracket + 3:]
 
 
-def hunger_games_makeimage_player_statuses(players, placement=False):
+def hunger_games_makeimage_player_statuses(players, placement=False, kills=False):
     """
     Generates a player status image.
     The players should be a 2-dimensional list with each entry as:
     1. User ID (number)
     2. User name / nick
     3. Status (int, 0 = alive, 1 = newly dead, 2 = dead)
-    This can also be used to make player placement images.
+    This can also be used to make player placement images and kill count lists.
     """
     # Splits all the players into their own rows.
     players_split = []
@@ -586,7 +586,7 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
         current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
         for player in split:
             # Gets pfp, pastes onto image.
-            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2] and not placement)
+            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2] and not placement and not kills)
 
             # Writes name and status / placement.
             player_name = player[1]
@@ -598,6 +598,10 @@ def hunger_games_makeimage_player_statuses(players, placement=False):
             player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER), player_name, font=player_font, fill=(255, 255, 255))
             # Placement
             if placement:
+                place = str(player[2]) + constants.NTH_SUFFIXES[player[2] % 10] + ' Place'
+                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), place, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, (player[2] - 1) / placement))
+            # Killcount
+            elif kills:
                 pass
             # Status
             else:
@@ -1062,7 +1066,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
             pre_placement_players.remove(player)
     # Reverses placements list to sort from first to last and makes it a phase
     placements.reverse()
-    hg_dict['phases'].append({'type': 'place', 'all': placements})
+    hg_dict['phases'].append({'type': 'place', 'all': placements, 'max': max([place[2] for place in placements]) - 1})
 
     # Sends the first message.
     # Creates the embed.
@@ -1162,7 +1166,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     # Creates embed for placement pages.
     elif current_phase['type'] == 'place':
         embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=True)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
         file = hunger_games_set_embed_image(player_statuses, embed)
     # Creates embed for other pages.
     else:

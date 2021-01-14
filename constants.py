@@ -35,7 +35,7 @@ COMM_LOG_PREFIX = '{} ({}): '
 # Global crap
 BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'
 GLOBAL_PREFIX = 'j!'
-NTH_SUFFIXES = ['th' 'st', 'nd', 'rd', 'th' 'th' 'th' 'th' 'th']
+NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
 
 # YouTube
 YOUTUBE_API_KEY = 'AIzaSyAHuBNRF1Ts5VKoqPnln57ojnrUVGUXINU'
