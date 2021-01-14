@@ -1168,7 +1168,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                 if hg_dict['current_phase'] == 0:
                     return
                 hg_dict['current_phase']-= 1
-                hunger_games_send_midgame(message, is_in_guild, hg_dict, count, True)
+                current_phase['next'] = 0
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, True)
                 return
             else:
                 # Normal increment.
@@ -1183,7 +1184,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
             # There is no check for next, because the final phase is a kill type, not an act type.
             if current_phase['next'] == action_count:
                 hg_dict['current_phase']+= 1
-                hunger_games_send_midgame(message, is_in_guild, hg_dict, count)
+                current_phase['prev'] = action_count - 1
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count)
                 return
             else:
                 # Normal increment.
