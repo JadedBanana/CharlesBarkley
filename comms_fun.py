@@ -1154,9 +1154,11 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     Sends all midgame embeds, regardless of type.
     """
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
+    do_increment = True
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
+        do_increment = False
         # This section increments the actions in the phase.
         if do_previous:
             # Previous
@@ -1218,6 +1220,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     # Creates embed for other pages.
     else:
         log.error(util.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
+        return
 
     # Sets footer, sends image, logs.
     if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
