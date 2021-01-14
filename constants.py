@@ -444,8 +444,8 @@ HG_NORMAL_NIGHT_ACTIONS = {
         {'players': 1, 'act': '{0} and {1} make up stories to entertain themselves.'},
         {'players': 2, 'act': '{0} and {1} team up to ambush {2}.', 'kill': [2], 'credit': [0, 1]},
         {'players': 3, 'act': '{0} fends {1}, {2}, and {3} away from their fire.'},
-        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.', 'kill': [0, 1, 2], 'credit': [3, 4, 5]},
-        {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5], 'credit': [0, 1, 2]}
+        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.', 'kill': [0, 1, 2], 'credit': [3, 4, 5, 3, 4, 5, 3, 4, 5]},
+        {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5], 'credit': [0, 1, 2, 0, 1, 2, 0, 1, 2]}
     ]
 }
 HG_RESTOCK_EVENT = {

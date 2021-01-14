@@ -602,7 +602,12 @@ def hunger_games_makeimage_player_statuses(players, placement=False, kills=False
                 player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), place, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, (player[2] - 1) / placement))
             # Killcount
             elif kills:
-                pass
+                if isinstance(kills, int):
+                    kill_str = str(player[2]) + ' Kill' if player[2] == 1 else ' Kills'
+                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, player[2] / kills))
+                else:
+                    kill_str = '0 Kills'
+                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=constants.HG_STATUS_DEAD_COLOR)
             # Status
             else:
                 status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
@@ -799,6 +804,11 @@ def hunger_games_generate_statuses(hg_statuses, action):
         for ind in action['full']['hurt']:
             hg_statuses[action['players'][ind][0]]['hurt'] = True
 
+    # Kill credit.
+    if 'credit' in action['full']:
+        for ind in action['full']['credit']:
+            hg_statuses[action['players'][ind][0]]['kills']+= 1
+
     # Healing.
     if 'heal' in action['full']:
         for ind in action['full']['heal']:
@@ -943,7 +953,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
     # Create player statuses.
     statuses = {}
     for player in hg_dict['players']:
-        statuses[str(player.id)] = {'name': player.nick if player.nick else player.name, 'dead': False, 'hurt': False, 'inv': []}
+        statuses[str(player.id)] = {'name': player.nick if player.nick else player.name, 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
     hg_dict['statuses'] = statuses
 
     # Makes the phases.
@@ -1068,6 +1078,25 @@ async def hunger_games_generate_full_game(hg_dict, message):
     placements.reverse()
     hg_dict['phases'].append({'type': 'place', 'all': placements, 'max': max([place[2] for place in placements]) - 1})
 
+    # Makes the kill screen pretty much the same way as the placement screen.
+    pre_placement_players = [k for k in hg_dict['statuses']]
+    kill_placements = []
+    while pre_placement_players:
+        max_placement = 0
+        current_placement_players = []
+        for player in pre_placement_players:
+            if max_placement < hg_dict['statuses'][player]['kills']:
+                current_placement_players = [player]
+                min_placement = hg_dict['statuses'][player]['kills']
+            elif min_placement == hg_dict['statuses'][player]['kills']:
+                current_placement_players.append(player)
+        # Adds player to the dict.
+        for player in current_placement_players:
+            kill_placements.append((player, hg_dict['statuses'][player]['name'], min_placement))
+            pre_placement_players.remove(player)
+    # Reverses placements list to sort from first to last and makes it a phase
+    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in placements])})
+
     # Sends the first message.
     # Creates the embed.
     embed = discord.Embed(title='The Bloodbath, Action 1', colour=constants.HG_EMBED_COLOR)
@@ -1167,6 +1196,11 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     elif current_phase['type'] == 'place':
         embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
         player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
+        file = hunger_games_set_embed_image(player_statuses, embed)
+    # Creates embed for killcount pages.
+    elif current_phase['type'] == 'kills':
+        embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
         file = hunger_games_set_embed_image(player_statuses, embed)
     # Creates embed for other pages.
     else:
