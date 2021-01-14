@@ -603,8 +603,8 @@ def hunger_games_makeimage_player_statuses(players, placement=False, kills=False
             # Killcount
             elif kills:
                 if isinstance(kills, int):
-                    kill_str = str(player[2]) + ' Kill' if player[2] == 1 else ' Kills'
-                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, player[2] / kills))
+                    kill_str = str(player[2]) + (' Kill' if player[2] == 1 else ' Kills')
+                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_DEAD_COLOR, constants.HG_STATUS_ALIVE_COLOR, player[2] / kills))
                 else:
                     kill_str = '0 Kills'
                     player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=constants.HG_STATUS_DEAD_COLOR)
@@ -1087,15 +1087,15 @@ async def hunger_games_generate_full_game(hg_dict, message):
         for player in pre_placement_players:
             if max_placement < hg_dict['statuses'][player]['kills']:
                 current_placement_players = [player]
-                min_placement = hg_dict['statuses'][player]['kills']
-            elif min_placement == hg_dict['statuses'][player]['kills']:
+                max_placement = hg_dict['statuses'][player]['kills']
+            elif max_placement == hg_dict['statuses'][player]['kills']:
                 current_placement_players.append(player)
         # Adds player to the dict.
         for player in current_placement_players:
-            kill_placements.append((player, hg_dict['statuses'][player]['name'], min_placement))
+            kill_placements.append((player, hg_dict['statuses'][player]['name'], max_placement))
             pre_placement_players.remove(player)
     # Reverses placements list to sort from first to last and makes it a phase
-    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in placements])})
+    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in kill_placements])})
 
     # Sends the first message.
     # Creates the embed.
