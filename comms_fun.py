@@ -1157,29 +1157,40 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
-        # For previous, we should only ever cancel if the prev is -1.
+        # This section increments the actions in the phase.
         if do_previous:
+            # Previous
+            # This part checks if this action is the first in the list.
+            # We don't want our phase to be -1.
             if current_phase['prev'] == -1:
-                print('NFUC')
+                if hg_dict['current_phase'] == 0:
+                    return
+                hg_dict['current_phase']-= 1
+                hunger_games_send_midgame(message, is_in_guild, hg_dict, count, True)
                 return
             else:
+                # Normal increment.
                 start = max(0, current_phase['prev'] - count + 1)
                 if start + count > current_phase['prev']:
                     count = current_phase['prev'] - start + 1
                 current_phase['prev'] = start - 1
                 current_phase['next'] = start + count
         else:
+            # Next
             action_count = len(current_phase['act'])
-            # There is no check for next.
+            # There is no check for next, because the final phase is a kill type, not an act type.
             if current_phase['next'] == action_count:
-                print('HFDHAU')
+                hg_dict['current_phase']+= 1
+                hunger_games_send_midgame(message, is_in_guild, hg_dict, count)
                 return
             else:
+                # Normal increment.
                 start = current_phase['next']
                 if start + count > action_count:
                     count = action_count - start
                 current_phase['prev'] = start - 1
                 current_phase['next'] = start + count
+        # Standard embed creation.
         action_nums = (start + 1, start + count)
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
         player_actions = hunger_games_makeimage_action(current_phase['act'], start, count, current_phase['desc'] if start == 0 else None)
