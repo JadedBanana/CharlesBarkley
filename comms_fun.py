@@ -1310,8 +1310,19 @@ async def hunger_games_update(self, message, is_in_guild):
     # If the game is already generated.
     if hg_dict['past_pregame']:
         if hg_dict['generated']:
+            # First, cancel confirmations.
+            if hg_dict['confirm_cancel']:
+                if any([response == 'y', response == 'yes']):
+                    del self.curr_hg[str(message.channel.id)]
+                    await message.channel.send('Hunger Games canceled.')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
+
+                elif any([response == 'n', response == 'no']):
+                    hg_dict['confirm_cancel'] = False
+                    await message.channel.send('Understood, cancel aborted.')
+
             # Next command (custom size).
-            if any([response.startswith(pre) for pre in ['n ', 'next ']]):
+            elif any([response.startswith(pre) for pre in ['n ', 'next ']]):
                 # Gets the first argument after the next.
                 response = response.split(' ')[1]
                 try:
@@ -1353,6 +1364,18 @@ async def hunger_games_update(self, message, is_in_guild):
                     await hunger_games_send_midgame(message, is_in_guild, hg_dict, do_previous=True)
                     hg_dict['updated'] = datetime.today()
                     return True
+
+            # Cancel command.
+            elif any([response == 'cancel', response == 'c']):
+                if hg_dict['complete']:
+                    del self.curr_hg[str(message.channel.id)]
+                    await message.channel.send('Thanks for playing!')
+                    log.debug(util.get_comm_start(message, is_in_guild) + 'finished + closed Hunger Games')
+
+                elif not hg_dict['confirm_cancel']:
+                    hg_dict['confirm_cancel'] = True
+                    await message.channel.send('Cancel Hunger Games? (y/n)')
+
 
         # If the game isn't generated yet.
         elif any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ']] + [response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
