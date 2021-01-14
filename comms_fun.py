@@ -1204,6 +1204,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
         if do_increment:
             if do_previous:
                 hg_dict['current_phase']-= 1
+                current_phase = hg_dict['phases'][hg_dict['current_phase']]
+                print(current_phase)
             else:
                 # We check here to make sure we're not at the end.
                 if current_phase['type'] == 'kills':
@@ -1212,7 +1214,8 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                 current_phase = hg_dict['phases'][hg_dict['current_phase']]
             # Check if we're now in an act.
             if current_phase['type'] == 'act':
-                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, do_previous=False, do_increment=False)
+                await hunger_games_send_midgame(message, is_in_guild, hg_dict, count, do_previous=do_previous, do_increment=False)
+                return
 
         # Creates embed for win AND tie pages.
         if current_phase['type'] in ['win', 'tie']:
