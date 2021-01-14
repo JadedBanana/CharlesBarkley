@@ -348,30 +348,30 @@ HG_BLOODBATH_ACTIONS = [
     {'players': 0, 'act': '{0} escapes with a lighter and some rope.', 'give': [8]},
     {'players': 1, 'act': '{0} rips a mace out of {1}\'s hands.', 'give': [1, 0]},
     {'players': 1, 'act': '{0} throws a knife into {1}\'s head.', 'kill': [1]},
-    {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1]},
-    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1]},
-    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1]},
+    {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1], 'credit': [0]},
+    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1], 'credit': [0]},
+    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1], 'credit': [0]},
     {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.', 'give': [3000, 3000, 3000]},
-    {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2]},
-    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2]}
+    {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2], 'credit': [0, 1]},
+    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2], 'credit': [1]}
 ]
 HG_NORMAL_DAY_ACTIONS = {
     'trigger': [
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'}, {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}], 'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
-        {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high ground, so they manage to defeat {1}.', 'give': [-304, 0], 'kill': [1]}], 'fail': [{'players': 0, 'give': [-304]}]},
-        {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.', 'kill':[1]}]},
-        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with a sword.', 'kill': [1]}, {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
-        {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]}, {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'give': [-3, 0]}]},
-        {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. An hour later, {1} steps on it and explodes.', 'kill': [1], 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from their explosives.'}, {'players': 0, 'act': '{0} attempts to create a landmine from their explosives, but blows themselves up in the process.', 'kill': [0]}]},
-        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.', 'kill': [1], 'give': [-5, 0]}, {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and throws it back at {0}, killing them.', 'kill': [0], 'give': [-5, 0], 'hurt': [1]}]},
-        {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.', 'kill': [1]}]},
-        {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a tree, killing them.', 'kill': [1]}]},
+        {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high ground, so they manage to defeat {1}.', 'give': [-304, 0], 'kill': [1], 'credit': [0]}], 'fail': [{'players': 0, 'give': [-304]}]},
+        {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.', 'kill':[1], 'credit': [0]}]},
+        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with a sword.', 'kill': [1], 'credit': [0]}, {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
+        {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]}, {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'credit': [0], 'give': [-3, 0]}]},
+        {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. An hour later, {1} steps on it and explodes.', 'kill': [1], 'credit': [0], 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from their explosives.'}, {'players': 0, 'act': '{0} attempts to create a landmine from their explosives, but blows themselves up in the process.', 'kill': [0]}]},
+        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.', 'kill': [1], 'give': [-5, 0], 'credit': [0]}, {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and throws it back at {0}, killing them.', 'kill': [0], 'credit': [1], 'give': [-5, 0], 'hurt': [1]}]},
+        {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.', 'kill': [1], 'credit': [0]}]},
+        {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a tree, killing them.', 'kill': [1], 'credit': [0]}]},
         {'needs': 8, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a net from their rope, which they use to catch food.', 'give': [8888]}]},
-        {'needs': 12, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [{'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1]}, {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.', 'give': [-12, 0]}]},
-        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and die.', 'give': [-13, 0]}]},
+        {'needs': 12, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [{'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]}, {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.', 'give': [-12, 0]}]},
+        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and die.', 'give': [-13, 0], 'credit': [0]}]},
         {'needs': 301, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.', 'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
         {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.', 'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
-        {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food to get {1} to kill {2}.', 'kill': [2], 'give': [-103, 0, 0]}]}
+        {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food as a motive to get {1} to kill {2}.', 'kill': [2], 'credit': [1], 'give': [-103, 0, 0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} receives clean water from an unknown sponsor.', 'give': [101]},
@@ -399,28 +399,28 @@ HG_NORMAL_DAY_ACTIONS = {
         {'players': 1, 'act': '{0} and {1} split up to look for resources.'},
         {'players': 1, 'act': '{0} sprains their ankle while running away from {1}.', 'hurt': [0]},
         {'players': 1, 'act': '{0} and {1} work together for the day.'},
-        {'players': 1, 'act': '{0} tracks down and kills {1}.', 'kill': [1]},
+        {'players': 1, 'act': '{0} tracks down and kills {1}.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} defeats {1} in a fight, but spares their life.', 'hurt': [1]},
         {'players': 1, 'act': '{0} begs for {1} to kill them. They refuse, keeping {0} alive.'},
-        {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1]},
+        {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.', 'kill': [0, 1]},
-        {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1]},
-        {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2]},
+        {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1], 'credit': [0]},
+        {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2], 'credit': [0, 0]},
         {'players': 2, 'act': '{0} overhears {1} and {2} talking in the distance.'},
-        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2]},
-        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [3]}
+        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2], 'credit': [1]},
+        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [3], 'credit': [1]}
     ]
 }
 HG_NORMAL_NIGHT_ACTIONS = {
     'trigger': [
-        {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'}, {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}], 'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
+        {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'}, {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, ambushing {1} and killing them.', 'kill': [1], 'credit': [0], 'give': [-302, 0]}], 'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0], 'credit': [1]}]},
         {'wounded': True, 'needs': 203, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
         {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-201]}]},
         {'wounded': True, 'needs': 202, 'chance': 0.5, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}]},
         {'wounded': True, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}], 'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
-        {'needs': 303, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} is mauled to death by a bear that was living in the cave they found.', 'kill': [0]}, {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0]}], 'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': -301}]},
-        {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.', 'kill': [1]}]},
-        {'needs': 14, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1]}]},
+        {'needs': 303, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling them.', 'kill': [0], 'credit': [1]}, {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0], 'credit': [1]}], 'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': -301}]},
+        {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.', 'kill': [1], 'credit': [0]}]},
+        {'needs': 14, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1], 'credit': [0]}]},
         {'needs': 104, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]}
     ],
     'normal': [
@@ -439,13 +439,13 @@ HG_NORMAL_NIGHT_ACTIONS = {
         {'players': 0, 'act': '{0} receives explosives from an unknown sponsor.', 'give': [4]},
         {'players': 1, 'act': '{0} convinces {1} to snuggle.'},
         {'players': 1, 'act': '{0} and {1} hold hands.'},
-        {'players': 1, 'act': '{0} pushes {1} into their own fire, burning them alive.', 'kill': [1]},
+        {'players': 1, 'act': '{0} pushes {1} into their own fire, burning them alive.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} and {1} talk about their place in the universe.'},
         {'players': 1, 'act': '{0} and {1} make up stories to entertain themselves.'},
-        {'players': 2, 'act': '{0} and {1} team up to ambush {2}.', 'kill': [2]},
+        {'players': 2, 'act': '{0} and {1} team up to ambush {2}.', 'kill': [2], 'credit': [0, 1]},
         {'players': 3, 'act': '{0} fends {1}, {2}, and {3} away from their fire.'},
-        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.', 'kill': [0, 1, 2]},
-        {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5]}
+        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.', 'kill': [0, 1, 2], 'credit': [3, 4, 5]},
+        {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5], 'credit': [0, 1, 2]}
     ]
 }
 HG_RESTOCK_EVENT = {
@@ -462,7 +462,7 @@ HG_RESTOCK_EVENT = {
 }
 HG_FIRE_EVENT = {
     'trigger': [
-        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the fire.'}]}
+        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the fire.', 'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -474,14 +474,14 @@ HG_FIRE_EVENT = {
         {'players': 0, 'act': '{0} is singed by the flames, but survives.', 'hurt': [0]},
         {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
         {'players': 1, 'act': '{0} pushes {1} into a river, sacrificing themselves.', 'kill': [0]},
-        {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.', 'kill': [0, 1]},
-        {'players': 1, 'act': '{0} kills {1} in order to utilize a body of water safely.', 'kill': [1]},
+        {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.', 'kill': [0, 1], 'credit': [0]},
+        {'players': 1, 'act': '{0} kills {1} in order to utilize a body of water safely.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} and {1} fail to find a safe spot and suffocate.', 'kill': [0, 1]}
     ]
 }
 HG_FLOOD_EVENT = {
     'trigger': [
-        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the water.'}]}
+        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the water.', 'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -490,7 +490,7 @@ HG_FLOOD_EVENT = {
         {'players': 0, 'act': '{0} is swept away by the flood.', 'kill': [0]},
         {'players': 0, 'act': '{0} climbs up a tree, but the waters snap the tree in half, taking the whole thing out.', 'kill': [0]},
         {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
-        {'players': 1, 'act': '{0} pushes {1} into the water.', 'kill': [1]},
+        {'players': 1, 'act': '{0} pushes {1} into the water.', 'kill': [1], 'credit': [0]},
         {'players': 2, 'act': '{0} throws {1} and {2} to safety, sacrificing themselves.', 'kill': [0]},
     ]
 }
@@ -504,8 +504,8 @@ HG_TORNADO_EVENT = {
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': '{0} is carried away by the storm.', 'kill': [0]},
         {'players': 1, 'act': '{0} lets {1} into their shelter.'},
-        {'players': 1, 'act': '{0} kicks {1} away, letting them be sucked up by the tornado.', 'kill': [1]},
-        {'players': 1, 'act': '{0} and {1} run away from the storm together, but as {1} is carried away, they grab {0}, leading them both to their deaths.', 'kill': [0, 1]},
+        {'players': 1, 'act': '{0} kicks {1} away, letting them be sucked up by the tornado.', 'kill': [1], 'credit': [0]},
+        {'players': 1, 'act': '{0} and {1} run away from the storm together, but as {1} is carried away, they grab {0}, leading them both to their deaths.', 'kill': [0, 1], 'credit': [1]},
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
