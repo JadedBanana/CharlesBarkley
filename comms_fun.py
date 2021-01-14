@@ -1157,29 +1157,6 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     """
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
-    # Brings us to a different phase if we're at the end or beginning of one.
-    # Since the game begins with an act phase, we only need to check for the beginning of act phases to prevent current_phase indexes of -1.
-    if current_phase['type'] == 'act':
-        print(current_phase['next'])
-        print(current_phase['prev'])
-        if do_previous and current_phase['prev'] < 0:
-            current_phase['next'] = 0
-            hg_dict['current_phase']-= 1
-            current_phase = hg_dict['phases'][hg_dict['current_phase']]
-        elif not do_previous and current_phase['next'] >= len(current_phase['act']):
-            current_phase['prev'] = len(current_phase['act']) - 1
-            current_phase['done'] = True
-            hg_dict['current_phase']+= 1
-            current_phase = hg_dict['phases'][hg_dict['current_phase']]
-    else:
-        if do_previous:
-            hg_dict['current_phase']-= 1
-            current_phase = hg_dict['phases'][hg_dict['current_phase']]
-        else:
-            # Since the game ends with a kill count phase, we only need to check for it to see if we're at the end.
-            hg_dict['current_phase']+= 1
-            current_phase = hg_dict['phases'][hg_dict['current_phase']]
-
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
         action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
@@ -1216,15 +1193,6 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
     else:
         embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
     await message.channel.send(file=file, embed=embed)
-
-    # Increments next and prev in the action for acts.
-    if current_phase['type'] == 'act':
-        if do_previous:
-            current_phase['prev'] = max(-1, current_phase['prev'] - count)
-            current_phase['next'] = current_phase['prev'] + 2
-        else:
-            current_phase['next'] = min(len(current_phase['act']), current_phase['next'] + count)
-            current_phase['prev'] = current_phase['next'] - 2
 
 
 async def hunger_games_pregame_shuffle(self, message, is_in_guild, player_count, uses_bots):
