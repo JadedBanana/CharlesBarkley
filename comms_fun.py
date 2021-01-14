@@ -879,7 +879,7 @@ def hunger_games_generate_bloodbath(hg_dict):
         hunger_games_generate_statuses(hg_dict['statuses'], actions[-1])
 
     # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': 0, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
 def hunger_games_generate_normal_actions(hg_dict, action_dict, title, desc=None):
@@ -1102,7 +1102,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
     embed = discord.Embed(title='The Bloodbath, Action 1', colour=constants.HG_EMBED_COLOR)
     embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
 
-    action_image = hunger_games_makeimage_action(hg_dict['phases'][0]['act'], 0, 1, False, hg_dict['phases'][0]['desc'])
+    action_image = hunger_games_makeimage_action(hg_dict['phases'][0]['act'], 0, 1, hg_dict['phases'][0]['desc'])
     current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_statuses.png')
     action_image.save(current_playerstatus_filepath)
     file = discord.File(current_playerstatus_filepath, filename='hg_player_statuses.png')
@@ -1180,9 +1180,10 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
                     count = action_count - start
                 current_phase['prev'] = start - 1
                 current_phase['next'] = start + count
+        print(current_phase['act'][start])
         action_nums = ((current_phase['prev'] - count + 1 if do_previous else current_phase['next']) + 1, (current_phase['prev'] + 1 if do_previous else current_phase['next'] + count))
         embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
-        player_actions = hunger_games_makeimage_action(current_phase['act'], current_phase['prev'] if do_previous else current_phase['next'], count, do_previous, current_phase['desc'] if ((current_phase['prev'] if do_previous else current_phase['next']) - count + 1 if do_previous else (current_phase['prev'] if do_previous else current_phase['next'])) == 0 else None)
+        player_actions = hunger_games_makeimage_action(current_phase['act'], start, count, current_phase['desc'] if start == 0 else None)
         file = hunger_games_set_embed_image(player_actions, embed)
     # Creates embed for win AND tie pages.
     elif current_phase['type'] in ['win', 'tie']:
