@@ -737,8 +737,6 @@ def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
     text_sizes = []
 
     for ind in range(start + count):
-        if ind == len(actions):
-            break
         # Tests for text boundaries
         full_action_text = actions[ind]['act']
         for ind2 in range(len(actions[ind]['players'])):
@@ -749,6 +747,7 @@ def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
         text_sizes.append(text_width)
         # Tests for image boundaries
         image_width = max(image_width, constants.HG_ICON_SIZE * len(actions[ind]['players']) + constants.HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
+        print(full_action_text)
 
     # Preps to draw.
     action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
