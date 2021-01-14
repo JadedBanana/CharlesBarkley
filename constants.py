@@ -520,6 +520,7 @@ HG_TIE_TITLE = 'The Winners'
 HG_WINNER_EVENT = 'The winner is {0}!'
 HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
 HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
+HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 # Graphics
 HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
@@ -544,7 +545,7 @@ HG_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nC: Ca
 HG_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nC: Cancel Game'
 HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\tN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
-HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nN: Next Action\tP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 # Events
 HG_EVENT_DEFAULT_CHANCE = 0.2

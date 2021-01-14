@@ -1114,6 +1114,7 @@ async def hunger_games_generate_full_game(hg_dict, message):
     hg_dict['current_phase'] = 0
     hg_dict['confirm_cancel'] = False
     hg_dict['generated'] = True
+    hg_dict['complete'] = False
 
 
 def hunger_games_set_embed_image(image, embed):
@@ -1205,7 +1206,6 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
             if do_previous:
                 hg_dict['current_phase']-= 1
                 current_phase = hg_dict['phases'][hg_dict['current_phase']]
-                print(current_phase)
             else:
                 # We check here to make sure we're not at the end.
                 if current_phase['type'] == 'kills':
@@ -1247,10 +1247,28 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
             return
 
     # Sets footer, sends image, logs.
-    if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
-        embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
+    if hg_dict['complete']:
+        # We're at the front of the game
+        if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
+            embed.set_footer(text=constants.HG_POSTGAME_BEGINNING_DESCRIPTION)
+        # We're at the end of the game
+        elif current_phase['type'] == 'kills':
+            embed.set_footer(text=constants.HG_FINALE_DESCRIPTION)
+        # We're anywhere else
+        else:
+            embed.set_footer(text=constants.HG_POSTGAME_MIDGAME_DESCRIPTION)
     else:
-        embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
+        # We're at the front of the game
+        if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
+            embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
+        # Game complete!
+        elif current_phase['type'] in constants.HG_COMPLETE_PHASE_TYPES:
+            hg_dict['complete'] = True
+            embed.set_footer(text=constants.HG_THE_END_DESCRIPTION)
+        # We're anywhere else in the game
+        else:
+            embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
+    # Send message
     await message.channel.send(file=file, embed=embed)
 
 
