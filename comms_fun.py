@@ -1316,10 +1316,12 @@ async def hunger_games_update(self, message, is_in_guild):
                     del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Hunger Games canceled.')
                     log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
+                    return True
 
                 elif any([response == 'n', response == 'no']):
                     hg_dict['confirm_cancel'] = False
                     await message.channel.send('Understood, cancel aborted.')
+                    return True
 
             # Next command (custom size).
             elif any([response.startswith(pre) for pre in ['n ', 'next ']]):
@@ -1371,19 +1373,20 @@ async def hunger_games_update(self, message, is_in_guild):
                     del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Thanks for playing!')
                     log.debug(util.get_comm_start(message, is_in_guild) + 'finished + closed Hunger Games')
+                    return True
 
                 elif not hg_dict['confirm_cancel']:
                     hg_dict['confirm_cancel'] = True
                     await message.channel.send('Cancel Hunger Games? (y/n)')
+                    return True
 
-
-        # If the game isn't generated yet.
+        # If the game isn't finished generating yet.
         elif any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ']] + [response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
             await message.channel.send('Still generating, be patient.')
             hg_dict['updated'] = datetime.today()
             return True
 
-    # The game is not yet generated.
+    # The game is not yet out of pregame.
     else:
         # Shuffle command (but of a different size).
         if any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ', 's ', 'shuffle ']]):
