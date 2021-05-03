@@ -4,11 +4,13 @@
 from dateutil.tz import tzoffset
 from datetime import datetime
 from iso3166 import countries
+from calendar import isleap
 from math import fabs
 import constants
 import requests
 import discord
 import util
+import json
 
 # Logging
 log = None
@@ -395,13 +397,14 @@ async def binary(self, message, argument, is_in_guild):
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, responded with 0b{}'.format(argument, num))
     await message.channel.send('0b' + str(num))
 
-async def birthday(self, message, argument, is_in_guild):
+def birthday_func(message, argument):
     """
-    Sets a user to be reminded about a person's birthday or lists all birthdays the person will be reminded of.
+    Does the math and string manipulation for the birthday function.
+    Returns a value based on results.
+    -1 = couldnt parse
+    0 = success
+    1 = invalid date
     """
-    # Normalize argument
-    argument = util.normalize_string(argument)
-
     if argument:
         # Adding birthday
         if argument.startswith('add '):
@@ -410,22 +413,119 @@ async def birthday(self, message, argument, is_in_guild):
             lastspace = argument.rfind(' ')
             if lastspace + 1:
                 name = argument[:lastspace]
-                date = argument[lastspace + 1:]
+                date = argument[lastspace + 1:].strip(' ')
 
                 # Check if valid date
                 for c in date:
                     if c not in constants.BIRTHDAY_DATE_CHARS:
-                            log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with invalid date'.format(argument))
-                            await message.channel.send('Invalid date.')
+                        return 1
+                if '/' not in date or date.count('/') > 2:
+                    return 1
+                slash_one = date.find('/')
+                if not slash_one in [1, 2]:
+                    return 1
+                slash_two = date.rfind('/')
+                if len(date) == slash_two + 1:
+                    return 1
+                if slash_one != slash_two:
+                    if not slash_two - slash_one in [2, 3]:
+                        return 1
+                    try:
+                        month = int(date[:slash_one])
+                        day = int(date[slash_one + 1:slash_two])
+                        year = int(date[slash_two + 1:])
+                    except ValueError:
+                        return 1
+                    year_included = True
+                else:
+                    try:
+                        month = int(date[:slash_one])
+                        day = int(date[slash_one + 1:])
+                    except ValueError:
+                        return 1
+                    year_included = False
+                if month < 1 or month > 12:
+                    return 1
+                if day < 0:
+                    return 1
+                if month == 2:
+                    if year_included:
+                        if (isleap(year) and day > 29) or (not isleap(year) and day > 28):
+                            return 1
+                    elif day > 29:
+                        return 1
+                elif day > constants.BIRTHDAY_MONTH_DAYS[month]:
+                    return 1
 
+                # Get user ids, if any mentioned
+                if message.mentions:
+                    # Setup birthdays_added list
+                    birthdays_added = []
+                    for user in message.mentions:
+                        birthdays_added.append(user.id)
+
+                # No user ids, just do generic name instead
+                else:
+                    birthdays_added = [name]
+
+                # Attempt to add users to the long JSON file
+                if birthdays_added:
+                    author_id = str(message.author.id)
+                    birthday_dict = json.load(open(constants.BIRTHDAY_FILE, 'r'))
+                    if author_id not in birthday_dict:
+                        birthday_dict[author_id] = []
+                    for birthday_person in birthdays_added:
+                        this_day_dict = {'day': day, 'month': month}
+                        if year_included:
+                            this_day_dict['year'] = year
+                        if isinstance(birthday_person, str):
+                            this_day_dict['name'] = birthday_person
+                        else:
+                            this_day_dict['id'] = birthday_person
+                        birthday_dict[author_id].append(this_day_dict)
+
+                    # Write the file again
+                    writer = open(constants.BIRTHDAY_FILE, 'w')
+                    # TODO
+
+                # Some error happened.
+                else:
+                    return 2
+
+
+                # Done
+                return 0
+
+            # Add function didn't go because no space, return
+            return -1
 
         # Listing birthdays
         elif argument.startswith('list '):
-            return
+            return 0
 
         # Removing birthdays
         elif argument.startswith('remove '):
-            return
+            return 0
 
-    log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with no / incorrect arguments'.format(argument))
-    await message.channel.send('```Usage:\nj!birthday add [Name / User] MM/DD\nj!birthday add [Name / User] MM/DD/YYYY\nj!birthday remove [Name / User]\nj!birthday list```')
+        # Set warning time
+        elif argument.startswith('warning '):
+            return 0
+
+    return -1
+
+async def birthday(self, message, argument, is_in_guild):
+    """
+    Sets a user to be reminded about a person's birthday or lists all birthdays the person will be reminded of.
+    """
+    # Normalize argument
+    argument = util.normalize_string(argument)
+
+    # Run birthday function
+    val = birthday_func(message, argument)
+
+    if val == 1:
+        log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with invalid date'.format(argument))
+        await message.channel.send('Invalid date.')
+    elif val == -1:
+        log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with no / incorrect arguments'.format(argument))
+        await message.channel.send('```Usage:\nj!birthday add [Name / User] MM/DD\nj!birthday add [Name / User] MM/DD/YYYY\nj!birthday remove [Name / User]\nj!birthday list\nj!birthday warning [days]```')

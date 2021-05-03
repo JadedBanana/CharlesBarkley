@@ -633,6 +633,8 @@ PFP_DEFAULT_SIZE = 1024
 
 # Birthday constants
 BIRTHDAY_DATE_CHARS = '0123456789/'
+BIRTHDAY_MONTH_DAYS = [0, 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+BIRTHDAY_FILE = 'save/birthdays.json'
 
 # Base conversion base prefixes
 NONDECIMAL_BASES = {
