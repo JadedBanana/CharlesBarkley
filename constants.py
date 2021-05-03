@@ -1,6 +1,6 @@
 # Constants file
 # General use
-VERSION = '0.3.3'
+VERSION = '0.4.0'
 
 # Developer stuff
 DEVELOPER_DISCORD_IDS = [
@@ -631,6 +631,10 @@ PFP_SIZE_PREFIX = '?size='
 PFP_FILETYPE = '.webp'
 PFP_DEFAULT_SIZE = 1024
 
+# Birthday constants
+BIRTHDAY_DATE_CHARS = '0123456789/'
+
+# Base conversion base prefixes
 NONDECIMAL_BASES = {
     '0x': [16, 'hexadecimal'],
     '0d': [12, 'duodecimal'],
@@ -669,8 +673,9 @@ HELP_MSG = '''```
 ===============
     UTILITY
 ===============
+- birthday: Sets the bot to remind you of a specific date
 - weather: Give the name of a city and will report the current weather at that location
-- calc / eval: Give a math equation and it will be evaluated as one (python eval() function)
+- calc / eval: Evaluates a mathematical expression
 - hex / hexadecimal: Converts a number to hexadecimal
 - duo / duodec / duodecimal: Converts a number to duodecimal
 - dec / decimal: Converts a number to decimal

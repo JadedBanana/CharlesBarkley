@@ -394,3 +394,38 @@ async def binary(self, message, argument, is_in_guild):
 
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, responded with 0b{}'.format(argument, num))
     await message.channel.send('0b' + str(num))
+
+async def birthday(self, message, argument, is_in_guild):
+    """
+    Sets a user to be reminded about a person's birthday or lists all birthdays the person will be reminded of.
+    """
+    # Normalize argument
+    argument = util.normalize_string(argument)
+
+    if argument:
+        # Adding birthday
+        if argument.startswith('add '):
+            # Split up argument.
+            argument = argument[4:]
+            lastspace = argument.rfind(' ')
+            if lastspace + 1:
+                name = argument[:lastspace]
+                date = argument[lastspace + 1:]
+
+                # Check if valid date
+                for c in date:
+                    if c not in constants.BIRTHDAY_DATE_CHARS:
+                            log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with invalid date'.format(argument))
+                            await message.channel.send('Invalid date.')
+
+
+        # Listing birthdays
+        elif argument.startswith('list '):
+            return
+
+        # Removing birthdays
+        elif argument.startswith('remove '):
+            return
+
+    log.debug(util.get_comm_start(message, is_in_guild) + 'ran birthday command with no / incorrect arguments'.format(argument))
+    await message.channel.send('```Usage:\nj!birthday add [Name / User] MM/DD\nj!birthday add [Name / User] MM/DD/YYYY\nj!birthday remove [Name / User]\nj!birthday list```')
