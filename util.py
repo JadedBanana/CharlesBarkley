@@ -11,6 +11,8 @@ import requests
 import discord
 import os
 
+database = DB(dbname=constants.DATABASE_NAME, host=constants.DATABASE_HOST, port=constants.DATABASE_PORT, user=constants.DATABASE_USER, passwd=constants.DATABASE_PASSWORD)
+
 def prod(iterable,*, start=1):
     """
     Returns product of all values in iterable, starting at start
@@ -388,3 +390,10 @@ def upper_per_word(input_str):
         else:
             input_str = input_str[:i] + input_str[i].lower() + input_str[i + 1:]
     return input_str
+
+
+def query(query_str):
+    """
+    Performs a query to the database.
+    """
+    return database.query(query_str)

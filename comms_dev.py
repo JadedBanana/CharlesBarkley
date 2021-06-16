@@ -214,7 +214,7 @@ async def bash(self, message, argument, is_in_guild):
     Runs bash using the arguments presented in the argument.
     """
     # Import subprocess so we can do the call
-    import subprocess;
+    import subprocess
     process = subprocess.Popen(argument.split(' '), stdout=subprocess.PIPE)
 
     # Get decoded version of the output.
@@ -228,3 +228,19 @@ async def bash(self, message, argument, is_in_guild):
         await message.channel.send('No output')
     else:
         await message.channel.send('Bash output: ```' + decoded_output + '```')
+
+
+async def query(self, message, argument, is_in_guild):
+    """
+    Runs an SQL query using the arguments presented in the argument.
+    """
+    query_response = repr(util.query(argument))
+
+    # Send report and log.
+    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered query execution of command ' + argument)
+    if len(query_response) > 2000:
+        await message.channel.send('Query output greater than 2000 characters')
+    elif not query_response:
+        await message.channel.send('No output')
+    else:
+        await message.channel.send('Query output: ```' + query_response + '```')
