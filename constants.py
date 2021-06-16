@@ -682,7 +682,6 @@ HELP_MSG = '''```
 ===============
     UTILITY
 ===============
-- birthday: Sets the bot to remind you of a specific date
 - weather: Give the name of a city and will report the current weather at that location
 - calc / eval: Evaluates a mathematical expression
 - hex / hexadecimal: Converts a number to hexadecimal
