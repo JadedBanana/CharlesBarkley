@@ -1,7 +1,11 @@
-from exceptions import *
+# ===============================================================
+#                 UTILITY METHODS (NOT COMMANDS)
+# ===============================================================
 from math import factorial
-import constants
+from exceptions import *
 from PIL import Image
+from pg import DB
+import constants
 import colorsys
 import requests
 import discord

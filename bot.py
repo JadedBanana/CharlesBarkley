@@ -1,6 +1,6 @@
-# Jadi3Pi bot file
-
-# Imports
+# ===============================================================
+#                         MAIN BOT CLASS
+# ===============================================================
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
 import comms_other
