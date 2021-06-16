@@ -106,7 +106,8 @@ class JadieClient(discord.Client):
             'ultimate': comms_fun.ultimate, 'talent': comms_fun.ultimate,
             'shsl': comms_fun.shsl,
             'hungergames': comms_fun.hunger_games_start, 'hg': comms_fun.hunger_games_start, 'hunger': comms_fun.hunger_games_start, 'hungry': comms_fun.hunger_games_start,
-            'birthday': comms_util.birthday, 'bday': comms_util.birthday
+            'birthday': comms_util.birthday, 'bday': comms_util.birthday,
+            'query': comms_dev.query
         }
 
     async def on_ready(self):
