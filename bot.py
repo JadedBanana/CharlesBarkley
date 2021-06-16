@@ -90,7 +90,6 @@ class JadieClient(discord.Client):
             'weather': comms_util.weather,
             'uwu': comms_fun.uwuify, 'uwuify': comms_fun.uwuify,
             'owo': comms_fun.owoify, 'owoify': comms_fun.owoify,
-            'business': comms_fun.business_only, 'businessonly': comms_fun.business_only,
             'thankyou': comms_fun.thank_you, 'ty': comms_fun.thank_you, 'thanks': comms_fun.thank_you
         }
 

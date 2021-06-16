@@ -206,37 +206,6 @@ async def owoify(self, message, argument, is_in_guild):
     await uwuify(self, message, argument, is_in_guild, True)
 
 
-async def business_only(self, message, argument, is_in_guild):
-    """
-    Takes a message and makes the most serious shit out of it.
-    Business only.
-    """
-    def do_busy_replace(text):
-        # Remove all double spaces.
-        while '  ' in input_str:
-            input_str = input_str.replace('  ', ' ')
-
-        # Replace all emotes.
-        for key in constants.BUSINESS_EMOTE_FIND_AND_REPLACE:
-            text = text.replace(' ' + key + ' ', ' ' + constants.BUSINESS_EMOTE_FIND_AND_REPLACE[key] + ' ')
-
-        return str(text)
-
-    # If an argument was provided, we business replace it.
-    if argument:
-        await message.channel.send(do_busy_replace(argument))
-
-    # Otherwise, we attempt to do it on the second-most recent message.
-    else:
-        try:
-            content = await util.get_secondmost_recent_message(message.channel)
-            if content:
-                await message.channel.send(do_busy_replace(content))
-        # If we got a little error, we pass.
-        except FirstMessageInChannelError:
-            pass
-
-
 async def ship(self, message, argument, is_in_guild):
     """
     Ships 2 or more users together.
