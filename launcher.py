@@ -1,40 +1,35 @@
-# Jadi3Pi launch file
-# Meant to be run as part of a crontab that activates once every 2 minutes.
+"""
+Jadi3Pi launch file.
+Uses the lib.cron_checker class to make sure that only one instance of the bot is running at a time.
+If the bot isn't running right now, then the bot gets launched.
+"""
 
-# Set the working directory to what we want so our imports work correctly
-# Also checks the OS to make sure we load into the correct working directory
-import platform
-import os
+if __name__ == '__main__':
 
-on_windows = platform.system() == 'Windows'
-if on_windows:
-    os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
-else:
-    os.chdir('/home/pi/Jadi3Pi')
+    # First things first, load up the .env variables.
+    from lib.util import environment
+    environment.load_dotenv()
 
-# Next, import cron and get the current cronstring.
-from lib import cron_checker, bot
+    # Next, import cron and get the current cron string.
+    from lib import cron_checker, bot
+    from time import sleep
+    cron_str_1 = cron_checker.get_cronstring()
 
-cronstr_1 = cron_checker.get_cronstring()
+    # If there isn't a cron string, we try again a second later.
+    if not cron_str_1:
+        sleep(1)
+        cron_str_1 = cron_checker.get_cronstring()
 
-# If there isn't a cronstr, we try again a second later.
-# If there still isn't one, we skip all this crap and begin.
-import time
-if not cronstr_1:
-    time.sleep(1)
-    cronstr_1 = cron_checker.get_cronstring()
+    # If there STILL isn't a cron string, then we immediately launch the bot.
+    # Otherwise, we test for a second cron string about a minute later.
+    if cron_str_1:
+        # Wait a little less than a minute, then get the current cron string again.
+        sleep(55)
+        cron_str_2 = cron_checker.get_cronstring()
 
-if cronstr_1:
-    # Wait a little less than a minute.
-    time.sleep(55)
+        # If the two cron strings are not the same, then we exit.
+        if cron_str_1 != cron_str_2:
+            exit(0)
 
-    # Get the current cronstring again.
-    cronstr_2 = cron_checker.get_cronstring()
-
-    # If the two cronstrings are not the same, then we exit.
-    if cronstr_1 != cronstr_2:
-        exit(0)
-
-# If it passed, we continue.
-
-bot.launch(on_windows)
+    # If it passed, we continue.
+    bot.launch(not environment.get('DEPLOYMENT_CLIENT'))
