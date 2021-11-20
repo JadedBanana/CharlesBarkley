@@ -9,11 +9,9 @@ from lib.commands.dev import comms_dev
 from lib.commands.fun import comms_fun
 from lib.util import util, environment
 import constants
-import platform
 import discord
 import logging
 import socket
-import os
 
 # Gets start time
 bot_start_time = datetime.today()

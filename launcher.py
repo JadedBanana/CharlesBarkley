@@ -4,7 +4,11 @@ Uses the lib.cron_checker class to make sure that only one instance of the bot i
 If the bot isn't running right now, then the bot gets launched.
 """
 
-if __name__ == '__main__':
+def launch():
+    """
+    Launch method.
+    Performs some checks, then launches the bot.
+    """
 
     # First things first, load up the .env variables.
     from lib.util import environment
@@ -48,3 +52,8 @@ if __name__ == '__main__':
     # Now, finally launch the bot.
     from lib import bot
     bot.launch()
+
+
+# If this is the main thread, launch.
+if __name__ == '__main__':
+    launch()
