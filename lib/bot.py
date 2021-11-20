@@ -208,9 +208,6 @@ class JadieClient(discord.Client):
 def launch(on_windows):
     client = JadieClient(on_windows)
 
-    # Next, start the cron loop so we don't end up running more than one of these at once.
-    cron_checker.start_cron_loop()
-
     # Logging new instance
     start_str = 'Starting new instance of JadieClient'
     run_str = 'Running on {} ({})'.format(socket.gethostname(), 'Windows' if on_windows else 'Linux')
