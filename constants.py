@@ -37,13 +37,6 @@ BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'
 GLOBAL_PREFIX = 'j!'
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
 
-# Database Credentials
-DATABASE_NAME = 'pi'
-DATABASE_HOST = '127.0.0.1'
-DATABASE_PORT = 5432
-DATABASE_USER = 'pi'
-DATABASE_PASSWORD = 'password'
-
 # YouTube
 YOUTUBE_API_KEY = 'AIzaSyAHuBNRF1Ts5VKoqPnln57ojnrUVGUXINU'
 YOUTUBE_QUOTA_RESET_HOUR = 3
