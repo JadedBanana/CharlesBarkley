@@ -209,10 +209,16 @@ def launch():
     # Right here, instantiating the client object!
     client = JadieClient()
 
-    # All this crap around client.run occurs only if we can't connect initially.
+    # Attempt to connect the client.
     try:
         client.run(constants.BOT_TOKEN)
-        os._exit(0)
+
+    # If a connection can't be made, then log that error and exit.
     except ClientConnectorError:
         logging.critical('Cannot connect to Discord.')
-        os._exit(-1)
+        exit(-1)
+
+    # If the client loop ever stops running, the process should terminate.
+    finally:
+        logging.critical('Bot terminated unexpectedly')
+        exit(-2)
