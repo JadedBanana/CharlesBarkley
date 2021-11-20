@@ -11,7 +11,7 @@ import constants
 import platform
 import discord
 import socket
-import cron
+from lib import cron_checker
 from lib.util import util, logger
 import os
 
@@ -209,7 +209,7 @@ def launch(on_windows):
     client = JadieClient(on_windows)
 
     # Next, start the cron loop so we don't end up running more than one of these at once.
-    cron.start_cron_loop()
+    cron_checker.start_cron_loop()
 
     # Logging new instance
     start_str = 'Starting new instance of JadieClient'

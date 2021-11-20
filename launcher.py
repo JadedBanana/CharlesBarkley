@@ -13,28 +13,28 @@ else:
     os.chdir('/home/pi/Jadi3Pi')
 
 # Next, import cron and get the current cronstring.
-import cron
-cronstr_1 = cron.get_cronstring()
+from lib import cron_checker, bot
+
+cronstr_1 = cron_checker.get_cronstring()
 
 # If there isn't a cronstr, we try again a second later.
 # If there still isn't one, we skip all this crap and begin.
 import time
 if not cronstr_1:
     time.sleep(1)
-    cronstr_1 = cron.get_cronstring()
+    cronstr_1 = cron_checker.get_cronstring()
 
 if cronstr_1:
     # Wait a little less than a minute.
     time.sleep(55)
 
     # Get the current cronstring again.
-    cronstr_2 = cron.get_cronstring()
+    cronstr_2 = cron_checker.get_cronstring()
 
     # If the two cronstrings are not the same, then we exit.
     if cronstr_1 != cronstr_2:
         exit(0)
 
 # If it passed, we continue.
-import bot
 
 bot.launch(on_windows)

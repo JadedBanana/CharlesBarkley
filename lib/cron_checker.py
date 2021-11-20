@@ -2,10 +2,14 @@
 Cron class is used in conjunction with cronjobs to automatically handle reboots and make sure that
 only one instance of the bot is running at any given time.
 """
+# Imports
 import os.path as path
-import constants
 import threading
 import random
+import base64
+
+# Variable setting
+CRONTAB_CHECK_FILE = '.croncheck'
 
 # get cronstring is used for the launcher
 def get_cronstring():
