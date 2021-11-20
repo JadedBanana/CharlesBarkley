@@ -1,1 +1,7 @@
+# Dotenv file
 **/*.env
+
+# Machine-specific data
+/logs
+/temp
+/.idea
