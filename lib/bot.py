@@ -2,102 +2,40 @@
 #                         MAIN BOT CLASS
 # ===============================================================
 from aiohttp.client_exceptions import ClientConnectorError
-from datetime import datetime, timedelta
-from lib.commands.other import comms_other
-from lib.commands.util import comms_util
-from lib.commands.dev import comms_dev
-from lib.commands.fun import comms_fun
-from lib.util import util, environment
-import constants
+from lib.util import environment
+from datetime import datetime
 import discord
 import logging
 import socket
 
-# Gets start time
-bot_start_time = datetime.today()
-
 class JadieClient(discord.Client):
 
-    # Keeps track of who we're copying by server and then id (hehehe)
-    copied_users = {}
 
-    # Keeps track of Hunger Games.
-    curr_hg = {}
-
-    # Keeps track of if the last attempt at randomyt was quota blocked.
-    quota_blocked_last_time = False
-
-    # Dict of commands gives easy automation so no switch statement required
-    public_command_dict = {}
-    developer_command_dict = {}
-
-    # Time since initial run.
-    bot_start_time = bot_start_time
-
-    # Time since last disconnect.
-    bot_uptime = None
-
-    # Keeps track of if this is the first time we've connected or not
-    connected_before = False
-    reconnected_since = False
-
-    # Keep track of whether or not we should ignore the developer.
-    ignore_developer = False
-
-    # Whether or not
-    reboot_confirmation = False
-
-
-    # ===============================================================
-    #                     GLOBAL BOT COMMANDS
-    # ===============================================================
     def __init__(self):
         """
-        Sets up the commands.
+        Instantiates the bot.
         """
         # Discord client init
         discord.Client.__init__(self)
 
-        # Sets the public_command_dict!
-        self.public_command_dict = {
-            'help': comms_other.help_command,
-            'runtime': comms_other.runtime,
-            'copy': comms_fun.copy_user,
-            'stopcopying': comms_fun.stop_copying,
-            'uptime': comms_other.uptime,
-            'hex': comms_util.hexadecimal, 'hexadecimal': comms_util.hexadecimal,
-            'duo': comms_util.duodecimal, 'duodec': comms_util.duodecimal, 'duodecimal': comms_util.duodecimal,
-            'dec': comms_util.decimal, 'decimal': comms_util.decimal,
-            'oct': comms_util.octal, 'octal': comms_util.octal,
-            'bin': comms_util.binary, 'binary': comms_util.binary,
-            'randomyt': comms_fun.randomyt, 'randomyoutube': comms_fun.randomyt, 'ytroulette': comms_fun.randomyt, 'youtuberoulette': comms_fun.randomyt,
-            'calc': comms_util.evaluate, 'eval': comms_util.evaluate, 'calculate': comms_util.evaluate, 'evaluate': comms_util.evaluate,
-            'randomwiki': comms_fun.randomwiki, 'randomwikipedia': comms_fun.randomwiki, 'wikiroulette': comms_fun.randomwiki, 'wikipediaroulette': comms_fun.randomwiki,
-            'ship': comms_fun.ship,
-            'weather': comms_util.weather,
-            'uwu': comms_fun.uwuify, 'uwuify': comms_fun.uwuify,
-            'owo': comms_fun.owoify, 'owoify': comms_fun.owoify,
-            'thankyou': comms_fun.thank_you, 'ty': comms_fun.thank_you, 'thanks': comms_fun.thank_you
-        }
+        # Bot start time and bot uptime.
+        self.bot_start_time = datetime.today()
+        self.bot_uptime = None
 
-        # Sets the developer command_dict
-        self.developer_command_dict = {
-            'localip': comms_dev.get_local_ip,
-            'toggleignoredev': comms_dev.toggle_ignore_dev,
-            'getpid': comms_dev.get_pid, 'localpid': comms_dev.get_pid, 'pid': comms_dev.get_pid,
-            'reboot': comms_dev.remote_reboot, 'restart': comms_dev.remote_reboot,
-            'update': comms_dev.update_remote,
-            'sendlog': comms_dev.send_log,
-            'loglist': comms_dev.log_list, 'logs': comms_dev.log_list,
-            'bash': comms_dev.bash,
-            'ultimate': comms_fun.ultimate, 'talent': comms_fun.ultimate,
-            'shsl': comms_fun.shsl,
-            'hungergames': comms_fun.hunger_games_start, 'hg': comms_fun.hunger_games_start, 'hunger': comms_fun.hunger_games_start, 'hungry': comms_fun.hunger_games_start
-        }
+        # Connection variables.
+        # Keeps track of if this is the first time we've connected or not.
+        self.connected_before = False
+        self.reconnected_since = False
+
+        # Dict of commands gives easy automation so no switch statement required
+        self.public_command_dict = {}
+        self.developer_command_dict = {}
+
 
     async def on_ready(self):
         """
-        Activates when client is ready for use on Discord (connected and ready)
+        Activates when client is ready for use on Discord (connected and ready).
+        Mostly just logs the active guilds and stores the bot uptime.
         """
         # Logs username and connection to discord
         logging.info(f'{self.user} is ready')
@@ -112,28 +50,33 @@ class JadieClient(discord.Client):
         # Bot uptime
         self.bot_uptime = datetime.today()
 
+
     async def on_connect(self):
         """
-        Whenever the bot connects to discord.
+        Whenever the bot connects to discord, this method launches.
+        Good for logging purposes.
         """
         # Connected_before ensures that we don't log the first time we go through.
         if self.connected_before:
             logging.info(f'{self.user} has reconnected to Discord')
         else:
             self.connected_before = True
-        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
-        # Marks ONLY when a reconnect has happened since the last disconnect
+        # Reconnected_since makes sure we're not putting 2 disconnect messages in a row.
+        # Marks ONLY when a reconnect has happened since the last disconnect.
         self.reconnected_since = True
+
 
     async def on_disconnect(self):
         """
-        Whenever the bot disconnects from discord.
+        Whenever the bot disconnects from discord, this method launches.
+        Good for logging purposes.
         """
         # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
         # Marks ONLY when a reconnect has happened since the last disconnect
         if self.reconnected_since:
             logging.info(f'{self.user} has disconnected from Discord')
             self.reconnected_since = False
+
 
     async def on_message(self, message):
         """
@@ -142,54 +85,6 @@ class JadieClient(discord.Client):
         # Checks to make sure the message, channel, and author exist.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
-
-        # Checks to see if the author was developer.
-        author_is_developer = message.author.id in constants.DEVELOPER_DISCORD_IDS
-
-        # If we're on Windows and the author was not developer and we're ignoring everyone but the author, we return
-        if self.on_windows and not author_is_developer and constants.ON_WINDOWS_ONLY_RESPOND_TO_DEV:
-            return
-        # If the author was developer and we're ignoring the developer, we return (unless the command was to toggle ignore developer)
-        elif author_is_developer and self.ignore_developer:
-            if not message.content.startswith('j!toggleignoredev'):
-                return
-
-        # If the channel is a TextChannel, we check to make sure the guild exists and is good.
-        is_in_guild = isinstance(message.channel, discord.TextChannel)
-        if is_in_guild and not message.guild:
-            return
-
-        # Reactive commands (will return True if method should return now)
-        # =================================================================
-        if str(message.channel.id) in self.curr_hg:
-            if await comms_fun.hunger_games_update(self, message, is_in_guild): # Hunger games
-                return
-            else:
-                if self.curr_hg[str(message.channel.id)]['updated'] < datetime.now() - timedelta(hours=1):
-                    del self.curr_hg[str(message.channel.id)]
-                    await message.channel.send('Hunger Games canceled due to inactivity.')
-                    logging.debug(util.get_comm_start(message, is_in_guild) + 'triggered Hunger Games expiration')
-        elif await comms_fun.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
-            return
-        if author_is_developer and self.reboot_confirmation: # Reboot confirmation is dev-only
-            await comms_dev.confirm_reboot(self, message, is_in_guild)
-
-        # Prompted commands
-        # ==================
-        command, argument = util.get_command_from_message(message)
-
-        # Immediately returns if no command
-        if not command:
-            return
-
-        # Grabs specific method from dict and runs command
-        if command in self.public_command_dict.keys():
-            await self.public_command_dict[command](self, message, argument, is_in_guild)
-
-        # If the user is dev, we cycle through the developer dict as well.
-        if author_is_developer:
-            if command in self.developer_command_dict.keys():
-                await self.developer_command_dict[command](self, message, argument, is_in_guild)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
@@ -209,7 +104,7 @@ def launch():
 
     # Attempt to connect the client.
     try:
-        client.run(constants.BOT_TOKEN)
+        client.run(environment.get('BOT_TOKEN'))
 
     # If a connection can't be made, then log that error and exit.
     except ClientConnectorError:
