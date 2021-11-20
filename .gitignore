@@ -5,3 +5,5 @@
 /logs
 /temp
 /.idea
+**/__pycache__
+**/*.croncheck
