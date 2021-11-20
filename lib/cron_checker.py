@@ -7,13 +7,15 @@ import os.path as path
 import threading
 import random
 
+
 # Constants setting
 CRONTAB_CHECK_FILE = '.croncheck'
 CRONTAB_WAIT_INTERVAL = 45
 CRONTAB_STR_LENGTH = 64
 CRONTAB_CHAR_POSSIBILITIES = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
 
-# get_cronstring is used for the launcher
+
+# get_cronstring is used for the launcher.
 def get_cronstring():
     """
     Gets the cronstring from the file.
@@ -26,7 +28,8 @@ def get_cronstring():
     with open(CRONTAB_CHECK_FILE, 'r') as r:
         return r.read()
 
-# this class runs the loop
+
+# This class runs an infinite loop constantly writing new shit to the cron file.
 class CronLoop(threading.Thread):
 
     def run(self):
@@ -40,7 +43,7 @@ class CronLoop(threading.Thread):
                 w.write(cron_str)
             time.sleep(CRONTAB_WAIT_INTERVAL)
 
-# starts the cron loop
+# Starts the cron loop. Used to write new shit to the cron file, forever.
 def start_cron_loop():
     """
     Starts the cron loop.

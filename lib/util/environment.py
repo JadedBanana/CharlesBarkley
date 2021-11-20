@@ -7,7 +7,7 @@ import os
 
 # List of variables we should expect to see in every .env file.
 EXPECTED_DOTENV_VARS = [
-    'DEPLOYMENT_CLIENT', 'LAUNCH_RUN_CRONCHECK'
+    'DEPLOYMENT_CLIENT', 'LAUNCH_RUN_CRONCHECK',
     'LOGGING_DEBUG_MODE', 'LOG_TO_CONSOLE', 'LOG_TO_FILE', 'DO_LEVEL_HEADERS', 'DO_TIMESTAMPS', 'LOGS_DIR',
     'BOT_TOKEN', 'GLOBAL_PREFIX',
     'YOUTUBE_API_KEY', 'YOUTUBE_SEARCH_COUNT', 'YOUTUBE_RICKROLL_CHANCE'
@@ -15,6 +15,7 @@ EXPECTED_DOTENV_VARS = [
 # List of expected .env types. Used in both load_dotenv and get.
 EXPECTED_DOTENV_TYPES = {
     'DEPLOYMENT_CLIENT': bool,
+    'LAUNCH_RUN_CRONCHECK': bool,
     'LOGGING_DEBUG_MODE': bool,
     'LOG_TO_CONSOLE': bool,
     'LOG_TO_FILE': bool,

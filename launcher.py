@@ -11,10 +11,10 @@ if __name__ == '__main__':
     environment.load_dotenv()
 
     # Next, see if we're supposed to do the croncheck. If so, do that!
+    from lib import cron_checker
     if environment.get('LAUNCH_RUN_CRONCHECK'):
 
         # Import cron and get the current cron string.
-        from lib import cron_checker, bot
         from time import sleep
         cron_str_1 = cron_checker.get_cronstring()
 
@@ -40,10 +40,11 @@ if __name__ == '__main__':
 
     # Logging message.
     import logging
-    logging.info('Passed cron check, performing basic setup')
+    logging.info('Passed startup checks, performing basic setup')
 
     # Start the cron loop so that any instances of this class after this one don't start while we're running.
     cron_checker.start_cron_loop()
 
-    # If it passed, we continue.
-    bot.launch(not environment.get('DEPLOYMENT_CLIENT'))
+    # Now, finally launch the bot.
+    from lib import bot
+    bot.launch()
