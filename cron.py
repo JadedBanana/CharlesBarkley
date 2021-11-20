@@ -1,3 +1,7 @@
+"""
+Cron class is used in conjunction with cronjobs to automatically handle reboots and make sure that
+only one instance of the bot is running at any given time.
+"""
 import os.path as path
 import constants
 import threading

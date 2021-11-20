@@ -6,7 +6,7 @@ import constants
 import discord
 import socket
 import string
-import util
+from lib.util import util
 import os
 
 # Logging

@@ -3,17 +3,16 @@
 # ===============================================================
 from aiohttp.client_exceptions import ClientConnectorError
 from datetime import datetime, timedelta
-import comms_other
-import comms_util
-import comms_dev
-import comms_fun
+from lib.commands.other import comms_other
+from lib.commands.util import comms_util
+from lib.commands.dev import comms_dev
+from lib.commands.fun import comms_fun
 import constants
 import platform
 import discord
-import logger
 import socket
 import cron
-import util
+from lib.util import util, logger
 import os
 
 # Outer-level crap

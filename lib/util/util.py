@@ -2,7 +2,7 @@
 #                 UTILITY METHODS (NOT COMMANDS)
 # ===============================================================
 from math import factorial
-from exceptions import *
+from lib.util.exceptions import *
 from PIL import Image
 import constants
 import colorsys

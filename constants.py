@@ -583,7 +583,7 @@ WEATHER_WIND_DIRECTIONS = {
 
 # Globals for the eval function
 import math
-import util
+from lib.util import util
 
 EVAL_GLOBALS = {
     # Math overall

@@ -4,13 +4,11 @@
 from dateutil.tz import tzoffset
 from datetime import datetime
 from iso3166 import countries
-from calendar import isleap
 from math import fabs
 import constants
 import requests
 import discord
-import util
-import json
+from lib.util import util
 
 # Logging
 log = None
