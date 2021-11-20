@@ -1,3 +1,13 @@
+# InvalidDotenvFileError is raised when issues reading in .env file.
+class InvalidDotenvFileError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason
+
+# UndefinedVariableError is raised when variables in .env file are defined incorrectly or not at all.
+class UndefinedVariableError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason
+
 # Used in __get_closest_user to disclose why an empty list would be returned
 class NoUserSpecifiedError(Exception):
     def __init__(self, args=None): Exception.__init__(self, args)
@@ -9,3 +19,4 @@ class ArgumentTooShortError(Exception):
 # Used in __get_secondmost_recent_message when it cannot be found
 class FirstMessageInChannelError(Exception):
     def __init__(self, args=None): Exception.__init__(self, args)
+
