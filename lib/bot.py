@@ -7,21 +7,13 @@ from lib.commands.other import comms_other
 from lib.commands.util import comms_util
 from lib.commands.dev import comms_dev
 from lib.commands.fun import comms_fun
+from lib.util import util, environment
 import constants
 import platform
 import discord
+import logging
 import socket
-from lib import cron_checker
-from lib.util import util, logger
 import os
-
-# Outer-level crap
-# Establishes logger
-log = logger.JLogger()
-comms_fun.log = log
-comms_util.log = log
-comms_other.log = log
-comms_dev.log = log
 
 # Gets start time
 bot_start_time = datetime.today()
@@ -61,14 +53,12 @@ class JadieClient(discord.Client):
     # ===============================================================
     #                     GLOBAL BOT COMMANDS
     # ===============================================================
-    def __init__(self, on_windows):
+    def __init__(self):
         """
         Sets up the commands.
         """
         # Discord client init
         discord.Client.__init__(self)
-
-        self.on_windows = on_windows
 
         # Sets the public_command_dict!
         self.public_command_dict = {
@@ -205,39 +195,24 @@ class JadieClient(discord.Client):
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
-def launch(on_windows):
-    client = JadieClient(on_windows)
+def launch():
+    """
+    Launches the JadieClient.
 
+    Raises:
+        SystemExit: Bot can't connect to Discord. Exit.
+    """
     # Logging new instance
-    start_str = 'Starting new instance of JadieClient'
-    run_str = 'Running on {} ({})'.format(socket.gethostname(), 'Windows' if on_windows else 'Linux')
-    log.info('')
-    log.info('=' * (max(len(start_str), len(run_str)) + 1))
-    log.info(start_str)
-    log.info(run_str)
-    log.info('=' * (max(len(start_str), len(run_str)) + 1))
+    logging.info('Starting new instance of JadieClient')
+    logging.info(f'Running on {socket.gethostname()} ({"Deployment" if environment.get("DEPLOYMENT_CLIENT") else "Development"} Version)')
 
-    # Making the temp dir if it doesn't exist already.
-    if not os.path.isdir(constants.TEMP_DIR):
-        os.mkdir(constants.TEMP_DIR)
+    # Right here, instantiating the client object!
+    client = JadieClient()
 
     # All this crap around client.run occurs only if we can't connect initially.
     try:
         client.run(constants.BOT_TOKEN)
         os._exit(0)
     except ClientConnectorError:
-        log.info('Cannot connect to Discord.')
+        logging.critical('Cannot connect to Discord.')
         os._exit(-1)
-
-# __main__, just in case.
-if __name__ == '__main__':
-    # Set the working directory to what we want so our imports work correctly
-    # Also checks the OS to make sure we load into the correct working directory
-    running_on_windows = platform.system() == 'Windows'
-    if running_on_windows:
-        os.chdir('C:/Users/popki/Projects/Python/Jadi3Pi')
-    else:
-        os.chdir('/home/pi/Jadi3Pi')
-
-    # Then we launch.
-    launch(running_on_windows)

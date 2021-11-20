@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # Performing logger setup.
     from lib.util import logger
-    logger.debug_setup() if environment.get('LOGGING_DEBUG_MODE') else logger.basic_setup()
+    logger.basic_setup()
 
     # Logging message.
     import logging
