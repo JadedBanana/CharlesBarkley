@@ -26,7 +26,7 @@ class JadieClient(discord.Client):
 
         # Load the commands.
         from lib import commands
-        commands.load_commands()
+        self.public_command_dict, self.developer_command_dict = commands.load_commands()
 
         # Discord client init
         discord.Client.__init__(self)
