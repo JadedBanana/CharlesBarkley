@@ -8,6 +8,11 @@ class UndefinedVariableError(ValueError):
     def __init__(self, reason):
         self.strerr = reason
 
+# DuplicateCommandError is raised when the command loader finds two commands using the same command name.
+class DuplicateCommandError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason
+
 # Used in __get_closest_user to disclose why an empty list would be returned
 class NoUserSpecifiedError(Exception):
     def __init__(self, args=None): Exception.__init__(self, args)

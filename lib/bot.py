@@ -15,9 +15,6 @@ class JadieClient(discord.Client):
         """
         Instantiates the bot.
         """
-        # Discord client init
-        discord.Client.__init__(self)
-
         # Bot start time and bot uptime.
         self.bot_start_time = datetime.today()
         self.bot_uptime = None
@@ -27,9 +24,12 @@ class JadieClient(discord.Client):
         self.connected_before = False
         self.reconnected_since = False
 
-        # Dict of commands gives easy automation so no switch statement required
-        self.public_command_dict = {}
-        self.developer_command_dict = {}
+        # Load the commands.
+        from lib import commands
+        commands.load_commands()
+
+        # Discord client init
+        discord.Client.__init__(self)
 
 
     async def on_ready(self):
