@@ -100,14 +100,14 @@ class JadieClient(discord.Client):
         Activates when client is ready for use on Discord (connected and ready)
         """
         # Logs username and connection to discord
-        log.info(f'{self.user} is ready')
+        logging.info(f'{self.user} is ready')
 
         # Logs list of servers the bot is in
         if not self.guilds:
-            log.info(f'No active guilds')
+            logging.info(f'No active guilds')
         else:
             for guild in self.guilds:
-                log.info(f'Active in guild "{guild.name}" with id {guild.id}')
+                logging.info(f'Active in guild "{guild.name}" with id {guild.id}')
 
         # Bot uptime
         self.bot_uptime = datetime.today()
@@ -118,7 +118,7 @@ class JadieClient(discord.Client):
         """
         # Connected_before ensures that we don't log the first time we go through.
         if self.connected_before:
-            log.info(f'{self.user} has reconnected to Discord')
+            logging.info(f'{self.user} has reconnected to Discord')
         else:
             self.connected_before = True
         # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
@@ -132,7 +132,7 @@ class JadieClient(discord.Client):
         # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
         # Marks ONLY when a reconnect has happened since the last disconnect
         if self.reconnected_since:
-            log.info(f'{self.user} has disconnected from Discord')
+            logging.info(f'{self.user} has disconnected from Discord')
             self.reconnected_since = False
 
     async def on_message(self, message):
@@ -168,7 +168,7 @@ class JadieClient(discord.Client):
                 if self.curr_hg[str(message.channel.id)]['updated'] < datetime.now() - timedelta(hours=1):
                     del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Hunger Games canceled due to inactivity.')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'triggered Hunger Games expiration')
+                    logging.debug(util.get_comm_start(message, is_in_guild) + 'triggered Hunger Games expiration')
         elif await comms_fun.copy_msg(self, message, is_in_guild): # Copy will copy a user's message if they're in the copy dict, does not work in channels with hunger games
             return
         if author_is_developer and self.reboot_confirmation: # Reboot confirmation is dev-only
