@@ -6,7 +6,7 @@ import constants
 import discord
 import socket
 import string
-from lib.util import util
+from lib.util import misc
 import os
 
 # Logging
@@ -22,7 +22,7 @@ async def get_local_ip(self, message, argument, is_in_guild):
         local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
 
         # Sends msg and logs.
-        log.debug(util.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
         await message.channel.send(local_ip)
 
     # Linux Part
@@ -32,7 +32,7 @@ async def get_local_ip(self, message, argument, is_in_guild):
         local_ips = [pre + ': ' + netifaces.ifaddresses(pre)[netifaces.AF_INET][0]['addr'] for pre in constants.LINUX_IP_PREFIXES]
 
         # Sends msg and logs.
-        log.debug(util.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
         for local_ip in local_ips:
             await message.channel.send(local_ip)
 
@@ -45,7 +45,7 @@ async def get_pid(self, message, argument, is_in_guild):
     pid = os.getpid()
 
     # Logs and returns PID
-    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered local PID, returned ' + str(pid))
+    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered local PID, returned ' + str(pid))
     await message.channel.send(pid)
 
 
@@ -56,7 +56,7 @@ async def remote_reboot(self, message, argument, is_in_guild):
     So we have a contingency!
     """
     self.reboot_confirmation = True
-    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered remote reboot, confirming...')
+    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered remote reboot, confirming...')
     await message.channel.send('Confirm remote reboot? (y/n)')
 
 
@@ -65,7 +65,7 @@ async def confirm_reboot(self, message, is_in_guild):
     Confirms the reboot.
     """
     # Create response str.
-    response = util.normalize_string(message.content).lower()
+    response = misc.normalize_string(message.content).lower()
 
     # Yes
     if response.startswith('y'):
@@ -79,7 +79,7 @@ async def confirm_reboot(self, message, is_in_guild):
         next_bot_start_time = datetime(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute) + timedelta(seconds=time_delta_seconds)
 
         # Notify user.
-        log.info(util.get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
+        log.info(misc.get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
         await message.channel.send('Confirmed. Performing remote reboot...')
         await message.channel.send('Bot is estimated to be back up in approximately {} seconds.'.format((next_bot_start_time - current_time).seconds))
 
@@ -89,12 +89,12 @@ async def confirm_reboot(self, message, is_in_guild):
     # No
     elif response.startswith('n'):
         self.reboot_confirmation = False
-        log.info(util.get_comm_start(message, is_in_guild) + 'Aborted remote restart')
+        log.info(misc.get_comm_start(message, is_in_guild) + 'Aborted remote restart')
         await message.channel.send('Remote reboot aborted.')
 
     # Invalid response
     else:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
         await message.channel.send('Invalid response. Confirm? (y/n)')
 
 
@@ -111,7 +111,7 @@ async def update_remote(self, message, argument, is_in_guild):
     decoded_output = process.communicate()[0].decode('utf-8')
 
     # Send report and log.
-    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered remote update.')
+    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered remote update.')
     await message.channel.send('Git output: ```' + decoded_output + '```')
     await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
 
@@ -129,14 +129,14 @@ async def send_log(self, message, argument, is_in_guild):
     # Otherwise, we grab the argument and try to work it into a good target log.
     else:
         # Normalizing the string
-        argument_slim = util.normalize_string(argument)
+        argument_slim = misc.normalize_string(argument)
         for i in range(len(argument_slim) - 1, -1, -1):
             if argument_slim[i] not in string.digits:
                 argument_slim = argument_slim[:i] + argument_slim[i + 1:]
 
         # If the length of our argument isn't now 8, we tell the user that and return.
         if len(argument_slim) != 8:
-            log.debug(util.get_comm_start(message, is_in_guild) + 'Ordered log file, invalid date')
+            log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered log file, invalid date')
             await message.channel.send('Invalid date format. Should be YYYY-MM-DD')
             return
 
@@ -147,12 +147,12 @@ async def send_log(self, message, argument, is_in_guild):
     # We see if that log file exists.
     if os.path.isfile(os.path.join(constants.LOGS_DIR, target_log)) or is_today:
         # Log then send file.
-        log.info(util.get_comm_start(message, is_in_guild) + 'Ordered log file {}, sending'.format(target_log))
+        log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered log file {}, sending'.format(target_log))
         await message.channel.send(file=discord.File(os.path.join(constants.LOGS_DIR, target_log)))
 
     # If the log file doesn't exist, we tell the user that.
     else:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'Ordered log file, file {} does not exist'.format(target_log))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered log file, file {} does not exist'.format(target_log))
         await message.channel.send('Log file {} does not exist.'.format(target_log))
 
 
@@ -161,7 +161,7 @@ async def log_list(self, message, argument, is_in_guild):
     Sends a list of all the log files in the log folder.
     """
     # Logs debug
-    log.debug(util.get_comm_start(message, is_in_guild) + 'Ordered log list.')
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered log list.')
 
     # Gets the file list and file sizes
     dir_files = sorted(os.listdir(constants.LOGS_DIR))
@@ -207,7 +207,7 @@ async def bash(self, message, argument, is_in_guild):
     decoded_output = process.communicate()[0].decode('utf-8')
 
     # Send report and log.
-    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered bash execution of command ' + argument)
+    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered bash execution of command ' + argument)
     if len(decoded_output) > 2000:
         await message.channel.send('Bash output greater than 2000 characters')
     elif not decoded_output:
@@ -220,10 +220,10 @@ async def query(self, message, argument, is_in_guild):
     """
     Runs an SQL query using the arguments presented in the argument.
     """
-    query_response = repr(util.query(argument))
+    query_response = repr(misc.query(argument))
 
     # Send report and log.
-    log.info(util.get_comm_start(message, is_in_guild) + 'Ordered query execution of command ' + argument)
+    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered query execution of command ' + argument)
     if len(query_response) > 2000:
         await message.channel.send('Query output greater than 2000 characters')
     elif not query_response:

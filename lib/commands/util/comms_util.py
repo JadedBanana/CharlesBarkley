@@ -8,7 +8,7 @@ from math import fabs
 import constants
 import requests
 import discord
-from lib.util import util
+from lib.util import misc
 
 # Logging
 log = None
@@ -19,16 +19,16 @@ async def weather(self, message, argument, is_in_guild):
     """
     # Test the argument.
     if not argument:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
         await message.channel.send('Invalid city.')
         return
 
     # Normalize the argument
-    argument = util.normalize_string(argument)
+    argument = misc.normalize_string(argument)
 
     # Testing again.
     if not argument:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested weather, empty city value')
         await message.channel.send('Invalid city.')
         return
 
@@ -38,13 +38,13 @@ async def weather(self, message, argument, is_in_guild):
 
     # If we didn't get weather_json or it's broken, we tell the user that.
     if not weather_json or 'cod' not in weather_json.keys():
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested weather, think it\'s broken')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested weather, think it\'s broken')
         await message.channel.send('Weather service is down, please be patient.')
         return
 
     # If the code is a 404, then we tell the user they have an invalid city.
     if weather_json['cod'] == 404 or any([key not in weather_json.keys() for key in ['name', 'sys', 'main']]):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested weather for city {}, invalid'.format(argument))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested weather for city {}, invalid'.format(argument))
         await message.channel.send('Invalid city.')
         return
 
@@ -82,9 +82,9 @@ async def weather(self, message, argument, is_in_guild):
     # Adds status + thumbnail to embed
     if 'weather' in weather_json.keys() and len(weather_json['weather']) > 0:
         if 'description' in weather_json['weather'][0].keys() and weather_json['weather'][0]['description']:
-            embed.add_field(name='Status', value=util.upper_per_word(weather_json['weather'][0]['description']) + ' \u200b \u200b \u200b', inline=True)
+            embed.add_field(name='Status', value=misc.upper_per_word(weather_json['weather'][0]['description']) + ' \u200b \u200b \u200b', inline=True)
         elif 'main' in weather_json['weather'][0].keys() and weather_json['weather'][0]['main']:
-            embed.add_field(name='Status', value=util.upper_per_word(weather_json['weather'][0]['main']) + ' \u200b \u200b \u200b', inline=True)
+            embed.add_field(name='Status', value=misc.upper_per_word(weather_json['weather'][0]['main']) + ' \u200b \u200b \u200b', inline=True)
         else:
             embed.add_field(name='Status', value='Unavailable \u200b \u200b \u200b', inline=True)
         if 'icon' in weather_json['weather'][0].keys() and weather_json['weather'][0]['icon']:
@@ -201,12 +201,12 @@ async def evaluate(self, message, argument, is_in_guild):
         evaluated = eval(argument, local_globals)
     # For a syntax error, we actually SEND THE ERROR back to the user.
     except SyntaxError as e:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a syntax error'.format(argument))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a syntax error'.format(argument))
         await message.channel.send('Syntax Error on line {}:```{}\n'.format(e.args[1][1], e.args[1][3].split('\n')[0]) + ' ' * (e.args[1][2] - 1) + '^```')
         return
     # For a type error or value error, we send that shit back too.
     except (TypeError, ValueError) as e:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a type error'.format(argument))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested eval for expression {}, got a type error'.format(argument))
         await message.channel.send(repr(e))
         return
 
@@ -219,5 +219,5 @@ async def evaluate(self, message, argument, is_in_guild):
         await message.channel.send(repr(evaluated))
 
     # Logs evaluated value.
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested eval for expression {}'.format(argument))
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'requested eval for expression {}'.format(argument))
 

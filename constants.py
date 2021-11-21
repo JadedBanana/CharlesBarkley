@@ -573,7 +573,7 @@ WEATHER_WIND_DIRECTIONS = {
 
 # Globals for the eval function
 import math
-from lib.util import util
+from lib.util import misc
 
 EVAL_GLOBALS = {
     # Math overall
@@ -581,13 +581,13 @@ EVAL_GLOBALS = {
     # Math constants
     'pi': math.pi, 'e': math.e, 'tau': math.tau, 'inf': math.inf, 'nan': math.nan,
     # Easy baby shit
-    'ceil': math.ceil, 'ncr': util.comb, 'comb': util.comb, 'copysign': math.copysign,
+    'ceil': math.ceil, 'ncr': misc.comb, 'comb': misc.comb, 'copysign': math.copysign,
     'fabs': math.fabs, 'abs': math.fabs, 'factorial': math.factorial, 'floor': math.floor,
     'fmod': math.fmod, 'frexp': math.frexp, 'fsum': math.fsum, 'gcd': math.gcd,
     'isclose': math.isclose, 'isfinite': math.isfinite, 'isinf': math.isinf,
     'isinfinite': math.isinf, 'isnan': math.isnan, 'ldexp': math.ldexp,
-    'modf': math.modf, 'npr': util.perm, 'perm': util.perm, 'prod': util.prod,
-    'product': util.prod, 'remainder': math.remainder, 'trunc': math.trunc,
+    'modf': math.modf, 'npr': misc.perm, 'perm': misc.perm, 'prod': misc.prod,
+    'product': misc.prod, 'remainder': math.remainder, 'trunc': math.trunc,
     'truncate': math.trunc,
     # Power and logarithmic
     'exp': math.exp, 'expm1': math.expm1, 'log': math.log, 'log1p': math.log1p,
@@ -607,7 +607,6 @@ EVAL_GLOBALS = {
 
 # Runtime and Uptime
 RUNTIME_PREFIX = 'Bot has been running for '
-UPTIME_PREFIX = 'Bot has been connected for '
 
 # Ip methods
 LINUX_IP_PREFIXES = ['lo', 'eth0']

@@ -12,7 +12,7 @@ import random
 import string
 import urllib
 import json
-from lib.util import util
+from lib.util import misc
 import os
 
 # Logger
@@ -42,11 +42,11 @@ async def copy_user(self, message, argument, is_in_guild):
     """
     # Tries to get a valid user out of the argument.
     try:
-        users = util.get_closest_users(message, argument, is_in_guild)
+        users = misc.get_closest_users(message, argument, is_in_guild)
     except (ArgumentTooShortError, NoUserSpecifiedError, UnableToFindUserError):
         users = []
     if not users:
-        log.info(util.get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid')
+        log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid')
         await message.channel.send('Invalid user.')
         return
 
@@ -64,7 +64,7 @@ async def copy_user(self, message, argument, is_in_guild):
         # Checks to make sure it isn't self.
         if user == self.user:
             if not len(users) - 1:
-                log.debug(util.get_comm_start(message, is_in_guild) + 'requested copy for this bot')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'requested copy for this bot')
                 await message.channel.send('Yeah, no, I\'m not gonna copy myself.')
             continue
 
@@ -72,9 +72,9 @@ async def copy_user(self, message, argument, is_in_guild):
         await message.channel.send('Now copying user ' + (user.nick if user.nick else user.name))
         if user not in self.copied_users[copied_key]:
             self.copied_users[copied_key].append(user)
-            log.info(util.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', now copying')
+            log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', now copying')
         else:
-            log.info(util.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', already copying')
+            log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', already copying')
 
 
 async def stop_copying(self, message, argument, is_in_guild):
@@ -89,11 +89,11 @@ async def stop_copying(self, message, argument, is_in_guild):
 
     # If the thing exists in the dict
     if copied_key in self.copied_users.keys():
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested to stop copying, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested to stop copying, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
         self.copied_users.pop(copied_key)
         await message.channel.send('No longer copying people in this server.')
     else:
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested to stop copying, already done')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested to stop copying, already done')
         await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
 
 
@@ -194,7 +194,7 @@ async def uwuify(self, message, argument, is_in_guild, use_owo=False):
     # Otherwise, we attempt to do it on the second-most recent message.
     else:
         try:
-            content = await util.get_secondmost_recent_message(message.channel)
+            content = await misc.get_secondmost_recent_message(message.channel)
             if content:
                 await message.channel.send(do_uwu_replace(content))
         # If we got a little error, we pass.
@@ -214,9 +214,9 @@ async def ship(self, message, argument, is_in_guild):
     """
     # Gets the user from the argument.
     try:
-        partner_1 = util.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
+        partner_1 = misc.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
     except (UnableToFindUserError, ArgumentTooShortError):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested ship for user ' + argument + ', invalid')
         await message.channel.send('Invalid user.')
         return
     except NoUserSpecifiedError:
@@ -227,7 +227,7 @@ async def ship(self, message, argument, is_in_guild):
     if not partner_1:
         try:
             # Gets valid users.
-            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=True)
+            users_choices = misc.get_applicable_users(message, is_in_guild, exclude_bots=True)
             # Getting the two users.
             partner_1 = random.choice(users_choices)
             users_choices.remove(partner_1)
@@ -235,30 +235,30 @@ async def ship(self, message, argument, is_in_guild):
         except IndexError:
             if len(users_choices) <= 1:
                 await message.channel.send('There was an error accessing userlist.')
-                log.error(util.get_comm_start(message, is_in_guild) + ' requested shop, bugged userlist')
+                log.error(misc.get_comm_start(message, is_in_guild) + ' requested shop, bugged userlist')
             else:
-                log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
                 await message.channel.send('There aren\'t enough users in here to form a ship!')
             return
 
     else:
         try:
             # Gets valid users.
-            users_choices = util.get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot, exclude_users=[partner_1])
+            users_choices = misc.get_applicable_users(message, is_in_guild, exclude_bots=not partner_1.bot, exclude_users=[partner_1])
             # Getting the second user.
             partner_2 = random.choice(users_choices)
         except IndexError:
-            log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
+            log.debug(misc.get_comm_start(message, is_in_guild) + 'Requested ship, not enough users')
             await message.channel.send('There aren\'t enough users in here to form a ship!')
             return
 
     # Log this ship
-    log.debug(util.get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'Requested ship, shipped {} and {}'.format(partner_1, partner_2))
 
     # Gets the PFP for partner 1 and 2. Also resizes them
-    partner_1_img, partner_1_filepath = util.get_profile_picture(partner_1)
+    partner_1_img, partner_1_filepath = misc.get_profile_picture(partner_1)
     partner_1_img = partner_1_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_1_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
-    partner_2_img, partner_2_filepath = util.get_profile_picture(partner_2)
+    partner_2_img, partner_2_filepath = misc.get_profile_picture(partner_2)
     partner_2_img = partner_2_img.resize((constants.SHIP_ICON_SIZE, constants.SHIP_ICON_SIZE), Image.LANCZOS if partner_2_img.width > constants.SHIP_ICON_SIZE else Image.NEAREST)
 
     # Gets the image for the heart (aww!)
@@ -298,9 +298,9 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
     """
     # Gets the user from the argument.
     try:
-        student = util.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
+        student = misc.get_closest_users(message, argument, is_in_guild, exclude_bots=False, limit=1)[0]
     except (UnableToFindUserError, ArgumentTooShortError):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested ultimate for user ' + argument + ', invalid')
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested ultimate for user ' + argument + ', invalid')
         await message.channel.send('Invalid user.')
         return
     except NoUserSpecifiedError:
@@ -342,7 +342,7 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
             student_name = student_name.strip(student_name[i])
         else:
             i += 1
-    student_name = util.normalize_string(student_name, remove_double_spaces=True)
+    student_name = misc.normalize_string(student_name, remove_double_spaces=True)
 
     # Creates standard user name (white).
     user_writer = ImageDraw.Draw(user_name)
@@ -417,7 +417,7 @@ async def randomyt(self, message, argument, is_in_guild):
     """
     # Rolls the random chance for a rick roll...
     if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
-        log.info(util.get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
+        log.info(misc.get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
         await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
         return
 
@@ -447,11 +447,11 @@ async def randomyt(self, message, argument, is_in_guild):
             target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=constants.YOUTUBE_QUOTA_RESET_HOUR)
 
             # Get time until quota and return that.
-            quota_str = util.calculate_time_passage(target_time - current_time)
+            quota_str = misc.calculate_time_passage(target_time - current_time)
             await message.channel.send('Youtube quota of 100 videos reached. Try again in {}'.format(quota_str))
             # We only put out the quota if it's the first time doing so today.
             if not self.quota_blocked_last_time:
-                log.warning(util.get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
+                log.warning(misc.get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
                 self.quota_blocked_last_time = True
             return
 
@@ -466,7 +466,7 @@ async def randomyt(self, message, argument, is_in_guild):
     choice = random.randint(0, len(video_ids) - 1)
 
     # Return selected video.
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
     await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
     self.quota_blocked_last_time = False
 
@@ -478,7 +478,7 @@ async def randomwiki(self, message, argument, is_in_guild):
     # Simple call.
     wiki_page = wikipedia.page(wikipedia.random(1))
 
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
     await message.channel.send(wiki_page.url)
 
 
@@ -487,11 +487,11 @@ def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False
     Draws a player's pfp at the given x and y.
     """
     # Gathers the profile picture.
-    player_pfp = util.get_profile_picture(playerid, True)[0]
+    player_pfp = misc.get_profile_picture(playerid, True)[0]
     player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
     # If player dead, recolor to black and white.
     if dead:
-        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=util.multiply_color_tuple((255, 255, 255), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR), mid=util.multiply_color_tuple((128, 128, 128), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR))
+        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=misc.multiply_color_tuple((255, 255, 255), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR), mid=misc.multiply_color_tuple((128, 128, 128), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR))
     image.paste(player_pfp, (pfp_x, pfp_y))
     # Draws border around player icons.
     drawer.line([(pfp_x - 1, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
@@ -567,12 +567,12 @@ def hunger_games_makeimage_player_statuses(players, placement=False, kills=False
             # Placement
             if placement:
                 place = str(player[2]) + constants.NTH_SUFFIXES[player[2] % 10] + ' Place'
-                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), place, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, (player[2] - 1) / placement))
+                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), place, font=player_font, fill=misc.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, (player[2] - 1) / placement))
             # Killcount
             elif kills:
                 if isinstance(kills, int):
                     kill_str = str(player[2]) + (' Kill' if player[2] == 1 else ' Kills')
-                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=util.find_color_tuple_midpoint_hsv(constants.HG_STATUS_DEAD_COLOR, constants.HG_STATUS_ALIVE_COLOR, player[2] / kills))
+                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=misc.find_color_tuple_midpoint_hsv(constants.HG_STATUS_DEAD_COLOR, constants.HG_STATUS_ALIVE_COLOR, player[2] / kills))
                 else:
                     kill_str = '0 Kills'
                     player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=constants.HG_STATUS_DEAD_COLOR)
@@ -1211,7 +1211,7 @@ async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_p
 
         # Creates embed for other pages.
         else:
-            log.error(util.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
+            log.error(misc.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
             return
 
     # Sets footer, sends image, logs.
@@ -1245,11 +1245,11 @@ async def hunger_games_pregame_shuffle(self, message, is_in_guild, player_count,
     Shuffles a pregame hunger games cast.
     """
     # Get the user list.
-    user_list = util.get_applicable_users(message, is_in_guild, not uses_bots)
+    user_list = misc.get_applicable_users(message, is_in_guild, not uses_bots)
     if len(user_list) < constants.HG_MIN_GAMESIZE:
         self.curr_hg.pop(str(message.channel.id))
         await message.channel.send('Not enough users in server.')
-        log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+        log.debug(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
 
     # Otherwise, we generate the players and ask if we should proceed.
     else:
@@ -1266,7 +1266,7 @@ async def hunger_games_pregame_shuffle(self, message, is_in_guild, player_count,
 
         # Send the updated cast
         await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
-        log.debug(util.get_comm_start(message, is_in_guild) + 'shuffled Hunger Games instance with {} players'.format(player_count))
+        log.debug(misc.get_comm_start(message, is_in_guild) + 'shuffled Hunger Games instance with {} players'.format(player_count))
 
 
 async def hunger_games_update(self, message, is_in_guild):
@@ -1284,7 +1284,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 if any([response == 'y', response == 'yes']):
                     del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Hunger Games canceled.')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
                     return True
 
                 elif any([response == 'n', response == 'no']):
@@ -1341,7 +1341,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 if hg_dict['complete']:
                     del self.curr_hg[str(message.channel.id)]
                     await message.channel.send('Thanks for playing!')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'finished + closed Hunger Games')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'finished + closed Hunger Games')
                     return True
 
                 elif not hg_dict['confirm_cancel']:
@@ -1386,10 +1386,10 @@ async def hunger_games_update(self, message, is_in_guild):
         elif any([response.startswith('r '), response.startswith('replace ')]):
             # Gets the first two users in the thing.
             try:
-                modified_players = util.get_closest_users(message, response[2:] if response.startswith('r ') else response[8:], is_in_guild, not hg_dict['uses_bots'], limit=2)
+                modified_players = misc.get_closest_users(message, response[2:] if response.startswith('r ') else response[8:], is_in_guild, not hg_dict['uses_bots'], limit=2)
             except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                 await message.channel.send('Invalid user(s).')
-                log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
                 hg_dict['updated'] = datetime.today()
                 return True
             # Conditional
@@ -1397,17 +1397,17 @@ async def hunger_games_update(self, message, is_in_guild):
                 # Both players are in the game
                 if modified_players[1] in hg_dict['players']:
                     await message.channel.send('{} is already in the game.'.format(modified_players[1]))
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, second already there')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, second already there')
                 # First player in game, second not
                 else:
                     hg_dict['players'].insert(hg_dict['players'].index(modified_players[0]), modified_players[1])
                     hg_dict['players'].remove(modified_players[0])
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Replaced {} with {}.'.format(modified_players[0].nick if modified_players[0].nick else modified_players[0].name, modified_players[1].nick if modified_players[1].nick else modified_players[1].name), hg_dict['uses_bots'])
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'replaced a player in Hunger Games instance')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'replaced a player in Hunger Games instance')
             else:
                 # First player not in game
                 await message.channel.send('{} isn\'t in the game.'.format(modified_players[0]))
-                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, first isn\'t there')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, first isn\'t there')
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1416,19 +1416,19 @@ async def hunger_games_update(self, message, is_in_guild):
             # Cancels if the game is already max size.
             if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
                 await message.channel.send('Max size already reached.')
-                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
             else:
                 # Cancels if no more members to add to game.
-                able_users = util.get_applicable_users(message, is_in_guild, hg_dict['uses_bots'], hg_dict['players'])
+                able_users = misc.get_applicable_users(message, is_in_guild, hg_dict['uses_bots'], hg_dict['players'])
                 if not able_users:
                     await message.channel.send('No more users not already in the game.')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, no more users')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, no more users')
                 # Otherwise, goes on.
                 else:
                     added_player = random.choice(able_users)
                     hg_dict['players'].append(added_player)
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1437,23 +1437,23 @@ async def hunger_games_update(self, message, is_in_guild):
             # Cancels if the game is already max size.
             if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
                 await message.channel.send('Max size already reached.')
-                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
             else:
                 # Attempts to add a player.
                 try:
-                    added_player = util.get_closest_users(message, response[2:] if response.startswith('a ') else response[4:], is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
+                    added_player = misc.get_closest_users(message, response[2:] if response.startswith('a ') else response[4:], is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
                 except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                     await message.channel.send('Invalid user.')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
                     hg_dict['updated'] = datetime.today()
                     return True
                 if added_player in hg_dict['players']:
                     await message.channel.send('{} is already in the game.'.format(added_player))
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, already there')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, already there')
                 else:
                     hg_dict['players'].append(added_player)
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1462,12 +1462,12 @@ async def hunger_games_update(self, message, is_in_guild):
             # Cancels if the game is already min size.
             if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
                 await message.channel.send('Min size already reached.')
-                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
             else:
                 # Removes player on the end.
                 removed_player = hg_dict['players'].pop(-1)
                 await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
-                log.debug(util.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1476,23 +1476,23 @@ async def hunger_games_update(self, message, is_in_guild):
             # Cancels if the game is already min size.
             if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
                 await message.channel.send('Min size already reached.')
-                log.debug(util.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
             else:
                 # Attempts to find player.
                 try:
-                    removed_player = util.get_closest_users(message, response[2:] if response.startswith('d ') else (response[4:] if response.starswith('del ') else response[7:]), is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
+                    removed_player = misc.get_closest_users(message, response[2:] if response.startswith('d ') else (response[4:] if response.starswith('del ') else response[7:]), is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
                 except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
                     await message.channel.send('Invalid user.')
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, invalid')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, invalid')
                     hg_dict['updated'] = datetime.today()
                     return True
                 if removed_player in hg_dict['players']:
                     hg_dict['players'].remove(removed_player)
                     await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'removed a player from Hunger Games instance')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'removed a player from Hunger Games instance')
                 else:
                     await message.channel.send('{} isn\'t in the game.'.format(removed_player))
-                    log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, not there')
+                    log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, not there')
             hg_dict['updated'] = datetime.today()
             return True
 
@@ -1506,30 +1506,30 @@ async def hunger_games_update(self, message, is_in_guild):
                         if player.bot:
                             hg_players_no_bots.remove(player)
                 while len(hg_players_no_bots) < constants.HG_MIN_GAMESIZE:
-                    other_players = util.get_applicable_users(message, is_in_guild, True, hg_players_no_bots)
+                    other_players = misc.get_applicable_users(message, is_in_guild, True, hg_players_no_bots)
                     if other_players:
                         hg_players_no_bots.append(random.choice(other_players))
                     else:
                         await message.channel.send('Not enough non-bots to disallow bots.')
-                        log.debug(util.get_comm_start(message, is_in_guild) + 'attempted to remove bots from Hunger Games instance, not enough users')
+                        log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to remove bots from Hunger Games instance, not enough users')
                         hg_dict['updated'] = datetime.today()
                         return True
                 # Allows it.
                 hg_dict['uses_bots'] = False
                 hg_dict['players'] = hg_players_no_bots
                 await hunger_games_send_pregame(message, hg_dict['players'], 'Removed bots from the game.', hg_dict['uses_bots'])
-                log.debug(util.get_comm_start(message, is_in_guild) + 'removed bots from Hunger Games instance')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'removed bots from Hunger Games instance')
             else:
                 hg_dict['uses_bots'] = True
                 await hunger_games_send_pregame(message, hg_dict['players'], 'Allowed bots into the game.', hg_dict['uses_bots'])
-                log.debug(util.get_comm_start(message, is_in_guild) + 'added bots to Hunger Games instance')
+                log.debug(misc.get_comm_start(message, is_in_guild) + 'added bots to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
 
         # Proceed command.
         elif any([response == 'p', response == 'proceed']):
             await message.channel.send('Generating Hunger Games instance...')
-            log.debug(util.get_comm_start(message, is_in_guild) + 'initiated Hunger Games')
+            log.debug(misc.get_comm_start(message, is_in_guild) + 'initiated Hunger Games')
             hg_dict['past_pregame'] = True
             hg_dict['generated'] = False
             await hunger_games_generate_full_game(hg_dict, message)
@@ -1539,7 +1539,7 @@ async def hunger_games_update(self, message, is_in_guild):
         # Cancel command.
         elif any([response == 'c', response == 'cancel']):
             await message.channel.send('Hunger Games canceled.')
-            log.debug(util.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
+            log.debug(misc.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
             del self.curr_hg[str(message.channel.id)]
             hg_dict['updated'] = datetime.today()
             return True
@@ -1570,19 +1570,19 @@ async def hunger_games_start(self, message, argument, is_in_guild):
             player_count = 24
 
         # Get the user list. If user list is < player_count people, we add bots as well.
-        user_list = util.get_applicable_users(message, is_in_guild, True)
+        user_list = misc.get_applicable_users(message, is_in_guild, True)
         uses_bots = False
         if len(user_list) < player_count:
-            user_list = util.get_applicable_users(message, is_in_guild, False)
+            user_list = misc.get_applicable_users(message, is_in_guild, False)
             uses_bots = True
         # If there still aren't enough users, we send error.
         if len(user_list) < constants.HG_MIN_GAMESIZE:
             if len(user_list) == 1:
                 await message.channel.send('There was an error accessing userlist.')
-                log.error(util.get_comm_start(message, is_in_guild) + ' requested hunger games, bugged userlist')
+                log.error(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, bugged userlist')
             else:
                 await message.channel.send('Not enough users in server.')
-                log.debug(util.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+                log.debug(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
 
         # Otherwise, we generate the players and ask if we should proceed.
         else:
@@ -1599,12 +1599,12 @@ async def hunger_games_start(self, message, argument, is_in_guild):
 
             # Send the initial cast
             await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
-            log.debug(util.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
+            log.debug(misc.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
 
 async def thank_you(self, message, argument, is_in_guild):
     """
     Thanks the bot!
     :D
     """
-    log.debug(util.get_comm_start(message, is_in_guild) + 'thanked the bot')
+    log.debug(misc.get_comm_start(message, is_in_guild) + 'thanked the bot')
     await message.channel.send(random.choice(constants.THANKYOU_RESPONSES))

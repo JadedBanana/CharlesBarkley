@@ -56,17 +56,30 @@ def comb(n, r=None):
 def calculate_time_passage(time_delta):
     """
     Creates the time delta string and reports to channel, then returns time delta string.
-    """
-    bot_str = ''
-    if time_delta.days:
-        bot_str+= str(time_delta.days) + 'd '
-    if int(time_delta.seconds / 3600):
-        bot_str+= str(int(time_delta.seconds / 3600)) + 'h '
-    if int(time_delta.seconds / 60):
-        bot_str+= str(int(time_delta.seconds % 3600 / 60)) + 'm '
-    bot_str+= str(time_delta.seconds % 60) + 's '
 
-    return bot_str
+    Arguments:
+        time_delta (datetime.time_delta) : The time delta (change in time).
+    """
+    # Starts out with empty time string.
+    time_str = ''
+
+    # Add on the days.
+    if time_delta.days:
+        time_str += str(time_delta.days) + 'd '
+
+    # Add on the hours.
+    if int(time_delta.seconds / 3600):
+        time_str += str(int(time_delta.seconds / 3600)) + 'h '
+
+    # Add on the minutes.
+    if int(time_delta.seconds / 60):
+        time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
+
+    # Add on the seconds.
+    time_str += str(time_delta.seconds % 60) + 's '
+
+    # Return the final string.
+    return time_str
 
 def get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=None):
     """
