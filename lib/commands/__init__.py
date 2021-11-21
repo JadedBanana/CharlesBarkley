@@ -41,39 +41,39 @@ def load_commands():
             if hasattr(module, 'PUBLIC_COMMAND_DICT') and isinstance(module.PUBLIC_COMMAND_DICT, dict):
 
                 # Iterate through each entry in the command dict and put them into the public command dict.
-                for command_name in module.PUBLIC_COMMAND_DICT:
+                for command_name, command_method in module.PUBLIC_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(module.PUBLIC_COMMAND_DICT[command_name], type(load_commands)):
+                    if isinstance(command_method, type(load_commands)):
 
                         # Log and increment.
-                        logging.info(f"Loading normal command from '{package_name + '.' + subpackage_name}'")
+                        logging.info(f"Loading normal command '{command_name}' from '{package_name + '.' + subpackage_name}'")
                         commands_implemented += 1
 
                         # Put it in!
                         if command_name in public_command_dict or command_name in developer_command_dict:
                             raise DuplicateCommandError(command_name)
                         else:
-                            public_command_dict[command_name] = module.PUBLIC_COMMAND_DICT[command_name]
+                            public_command_dict[command_name] = command_method
 
             # Next, check for a developer command dict.
             if hasattr(module, 'DEVELOPER_COMMAND_DICT') and isinstance(module.DEVELOPER_COMMAND_DICT, dict):
 
                 # Iterate through each entry in the command dict and put them into the developer command dict.
-                for command_name in module.DEVELOPER_COMMAND_DICT:
+                for command_name, command_method in module.DEVELOPER_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(module.DEVELOPER_COMMAND_DICT[command_name], type(load_commands)):
+                    if isinstance(command_method, type(load_commands)):
 
                         # Log and increment.
-                        logging.info(f"Loading developer command from '{package_name + '.' + subpackage_name}'")
+                        logging.info(f"Loading developer command '{command_name}' from '{package_name + '.' + subpackage_name}'")
                         commands_implemented += 1
 
                         # Put it in!
                         if command_name in public_command_dict or command_name in developer_command_dict:
                             raise DuplicateCommandError(command_name)
                         else:
-                            developer_command_dict[command_name] = module.DEVELOPER_COMMAND_DICT[command_name]
+                            developer_command_dict[command_name] = command_method
 
             # Also check for a reactive command list.
             if hasattr(module, 'REACTIVE_COMMAND_LIST') and isinstance(module.REACTIVE_COMMAND_LIST, type(list)):
@@ -95,20 +95,20 @@ def load_commands():
             if hasattr(module, 'SPECIALIZED_COMMAND_DICT') and isinstance(module.SPECIALIZED_COMMAND_DICT, dict):
 
                 # Iterate through each entry in the command dict and put them into the specialized command dict.
-                for command_name in module.SPECIALIZED_COMMAND_DICT:
+                for command_name, command_method in module.SPECIALIZED_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(module.SPECIALIZED_COMMAND_DICT[command_name], type(load_commands)):
+                    if isinstance(command_method, type(load_commands)):
 
                         # Log and increment.
-                        logging.info(f"Loading specialized command from '{package_name + '.' + subpackage_name}'")
+                        logging.info(f"Loading specialized command '{command_name}' from '{package_name + '.' + subpackage_name}'")
                         commands_implemented += 1
 
                         # Put it in!
                         if command_name in specialized_command_dict:
                             raise DuplicateCommandError(command_name)
                         else:
-                            specialized_command_dict[command_name] = module.SPECIALIZED_COMMAND_DICT[command_name]
+                            specialized_command_dict[command_name] = command_method
 
         # Log the total commands implemented this package.
         logging.info(f"Loaded {commands_implemented} commands from command package '{package_name}'")
