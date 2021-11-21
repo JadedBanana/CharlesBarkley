@@ -52,27 +52,6 @@ def comb(n, r=None):
         r = n
     return perm(n, r) / factorial(r)
 
-def normalize_string(input_str, remove_discord_formatting=True, remove_double_spaces=True):
-    """
-    Removes spaces at the start and end as well as double spaces in a string.
-    """
-    # Start spaces
-    while input_str.startswith(' '):
-        input_str = input_str[1:]
-    # End spaces
-    while input_str.endswith(' '):
-        input_str = input_str[:len(input_str) - 1]
-    # Newlines, tabs
-    input_str = input_str.replace('\t', ' ').replace('\n', ' ')
-    # Double spaces
-    if remove_double_spaces:
-        while '  ' in input_str:
-            input_str = input_str.replace('  ', ' ')
-    # Code segments, spoilers, italics/bold
-    if remove_discord_formatting:
-        input_str = input_str.strip('`').strip('*').strip('_')
-    # Return
-    return input_str
 
 def calculate_time_passage(time_delta):
     """

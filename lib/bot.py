@@ -94,7 +94,10 @@ class JadieClient(discord.Client):
         # Check to see if the author was a developer.
         author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
 
-        # Get the message content.
+        # First, if the author is a developer, check if this message is a toggleignoredev command.
+        if author_is_developer and message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev'):
+            # If so, run the command!
+            return await self.toggle_ignore_developer(self, message)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
