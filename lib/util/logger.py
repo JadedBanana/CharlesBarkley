@@ -51,14 +51,14 @@ class BotLogger:
         """
         # Message in a guild
         if isinstance(message.channel, discord.TextChannel):
-            return f'{message.author} (Guild {message.guild}, Channel {message.channel}): '
+            return f'{message.author} ({message.guild}, {message.channel}): '
 
         # Message in DM's
         elif isinstance(message.channel, discord.DMChannel):
             return f'{message.author} (DM): '
 
         # Other (idk how this would work)
-        return f'{message.author} (Unknown Channel {message.channel}): '
+        return f'{message.author} (Mystery Channel: {message.channel}): '
 
 
     @staticmethod
