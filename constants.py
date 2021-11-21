@@ -605,9 +605,6 @@ EVAL_GLOBALS = {
     'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
 }
 
-# Runtime and Uptime
-RUNTIME_PREFIX = 'Bot has been running for '
-
 # Ip methods
 LINUX_IP_PREFIXES = ['lo', 'eth0']
 

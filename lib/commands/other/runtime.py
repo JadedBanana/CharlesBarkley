@@ -1,6 +1,6 @@
 """
-Uptime command.
-Gets how long the bot has been up for.
+Runtime command.
+Gets the bot's running time.
 """
 # Imports
 from lib.util.logger import BotLogger as logging
@@ -9,9 +9,9 @@ from lib.util import messaging
 from datetime import datetime
 
 
-async def uptime(bot, message, argument):
+async def runtime(bot, message, argument):
     """
-    Prints out the uptime of the bot.
+    Prints out the runtime of the bot.
 
     Arguments:
         bot (lib.bot.JadieClient) : The bot object that called this command.
@@ -19,19 +19,19 @@ async def uptime(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Immediately returns if bot start time was not established
-    if not bot.bot_uptime:
-        logging.error(message, 'requested uptime, could not find uptime variable on bot')
-        return await messaging.send_text_message(message, 'An error occurred while getting uptime, sorry! :P')
+    if not bot.bot_start_time:
+        logging.error(message, 'requested runtime, could not find runtime variable on bot')
+        return await messaging.send_text_message(message, 'An error occurred while getting runtime, sorry! :P')
 
     # Gets the time passage string.
-    time_delta = datetime.today() - bot.bot_uptime
+    time_delta = datetime.today() - bot.bot_start_time
     time_str = calculate_time_passage(time_delta)
 
     # Sends report, logs message
-    logging.info(message, f'requested uptime, responded with {time_str}')
-    await messaging.send_text_message(message, f'Jadi3Pi has been connected for {time_str}.')
+    logging.info(message, f'requested runtime, responded with {time_str}')
+    await messaging.send_text_message(message, f'Jadi3Pi has been running for {time_str}.')
 
 
 # Command values
-COMMAND_NAMES = ['uptime']
-CALL_METHOD = uptime
+COMMAND_NAMES = ['runtime']
+CALL_METHOD = runtime
