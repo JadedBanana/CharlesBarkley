@@ -24,7 +24,7 @@ async def decimal(bot, message, argument):
         await messaging.send_text_message(message, int(num) if num % 1 == 0 else num)
 
     # Something went wrong, log and send message.
-    except ValueError:
+    except (ValueError, AttributeError):
         logging.info(message, f'requested decimal conversion for {argument}, invalid')
         return await messaging.send_text_message(message, 'Invalid number.')
 

@@ -26,7 +26,7 @@ async def hexadecimal(bot, message, argument):
         await messaging.send_text_message(message, '0x' + str(num))
 
     # Something went wrong, log and send message.
-    except ValueError:
+    except (ValueError, AttributeError):
         logging.info(message, f'requested hexadecimal conversion for {argument}, invalid')
         return await messaging.send_text_message(message, 'Invalid number.')
 
