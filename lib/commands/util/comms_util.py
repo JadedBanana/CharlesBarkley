@@ -222,33 +222,6 @@ async def evaluate(self, message, argument, is_in_guild):
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested eval for expression {}'.format(argument))
 
 
-def convert_num_from_decimal(n, base):
-    """
-    Converts a number from decimal to another base.
-    """
-    # Gets maximum exponent of base
-    exp = 0
-    while base**(exp  + 1) <= n:
-        exp+= 1
-
-    # Adds all the numbers that aren't a multiple of base to the string.
-    num_str = ''
-    while n != 0 and exp >= constants.MAX_CONVERT_DEPTH:
-        # Adds a decimal point if we're below 0 exp.
-        if exp == -1:
-            num_str+= '.'
-        num_str+= constants.CONVERT_CHARS[int(n / base ** exp)]
-        n -= (int(n / base**exp) * base**exp)
-        exp-= 1
-
-    # Adds all the zeros between exp and 0 if exp is not below 0.
-    while exp >= 0:
-        num_str+= '0'
-        exp-= 1
-
-    return num_str
-
-
 async def hexadecimal(self, message, argument, is_in_guild):
     """
     Converts a number to hexadecimal.

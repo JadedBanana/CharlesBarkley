@@ -54,19 +54,56 @@ def convert_num_to_decimal(n, base):
         # This math works by multiplying the converted numbers by their exponents then adding them onto final_num.
         exp = per_index - index
         # Get the decimal number of the current character
-        num_of = CONVERT_CHARS.find(n[index])
+        num_of_char = CONVERT_CHARS.find(n[index])
         # A little error handling for characters that aren't in the list or are more than this base can handle
-        if num_of == -1 or num_of >= base:
+        if num_of_char == -1 or num_of_char >= base:
             raise ValueError('Unexpected character')
         # Then add it to the decimal number.
         else:
-            decimal_num += base**exp * num_of
+            decimal_num += base ** exp * num_of_char
 
     # Return the decimal number.
     return decimal_num
 
 
-def get_num_from_argument(argument):
+def convert_num_from_decimal(n, base):
+    """
+    Converts a number from decimal to another base.
+
+    Arguments:
+        n (float) : The number, represented as a float.
+        base (int) : The base.
+
+    Returns:
+        str : The converted number represented as a string.
+    """
+    # Gets maximum exponent that will be necessary to dissect this number.
+    exp = 0
+    while base**(exp  + 1) <= n:
+        exp+= 1
+
+    # Adds all the numbers that aren't a multiple of base to the string.
+    num_str = ''
+    while n != 0 and exp >= MAX_CONVERT_DEPTH:
+        # Adds a decimal point if we're below 0 exp.
+        if exp == -1:
+            num_str+= '.'
+        # Grab the correct num character and add it to the string.
+        num_str += CONVERT_CHARS[int(n / base ** exp)]
+        # Subtract our remaining number and exponent.
+        n -= (int(n / base**exp) * base**exp)
+        exp-= 1
+
+    # Adds all the zeros between exp and 0 if exp is not below 0.
+    while exp >= 0:
+        num_str+= '0'
+        exp-= 1
+
+    # Return the converted number.
+    return num_str
+
+
+def get_multibased_num_from_argument(argument):
     """
     Gets the number from an argument.
     Numbers can be in base 2, 8, 10, 12, or 16, but non-10 bases must be preceded
