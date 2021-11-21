@@ -28,7 +28,7 @@ class JadieClient(discord.Client):
         from lib import commands
         self.public_command_dict, self.developer_command_dict, specialized_command_dict = commands.load_commands()
         # Load specialized commands.
-        self.toggle_ignore_developer = specialized_command_dict['toggle_ignore_developer']
+        self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
 
         # Set variable for whether or not to ignore the developer.
         self.ignore_developer = False
@@ -94,8 +94,12 @@ class JadieClient(discord.Client):
         # Check to see if the author was a developer.
         author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
 
-        # First, if the author is a developer, check if this message is a toggleignoredev command.
-        if author_is_developer and message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev'):
+        print(self.ignore_developer)
+
+        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
+        if self.ignore_developer and author_is_developer and (\
+                message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or \
+                message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev ')):
             # If so, run the command!
             return await self.toggle_ignore_developer(self, message)
 

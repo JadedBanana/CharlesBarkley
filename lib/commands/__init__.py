@@ -29,15 +29,11 @@ def load_commands():
         for importer2, subpackage_name, is_package2 in pkgutil.iter_modules(['lib/commands/' + package_name]):
             module = importer2.find_module(subpackage_name).load_module()
 
-            # Modules in the 'specialized' package work differently, so there's an if statement here.
-            if package_name != 'specialized':
+            # For each module, check if it has the attributes desired. If so, then slot it into the command dict.
+            if all([hasattr(module, attribute) for attribute in ['COMMAND_NAMES', 'CALL_METHOD']]):
 
-                # For each module, check if it has the attributes desired. If so, then slot it into the command dict.
-                if all([hasattr(module, attribute) for attribute in ['COMMAND_NAMES', 'CALL_METHOD']]):
-
-                    # Check to make sure that COMMAND_NAMES is a list and CALL_METHOD is a method.
-                    if not (isinstance(module.COMMAND_NAMES, list) and isinstance(module.CALL_METHOD, type(load_commands))):
-                        continue
+                # Check to make sure that COMMAND_NAMES is a list and CALL_METHOD is a method.
+                if isinstance(module.COMMAND_NAMES, list) and isinstance(module.CALL_METHOD, type(load_commands)):
 
                     # Decide which dict to put the command into.
                     command_dict = developer_command_dict if hasattr(module, 'DEV_ONLY_COMMAND') and module.DEV_ONLY_COMMAND else public_command_dict
@@ -54,7 +50,7 @@ def load_commands():
                             command_dict[name] = module.CALL_METHOD
 
             # Specialized commands.
-            else:
+            if package_name == 'specialized':
 
                 # For each module, check if it has the attributes desired. If so, then slot it into the command dict.
                 if all([hasattr(module, attribute) for attribute in ['COMMAND_NAME', 'CALL_METHOD']]):
