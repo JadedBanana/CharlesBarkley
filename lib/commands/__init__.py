@@ -7,6 +7,13 @@ def load_commands():
     Loads all the commands from the sub-folders and puts them into three command dicts (one developer-only, one for general users, and
     one for specific commands hardcoded into the bot).
     Automatic method, requires no modifications to keep up-to-date.
+
+    Raises:
+        DuplicateCommandError : 2 commands are using the same name.
+
+    Returns:
+        dict, dict, list, dict : The public command dict, developer command dict, reactive command list, and specialized command dict,
+                                 in that exact order.
     """
     # Imports
     from lib.util.exceptions import DuplicateCommandError

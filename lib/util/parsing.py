@@ -9,6 +9,13 @@ from lib.util import environment
 def normalize_string(input_str, remove_double_spaces=True):
     """
     Removes spaces at the start and end of strings, as well as double spaces, newlines, and tabs in strings.
+
+    Arguments:
+        input_str (str) : The string to be normalized.
+        remove_double_spaces (bool) : Whether or not double spaces should be removed.
+
+    Returns:
+        str : The normalized string.
     """
     # Newlines, tabs
     input_str = input_str.replace('\t', ' ').replace('\n', ' ')
@@ -32,7 +39,11 @@ def normalize_string(input_str, remove_double_spaces=True):
 
 def get_command_from_message(message):
     """
-    Gets a command from a message, with one argument after
+    Splits a message's contents into command and argument.
+    If either one can't be found, then None is returned in its stead.
+
+    Returns:
+        str, str : The command, then the argument in that order.
     """
     # Immediately returns if command prefix is missing
     if not message.content.lower().startswith(environment.get("GLOBAL_PREFIX")):

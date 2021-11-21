@@ -14,6 +14,7 @@ class JadieClient(discord.Client):
     def __init__(self):
         """
         Instantiates the bot.
+        Does a lot to do so, like getting the start time and uptime, as well as loading the commands.
         """
         # Bot start time and bot uptime.
         self.bot_start_time = datetime.today()
@@ -86,6 +87,9 @@ class JadieClient(discord.Client):
     async def on_message(self, message):
         """
         Reacts to messages.
+
+        Arguments:
+            message (discord.message.Message) : The discord message object that triggered this method.
         """
         # Checks to make sure the message, channel, and author exist.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:

@@ -10,6 +10,11 @@ async def toggle_ignore_dev(bot, message, argument=None):
     """
     Toggles whether or not to ignore the developer.
     The response varies depending on whether or not this is the deployment version.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
     """
     # TODO: reimplement logging in this part
     # For deployment client, toggle the ignoring developer status.
