@@ -26,7 +26,12 @@ class JadieClient(discord.Client):
 
         # Load the commands.
         from lib import commands
-        self.public_command_dict, self.developer_command_dict = commands.load_commands()
+        self.public_command_dict, self.developer_command_dict, specialized_command_dict = commands.load_commands()
+        # Load specialized commands.
+        self.toggle_ignore_developer = specialized_command_dict['toggle_ignore_developer']
+
+        # Set variable for whether or not to ignore the developer.
+        self.ignore_developer = False
 
         # Discord client init
         discord.Client.__init__(self)
@@ -85,6 +90,11 @@ class JadieClient(discord.Client):
         # Checks to make sure the message, channel, and author exist.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
+
+        # Check to see if the author was a developer.
+        author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
+
+        # Get the message content.
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.

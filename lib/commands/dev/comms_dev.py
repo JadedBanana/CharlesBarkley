@@ -37,20 +37,6 @@ async def get_local_ip(self, message, argument, is_in_guild):
             await message.channel.send(local_ip)
 
 
-async def toggle_ignore_dev(self, message, argument, is_in_guild):
-    """
-    Toggles whether or not to ignore the developer.
-    If constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX is set to True, this command only works on Linux.
-    """
-    if constants.IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX and self.on_windows:
-        log.info(util.get_comm_start(message, is_in_guild) + 'Ordered ignore dev, but this is Windows')
-        await message.channel.send('Windows: ignored ignore request')
-    else:
-        self.ignore_developer = not self.ignore_developer
-        log.info(util.get_comm_start(message, is_in_guild) + 'Ordered ignore dev, set to ' + str(self.ignore_developer))
-        await message.channel.send(('Windows: ' if self.on_windows else 'Linux: ') + 'set to ' + str(self.ignore_developer))
-
-
 async def get_pid(self, message, argument, is_in_guild):
     """
     Gets the local PID this bot is running on.
