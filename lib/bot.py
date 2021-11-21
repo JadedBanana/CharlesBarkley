@@ -26,7 +26,7 @@ class JadieClient(discord.Client):
 
         # Load the commands.
         from lib import commands
-        self.public_command_dict, self.developer_command_dict, specialized_command_dict = commands.load_commands()
+        self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = commands.load_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
 
@@ -94,14 +94,23 @@ class JadieClient(discord.Client):
         # Check to see if the author was a developer.
         author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
 
-        print(self.ignore_developer)
-
         # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
         if self.ignore_developer and author_is_developer and (\
                 message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or \
                 message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev ')):
             # If so, run the command!
             return await self.toggle_ignore_developer(self, message)
+
+        # Second, if the author ISN'T a developer and this is a development version, then ignore them.
+        if not (author_is_developer or environment.get("DEPLOYMENT_CLIENT")):
+            return
+
+        # Third, if the message's guild is bugged out, then return.
+        if isinstance(message.channel, discord.TextChannel) and not message.guild:
+            logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
+            return
+
+
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
