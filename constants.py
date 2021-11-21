@@ -21,10 +21,6 @@ DO_LEVEL_HEADERS = True
 DO_TIMESTAMPS = True
 LOGS_DIR = 'logs'
 
-# Server, channel, user
-COMM_LOG_PREFIX_GUILD = '{} ({}, {}): '
-COMM_LOG_PREFIX = '{} ({}): '
-
 # Bot stuff
 # Global crap
 BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'

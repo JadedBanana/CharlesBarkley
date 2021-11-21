@@ -90,17 +90,6 @@ def get_applicable_users(message, is_in_guild, exclude_bots=True, exclude_users=
     # Returns.
     return all_users
 
-def get_comm_start(message, is_in_guild):
-    """
-    Gets the command prefix. Just used to cut down space.
-    """
-    if is_in_guild:
-        return constants.COMM_LOG_PREFIX_GUILD.format(message.author, message.channel, message.guild)
-    elif isinstance(message.channel, discord.DMChannel):
-        return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
-    else:
-        return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
-
 
 def get_multi_index(source, arg):
     """
