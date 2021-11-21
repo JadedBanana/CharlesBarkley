@@ -13,6 +13,11 @@ class DuplicateCommandError(ValueError):
     def __init__(self, reason):
         self.strerr = reason
 
+# FirstMessageInChannelError is raised when attempting to pull the previous message fails because this is the first message in the channel.
+class FirstMessageInChannelError(Exception):
+    def __init__(self, reason):
+        self.strerr = reason
+
 # Used in __get_closest_user to disclose why an empty list would be returned
 class NoUserSpecifiedError(Exception):
     def __init__(self, args=None): Exception.__init__(self, args)
@@ -21,7 +26,4 @@ class UnableToFindUserError(Exception):
 class ArgumentTooShortError(Exception):
     def __init__(self, short_user, args=None): self.short_user = short_user; Exception.__init__(self, args)
 
-# Used in __get_secondmost_recent_message when it cannot be found
-class FirstMessageInChannelError(Exception):
-    def __init__(self, args=None): Exception.__init__(self, args)
 
