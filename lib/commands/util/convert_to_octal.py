@@ -32,5 +32,7 @@ async def octal(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['oct', 'octal']
-CALL_METHOD = octal
+PUBLIC_COMMAND_DICT = {
+    'oct': octal,
+    'octal': octal
+}

@@ -27,6 +27,9 @@ async def toggle_ignore_dev(bot, message, argument=None):
         await messaging.send_text_message(message, f'Development version speaking, ignoring ignore request')
 
 # Command values
-COMMAND_NAME = 'toggleignoredev'
-COMMAND_NAMES = ['toggleignoredev']
-CALL_METHOD = toggle_ignore_dev
+DEVELOPER_COMMAND_DICT = {
+    'toggleignoredev': toggle_ignore_dev
+}
+SPECIALIZED_COMMAND_DICT = {
+    'toggleignoredev': toggle_ignore_dev
+}

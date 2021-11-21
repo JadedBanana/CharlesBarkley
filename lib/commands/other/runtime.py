@@ -33,5 +33,6 @@ async def runtime(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['runtime']
-CALL_METHOD = runtime
+PUBLIC_COMMAND_DICT = {
+    'runtime': runtime
+}

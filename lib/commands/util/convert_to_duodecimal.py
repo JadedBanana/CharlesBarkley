@@ -32,5 +32,8 @@ async def duodecimal(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['duo', 'duodec', 'duodecimal']
-CALL_METHOD = duodecimal
+PUBLIC_COMMAND_DICT = {
+    'duo': duodecimal,
+    'duoadec': duodecimal,
+    'duodecimal': duodecimal
+}

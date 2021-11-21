@@ -32,5 +32,7 @@ async def binary(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['bin', 'binary']
-CALL_METHOD = binary
+PUBLIC_COMMAND_DICT = {
+    'bin': binary,
+    'binary': binary
+}

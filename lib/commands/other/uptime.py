@@ -33,5 +33,6 @@ async def uptime(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['uptime']
-CALL_METHOD = uptime
+PUBLIC_COMMAND_DICT = {
+    'uptime': uptime
+}

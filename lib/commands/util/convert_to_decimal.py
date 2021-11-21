@@ -30,5 +30,7 @@ async def decimal(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['dec', 'decimal']
-CALL_METHOD = decimal
+PUBLIC_COMMAND_DICT = {
+    'dec': decimal,
+    'decimal': decimal
+}

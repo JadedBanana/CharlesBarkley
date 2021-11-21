@@ -32,5 +32,8 @@ async def hexadecimal(bot, message, argument):
 
 
 # Command values
-COMMAND_NAMES = ['hex', 'hexadec', 'hexadecimal']
-CALL_METHOD = hexadecimal
+PUBLIC_COMMAND_DICT = {
+    'hex': hexadecimal,
+    'hexadec': hexadecimal,
+    'hexadecimal': hexadecimal
+}
