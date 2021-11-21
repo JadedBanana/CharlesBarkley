@@ -15,8 +15,8 @@ class DuplicateCommandError(ValueError):
 
 # FirstMessageInChannelError is raised when attempting to pull the previous message fails because this is the first message in the channel.
 class FirstMessageInChannelError(Exception):
-    def __init__(self, reason):
-        self.strerr = reason
+    def __init__(self):
+        pass
 
 # Used in __get_closest_user to disclose why an empty list would be returned
 class NoUserSpecifiedError(Exception):

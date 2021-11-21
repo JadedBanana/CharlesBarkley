@@ -7,12 +7,6 @@ ON_WINDOWS_ONLY_RESPOND_TO_DEV = True
 IGNORE_DEVELOPER_ONLY_WORKS_ON_LINUX = True
 TEMP_DIR = 'temp'
 
-# Crontab shit
-CRONTAB_CHECK_FILE = '.croncheck'
-CRONTAB_WAIT_INTERVAL = 45
-CRONTAB_STR_LENGTH = 24
-CRONTAB_STR_CHARS = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
-
 # Logging constants
 DEFAULT_LEVEL = 0
 LOG_TO_CONSOLE = True
@@ -266,19 +260,6 @@ SHIP_MESSAGES = [
     'Say whatever you want. {} and {} is the purest, most amazing ship and I will not stand for any others.',
     'The fact that there isn\'t a slashfic about {} and {} is an absolute travesty.'
 ]
-
-# Uwu
-EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
-UWU_FACES = {
-    ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
-    '^w^': 'uwu', 'O_o': 'u_u', 'o_o': 'u_u', 'o_O': 'u_u', 'O_O': 'u_u', '(:': 'uwu', ':D': 'uwu',
-    'D:': 'umu', '):': 'umu'
-}
-OWO_FACES = {
-    ':)': 'owo', ':(': 'omo', ':|': 'o_o', ':-)': 'owo', ':-(': 'omo', ':-|': 'o_o', '^_^': 'owo',
-    '^w^': 'owo', 'O_o': 'o_o', 'o_o': 'o_o', 'o_O': 'o_o', 'O_O': 'o_o', '(:': 'owo', ':D': 'owo',
-    'D:': 'omo', '):': 'omo'
-}
 
 
 # Hunger Games

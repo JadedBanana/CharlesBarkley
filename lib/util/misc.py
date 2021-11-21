@@ -312,12 +312,15 @@ def get_profile_picture(user, already_id=False):
     return img_return, image_locale
 
 
-async def get_secondmost_recent_message(channel):
+async def get_secondmost_recent_message(message):
     """
-    Gets the second-most recent message in a channel, given a channel.
+    Gets the second-most recent message in a channel, given a message.
     """
+    # Simple get statement.
     try:
-        return (await channel.history(limit=2).flatten())[1].content
+        return (await message.channel.history(limit=2).flatten())[1].content
+
+    # If there's an index error, raise the FirstMessageInChannelError.
     except IndexError:
         raise FirstMessageInChannelError()
 
