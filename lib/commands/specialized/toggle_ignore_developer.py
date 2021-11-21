@@ -6,7 +6,7 @@ Specialized command in that it can be called even when the developer is being ig
 from lib.util import environment
 from lib.util import messaging
 
-async def toggle_ignore_dev(bot, message):
+async def toggle_ignore_dev(bot, message, argument=None):
     """
     Toggles whether or not to ignore the developer.
     The response varies depending on whether or not this is the deployment version.

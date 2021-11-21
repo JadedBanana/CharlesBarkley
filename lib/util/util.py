@@ -101,22 +101,6 @@ def get_comm_start(message, is_in_guild):
     else:
         return constants.COMM_LOG_PREFIX.format(message.author, message.channel)
 
-def get_command_from_message(message):
-    """
-    Gets a command from a message, with one argument after
-    """
-    # Immediately returns if command prefix is missing
-    if not message.content.lower().startswith(constants.GLOBAL_PREFIX):
-        return None, None
-
-    # Removes global prefix from message
-    message = message.content[len(constants.GLOBAL_PREFIX):]
-
-    # Finds space or end of line -- whichever comes first, and returns
-    end_index = message.find(' ')
-    if not end_index + 1:
-        return message, None
-    return message[:end_index].lower(), message[end_index + 1:]
 
 def get_multi_index(source, arg):
     """
