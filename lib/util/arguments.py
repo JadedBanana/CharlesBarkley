@@ -9,10 +9,10 @@ from lib.util import parsing
 CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
 MAX_CONVERT_DEPTH = -16
 NONDECIMAL_BASES = {
-    '0x': [16, 'hexadecimal'],
-    '0d': [12, 'duodecimal'],
-    '0o': [8, 'octal'],
-    '0b': [2, 'binary']
+    '0x': 16,
+    '0d': 12,
+    '0o': 8,
+    '0b': 2
 }
 
 
@@ -126,7 +126,7 @@ def get_multibased_num_from_argument(argument):
     for base in NONDECIMAL_BASES:
         if argument2.startswith(base):
             # Attempt to convert.
-            return convert_num_to_decimal(argument[2:], NONDECIMAL_BASES[base][0])
+            return convert_num_to_decimal(argument[2:], NONDECIMAL_BASES[base])
 
     # If we've made it this far, then it means that the number is a decimal base.
     return float(argument)
