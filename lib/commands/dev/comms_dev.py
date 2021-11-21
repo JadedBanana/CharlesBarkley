@@ -12,31 +12,6 @@ import os
 # Logging
 log = None
 
-async def get_local_ip(self, message, argument, is_in_guild):
-    """
-    Gets the local ip address this bot is running on.
-    """
-    # Windows part
-    if self.on_windows:
-        # Gets the local ip using socket.
-        local_ip = socket.gethostbyname('Windows: ' + socket.gethostname())
-
-        # Sends msg and logs.
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ip))
-        await message.channel.send(local_ip)
-
-    # Linux Part
-    else:
-        # Imports netifaces and gets the local ip's.
-        import netifaces;
-        local_ips = [pre + ': ' + netifaces.ifaddresses(pre)[netifaces.AF_INET][0]['addr'] for pre in constants.LINUX_IP_PREFIXES]
-
-        # Sends msg and logs.
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered local ip, returned ' + str(local_ips))
-        for local_ip in local_ips:
-            await message.channel.send(local_ip)
-
-
 async def get_pid(self, message, argument, is_in_guild):
     """
     Gets the local PID this bot is running on.
@@ -193,40 +168,3 @@ async def log_list(self, message, argument, is_in_guild):
             await message.channel.send(msg)
     else:
         await message.channel.send('Could not find any log files.')
-
-
-async def bash(self, message, argument, is_in_guild):
-    """
-    Runs bash using the arguments presented in the argument.
-    """
-    # Import subprocess so we can do the call
-    import subprocess
-    process = subprocess.Popen(argument.split(' '), stdout=subprocess.PIPE)
-
-    # Get decoded version of the output.
-    decoded_output = process.communicate()[0].decode('utf-8')
-
-    # Send report and log.
-    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered bash execution of command ' + argument)
-    if len(decoded_output) > 2000:
-        await message.channel.send('Bash output greater than 2000 characters')
-    elif not decoded_output:
-        await message.channel.send('No output')
-    else:
-        await message.channel.send('Bash output: ```' + decoded_output + '```')
-
-
-async def query(self, message, argument, is_in_guild):
-    """
-    Runs an SQL query using the arguments presented in the argument.
-    """
-    query_response = repr(misc.query(argument))
-
-    # Send report and log.
-    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered query execution of command ' + argument)
-    if len(query_response) > 2000:
-        await message.channel.send('Query output greater than 2000 characters')
-    elif not query_response:
-        await message.channel.send('No output')
-    else:
-        await message.channel.send('Query output: ```' + query_response + '```')

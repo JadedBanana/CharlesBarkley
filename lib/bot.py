@@ -91,7 +91,7 @@ class JadieClient(discord.Client):
         Arguments:
             message (discord.message.Message) : The discord message object that triggered this method.
         """
-        # Checks to make sure the message, channel, and author exist.
+        # Checks to make sure the message, channel, and author exist, and that the message isn't from the bot itself.
         if not message or not message.content or not message.channel or not message.author or message.author == self.user:
             return
 
@@ -114,25 +114,31 @@ class JadieClient(discord.Client):
             logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
             return
 
-        # Fourth, iterate through reactive commands and see if they have anything to say. If so, return.
-        for command in self.reactive_command_list:
-            if command(self, message):
-                return
-
-        # Fifth, parse the command out of the message and get the argument.
+        # Fourth, parse the command out of the message and get the argument.
         command, argument = parsing.get_command_from_message(message)
 
-        # If the command wasn't found, return.
+        # Fifth, if there ISN'T a command, then mark this as a regular message.
+        regular_message = False
         if not command:
-            return
+            regular_message = True
 
-        # Grabs command from the regular dict and tries to run it.
-        if command in self.public_command_dict:
-            return await self.public_command_dict[command](self, message, argument)
+        # Otherwise, try to get the command.
+        else:
+            # Grabs command from the regular dict and tries to run it.
+            if command in self.public_command_dict:
+                return await self.public_command_dict[command](self, message, argument)
 
-        # If the author is a developer, grab the command from the developer dict.
-        if author_is_developer and command in self.developer_command_dict:
-            return await self.developer_command_dict[command](self, message, argument)
+            # If the author is a developer, grab the command from the developer dict.
+            elif author_is_developer and command in self.developer_command_dict:
+                return await self.developer_command_dict[command](self, message, argument)
+
+            # If a command wasn't detected, then this is a regular message.
+            regular_message = True
+
+        # Finally, if this was a regular message, run reactive commands.
+        if regular_message:
+            for reactive_command in self.reactive_command_list:
+                reactive_command(self, message)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
