@@ -272,23 +272,3 @@ async def decimal(self, message, argument, is_in_guild):
 
     log.debug(util.get_comm_start(message, is_in_guild) + 'requested decimal conversion for {}, responded {}'.format(argument, int(num) if num % 1 == 0 else num))
     await message.channel.send(int(num) if num % 1 == 0 else num)
-
-
-async def octal(self, message, argument, is_in_guild):
-    """
-    Converts a number to octal.
-    """
-    # Getting the number
-    num = await get_num_from_argument(message, argument)
-
-    # Error handling for not numbers
-    if isinstance(num, str):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested octal conversion for {}, invalid'.format(argument))
-        return
-
-    num = convert_num_from_decimal(num, 8)
-
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested octal conversion for {}, responded 0o{}'.format(argument, num))
-    await message.channel.send('0o' + str(num))
-
-
