@@ -6,6 +6,7 @@ Converts numbers from other bases into binary.
 from lib.util.logger import BotLogger as logging
 from lib.util import arguments, messaging
 
+
 async def binary(bot, message, argument):
     """
     Converts a number to binary.

@@ -6,6 +6,7 @@ Converts numbers from other bases into octal.
 from lib.util.logger import BotLogger as logging
 from lib.util import arguments, messaging
 
+
 async def octal(bot, message, argument):
     """
     Converts a number to octal.
