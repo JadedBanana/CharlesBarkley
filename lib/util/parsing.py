@@ -5,6 +5,7 @@ There are multiple methods that help with picking out pieces and piecing things 
 # Imports
 from lib.util import environment
 
+
 def normalize_string(input_str, remove_double_spaces=True):
     """
     Removes spaces at the start and end of strings, as well as double spaces, newlines, and tabs in strings.

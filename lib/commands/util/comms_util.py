@@ -249,65 +249,6 @@ def convert_num_from_decimal(n, base):
     return num_str
 
 
-def convert_num_to_decimal(n, base):
-    """
-    Converts a number to decimal from another base.
-    """
-    # If there's more than 1 decimal point, we raise a ValueError.
-    if n.count('.') > 1:
-        raise ValueError()
-
-    # If there is no decimal point, we take the easy way out.
-    if '.' not in n:
-        return int(n, base=base)
-
-    # Otherwise, we're in for a ride.
-    else:
-        # Get the index of the period.
-        per_index = n.find('.')
-
-        # Take the easy way for the numbers BEFORE the decimal point.
-        final_num = int(n[:per_index], base=base)
-
-        # We add a little leniency for those below base 36 in terms of capitalization.
-        if base <= 36:
-            n = n.upper()
-
-        # Do it ourselves for numbers after.
-        for index in range(per_index + 1, len(n)):
-            exp = per_index - index
-            num_of = constants.CONVERT_CHARS.find(n[index])
-            # A little error handling for -1's or stuff outside the range.
-            if num_of == -1 or num_of >= base:
-                raise ValueError()
-            else:
-                final_num+= base**exp * num_of
-
-        return final_num
-
-
-async def get_num_from_argument(message, argument):
-    # Gets usages for arguments
-    argument = util.normalize_string(argument)
-    argument2 = argument.lower()
-
-    # Nondecimal bases
-    for base in constants.NONDECIMAL_BASES.keys():
-        if argument2.startswith(base):
-            try:
-                return convert_num_to_decimal(argument[2:], constants.NONDECIMAL_BASES[base][0])
-            except ValueError:
-                await message.channel.send(argument + ' is not a valid {} number').format(constants.NONDECIMAL_BASES[base][1])
-                return ''
-
-    # Decimal base
-    try:
-        return float(argument)
-    except ValueError:
-        await message.channel.send(argument + ' is not a valid decimal number')
-        return ''
-
-
 async def hexadecimal(self, message, argument, is_in_guild):
     """
     Converts a number to hexadecimal.
@@ -378,19 +319,3 @@ async def octal(self, message, argument, is_in_guild):
     await message.channel.send('0o' + str(num))
 
 
-async def binary(self, message, argument, is_in_guild):
-    """
-    Converts a number to binary.
-    """
-    # Getting the number
-    num = await get_num_from_argument(message, argument)
-
-    # Error handling for not numbers
-    if isinstance(num, str):
-        log.debug(util.get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, invalid'.format(argument))
-        return
-
-    num = convert_num_from_decimal(num, 2)
-
-    log.debug(util.get_comm_start(message, is_in_guild) + 'requested binary conversion for {}, responded with 0b{}'.format(argument, num))
-    await message.channel.send('0b' + str(num))

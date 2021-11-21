@@ -609,10 +609,6 @@ EVAL_GLOBALS = {
     'erf': math.erf, 'erfc': math.erfc, 'gamma': math.gamma, 'lgamma': math.lgamma
 }
 
-# Conversion chars
-CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
-MAX_CONVERT_DEPTH = -16
-
 # Runtime and Uptime
 RUNTIME_PREFIX = 'Bot has been running for '
 UPTIME_PREFIX = 'Bot has been connected for '
