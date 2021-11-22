@@ -18,12 +18,21 @@ class FirstMessageInChannelError(Exception):
     def __init__(self):
         pass
 
-# Used in __get_closest_user to disclose why an empty list would be returned
+# CannotAccessUserlistError is raised when can't access the userlist.
+class CannotAccessUserlistError(Exception):
+    def __init__(self):
+        pass
+
+# NoUserSpecifiedError is raised when trying to access a user from an argument that it can't find.
 class NoUserSpecifiedError(Exception):
-    def __init__(self, args=None): Exception.__init__(self, args)
+    def __init__(self):
+        pass
+
+# UnableToFindUserError is raised when can't find a user based on that argument.
 class UnableToFindUserError(Exception):
-    def __init__(self, completed_users, incomplete_user, args=None): self.completed_users = completed_users; self.incomplete_user = incomplete_user; Exception.__init__(self, args)
-class ArgumentTooShortError(Exception):
-    def __init__(self, short_user, args=None): self.short_user = short_user; Exception.__init__(self, args)
+    def __init__(self, completed_users, incomplete_user):
+        self.completed_users = completed_users
+        self.incomplete_user = incomplete_user
+
 
 

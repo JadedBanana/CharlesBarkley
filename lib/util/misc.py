@@ -100,16 +100,20 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     """
     # First, we get a list of all users.
     # If this is a guild, grab the users in the guild.
-    if isinstance(message, discord.TextChannel):
+    if isinstance(message.channel, discord.TextChannel):
         all_users = message.guild.members
 
     # If this is a DM, grab the recipient.
-    elif isinstance(message, discord.DMChannel):
+    elif isinstance(message.channel, discord.DMChannel):
         all_users = [message.channel.recipient]
 
     # Otherwise (group channel), pull the recipients.
     else:
         all_users = message.channel.recipients
+
+    # If there isn't an all_users, raise a CannotAccessUserlistError.
+    if len(all_users) < 2:
+        raise CannotAccessUserlistError()
 
     # If we were told to not include bots, we get rid of them.
     if exclude_bots:
