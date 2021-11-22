@@ -3,7 +3,9 @@ UWU and OWO command.
 Make a mockery out of people by converting their messages into uwu- or owo-speak.
 """
 # Imports
-from lib.util import messaging, misc
+from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
+from lib.util.logger import BotLogger as logging
+from lib.util import arguments, messaging, misc
 import discord
 
 
@@ -24,66 +26,87 @@ async def copy_msg(bot, message):
 
     # Check.
     if copy_key in COPIED_USERS and message.author.id in COPIED_USERS[copy_key]:
-        await message.channel.send(message.content)
+        await messaging.send_text_message(message, message.content)
 
 
 async def copy_user(bot, message, argument):
     """
-    Marks a user down as copiable.
+    Marks a user down as COPIABLE.
     Copiable users will be copied in every message they send.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
     """
     # Tries to get a valid user out of the argument.
     try:
-        users = misc.get_closest_users(message, argument, is_in_guild)
-    except (ArgumentTooShortError, NoUserSpecifiedError, UnableToFindUserError):
-        users = []
-    if not users:
-        log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + argument + ', invalid')
-        await message.channel.send('Invalid user.')
-        return
+        user = arguments.get_closest_users(message, argument, limit=1)[0]
+
+    # On NoUserSpecifiedError, request they tag a user.
+    except NoUserSpecifiedError:
+        logging.info(message, f"requested copy for user '{argument}', invalid")
+        return await messaging.send_text_message(message, 'Please mention a user to copy.')
+
+    # On UnableToFindUserError,
+    except UnableToFindUserError:
+        logging.info(message, f"requested copy for user '{argument}', invalid")
+        return await messaging.send_text_message(message, f"Could not find user '{argument}'.")
+
+    # On CannotAccessUserlistError, log an error and send an apology message.
+    except CannotAccessUserlistError:
+        logging.error(message, 'Failed to access the userlist')
+        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try @ mentioning someone instead.')
 
     # Gets the key we'll be using for the copied_users dict.
-    if is_in_guild:
-        copied_key = str(message.guild.id)
+    copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
+
+    # Checks to make sure the mentioned user isn't the bot itself.
+    if user == bot.user:
+        logging.info(message, 'requested copy for this bot')
+        return await messaging.send_text_message(message, 'Ha, ha. Very funny. No.')
+
+    # If the copy key isn't in the dict, add it.
+    if copy_key not in COPIED_USERS:
+        COPIED_USERS[copy_key] = []
+
+    # Otherwise, copy the user.
+    await messaging.send_text_message(message, f'Now copying user {misc.get_photogenic_username(user)}')
+    if user.id not in COPIED_USERS[copy_key]:
+        COPIED_USERS[copy_key].append(user.id)
+        logging.info(message, 'requested copy for user ' + str(user) + ', now copying')
     else:
-        copied_key = str(message.channel.id)
-    if copied_key not in self.copied_users.keys():
-        self.copied_users.update({copied_key: []})
-
-    # Adds the users to the copy dict.
-    for user in users:
-
-        # Checks to make sure it isn't self.
-        if user == self.user:
-            if not len(users) - 1:
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'requested copy for this bot')
-                await message.channel.send('Yeah, no, I\'m not gonna copy myself.')
-            continue
-
-        # Other.
-        await message.channel.send('Now copying user ' + (user.nick if user.nick else user.name))
-        if user not in self.copied_users[copied_key]:
-            self.copied_users[copied_key].append(user)
-            log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', now copying')
-        else:
-            log.info(misc.get_comm_start(message, is_in_guild) + 'requested copy for user ' + str(user) + ', already copying')
+        logging.info(message, 'requested copy for user ' + str(user) + ', already copying')
 
 
 async def stop_copying(bot, message, argument):
     """
-    Stops copying everyone in a server.
-    """
-    # Gets copy key
-    if is_in_guild:
-        copied_key = str(message.guild.id)
-    else:
-        copied_key = str(message.channel.id)
+    Stops copying everyone in a server / channel.
 
-    # If the thing exists in the dict
-    if copied_key in self.copied_users.keys():
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested to stop copying, {} users deleted from copied_users'.format(len(self.copied_users[copied_key])))
-        self.copied_users.pop(copied_key)
-        await message.channel.send('No longer copying people in this server.')
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Gets the key we'll be using for the copied_users dict.
+    copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
+
+    # If the thing exists in the dict, delete it.
+    if copy_key in COPIED_USERS:
+        logging.info(message, f'requested to stop copying, {len(COPIED_USERS[copy_key])} users deleted from copied_users')
+        del COPIED_USERS[copy_key]
+        await messaging.send_text_message(message, 'No longer copying people in this server.')
+
     else:
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'requested to stop copying, already done')
-        await message.channel.send('Wasn\'t copying anyone here to begin with, but ok.')
+        logging.info(message, 'requested to stop copying, already done')
+        await messaging.send_text_message(message, "Wasn't copying anyone here to begin with, but ok.")
+
+
+# Command values
+PUBLIC_COMMAND_DICT = {
+    'copy': copy_user,
+    'stopcopying': stop_copying
+}
+REACTIVE_COMMAND_LIST = [
+    copy_msg
+]

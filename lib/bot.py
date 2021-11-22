@@ -138,7 +138,7 @@ class JadieClient(discord.Client):
         # Finally, if this was a regular message, run reactive commands.
         if regular_message:
             for reactive_command in self.reactive_command_list:
-                reactive_command(self, message)
+                await reactive_command(self, message)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.

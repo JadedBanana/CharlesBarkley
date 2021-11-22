@@ -85,6 +85,21 @@ def calculate_time_passage(time_delta):
     return time_str
 
 
+def get_photogenic_username(user):
+    """
+    Gets a more photogenic username based on the user's username and nickname.
+
+    Arguments:
+        user (discord.user.User) : The user.
+
+    Returns:
+        str : The photogenic username.
+    """
+    # Return.
+    return user.nick if user.nick else user.name
+
+
+
 def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     """
     Returns a list of applicable users that fit the criteria provided.
@@ -97,6 +112,9 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     Returns:
         discord.user.User[] : A list of users that fit the criteria.
 
+    Raises:
+        CannotAccessUserlistError : Can't access the userlist.
+                                    This error is common when working from Windows.
     """
     # First, we get a list of all users.
     # If this is a guild, grab the users in the guild.
