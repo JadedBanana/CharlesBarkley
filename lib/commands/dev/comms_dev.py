@@ -12,17 +12,6 @@ import os
 # Logging
 log = None
 
-async def get_pid(self, message, argument, is_in_guild):
-    """
-    Gets the local PID this bot is running on.
-    """
-    # Gets PID
-    pid = os.getpid()
-
-    # Logs and returns PID
-    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered local PID, returned ' + str(pid))
-    await message.channel.send(pid)
-
 
 async def remote_reboot(self, message, argument, is_in_guild):
     """
