@@ -76,7 +76,7 @@ def load_commands():
                             developer_command_dict[command_name] = command_method
 
             # Also check for a reactive command list.
-            if hasattr(module, 'REACTIVE_COMMAND_LIST') and isinstance(module.REACTIVE_COMMAND_LIST, type(list)):
+            if hasattr(module, 'REACTIVE_COMMAND_LIST') and isinstance(module.REACTIVE_COMMAND_LIST, list):
 
                 # Iterate through each entry in the command list and put them into the developer command dict.
                 for command in module.REACTIVE_COMMAND_LIST:
