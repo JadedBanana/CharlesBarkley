@@ -13,55 +13,6 @@ import os
 log = None
 
 
-async def remote_reboot(self, message, argument, is_in_guild):
-    """
-    Since this bot runs on automatic crontabs, we can just exit and assume the scheduling will do the rest.
-    However, we don't wanna reboot all willy-nilly.
-    So we have a contingency!
-    """
-    self.reboot_confirmation = True
-    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered remote reboot, confirming...')
-    await message.channel.send('Confirm remote reboot? (y/n)')
-
-
-async def confirm_reboot(self, message, is_in_guild):
-    """
-    Confirms the reboot.
-    """
-    # Create response str.
-    response = misc.normalize_string(message.content).lower()
-
-    # Yes
-    if response.startswith('y'):
-        # Gets time until bot should be back.
-        current_time = datetime.today()
-        # If the minute is even, our time delta will be 3 minutes 15 seconds instead of 2 minutes 15 seconds.
-        time_delta_seconds = 135
-        if current_time.minute % 2 == 0:
-            time_delta_seconds = 185
-        # Creating next bot start time.
-        next_bot_start_time = datetime(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute) + timedelta(seconds=time_delta_seconds)
-
-        # Notify user.
-        log.info(misc.get_comm_start(message, is_in_guild) + 'Confirmed remote restart, restarting')
-        await message.channel.send('Confirmed. Performing remote reboot...')
-        await message.channel.send('Bot is estimated to be back up in approximately {} seconds.'.format((next_bot_start_time - current_time).seconds))
-
-        # Exit.
-        os._exit(0)
-
-    # No
-    elif response.startswith('n'):
-        self.reboot_confirmation = False
-        log.info(misc.get_comm_start(message, is_in_guild) + 'Aborted remote restart')
-        await message.channel.send('Remote reboot aborted.')
-
-    # Invalid response
-    else:
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'Invalid response to confirmation message ({})'.format(response))
-        await message.channel.send('Invalid response. Confirm? (y/n)')
-
-
 async def update_remote(self, message, argument, is_in_guild):
     """
     Uses git to pull the most recent commit down.
