@@ -18,9 +18,6 @@ async def copy_msg(bot, message):
     Arguments:
         bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
-
-    Returns:
-        False : Always returns false so that
     """
     # If this is in a guild, check for the guild id in the COPIED_USERS. Otherwise, check using the channel id.
     copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
@@ -28,9 +25,6 @@ async def copy_msg(bot, message):
     # Check.
     if copy_key in COPIED_USERS and message.author.id in COPIED_USERS[copy_key]:
         await message.channel.send(message.content)
-
-    # Always return False.
-    return False
 
 
 async def copy_user(bot, message, argument):

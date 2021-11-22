@@ -130,9 +130,21 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
 def get_multi_index(source, arg):
     """
     Gets multiple indexes for the argument in the source.
+    For example, in the string 'aessdeeae', the letter 'e' appears at indexes 1, 5, 6, and 8.
+    Therefore, calling this method with that string with 'e' as the arg will return [1, 5, 6, 8].
+
+    Arguments:
+        source (list | str) : An iterable object, such as a list or a str.
+        arg (object) : An object that we may find in the source.
+
+    Returns:
+        int[] : A list of indexes.
+                The arg appears in source at these indexes.
     """
+    # List of all indexes, as well as the length we've removed.
     all_indexes = []
     len_removed = 0
+
     # Iterates through all the appearances of arg in the source.
     while arg in source:
         next_index = source.index(arg)
@@ -144,6 +156,7 @@ def get_multi_index(source, arg):
 
     # Returns.
     return all_indexes
+
 
 def get_profile_picture(user, already_id=False):
     """
