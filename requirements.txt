@@ -1,3 +1,5 @@
 aiohttp
 discord==1.7.3
 python-dotenv
+wikipedia
+iso3166>=2.0.0
