@@ -35,7 +35,8 @@ class JadieClient(discord.Client):
         self.ignore_developer = False
 
         # Discord client init
-        discord.Client.__init__(self)
+        intents = discord.Intents.all()
+        discord.Client.__init__(self, intents=intents)
 
 
     async def on_ready(self):
