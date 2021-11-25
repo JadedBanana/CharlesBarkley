@@ -5,6 +5,7 @@ Mainly deals with profile pictures (hence, that's what most of the methods are f
 # Imports
 from PIL import Image
 import requests
+import logging
 import random
 import os
 
@@ -34,6 +35,9 @@ def initialize():
     # Make profile picture dir
     if not os.path.isdir(os.path.join(TEMP_DIR, PFP_DIR)):
         os.mkdir(os.path.join(TEMP_DIR, PFP_DIR))
+
+    # Clear profile pictures not in use, as well as leftover temp files.
+    clear_profile_pictures_not_in_use()
 
 
 def checkout_profile_picture_by_user(user, message, command_key, size=None):
@@ -83,7 +87,29 @@ def retire_profile_picture_by_user(user, message, command_key):
         ACTIVE_PROFILE_PICTURES[user.id][1].remove(command_key + str(message.channel.id))
 
     # Run the script that clears empty profile pictures.
-    # TODO
+    clear_profile_pictures_not_in_use()
+
+
+def clear_profile_pictures_not_in_use():
+    """
+    Clears (deletes) profile pictures that are not in use.
+    """
+    # Iterate through all the images in the directory.
+    for profile_image in os.listdir(os.path.join(TEMP_DIR, PFP_DIR)):
+
+        # Look for instances of images not being in the ACTIVE_PROFILE_PICTURES.
+        if profile_image[:-len(PFP_FILETYPE)] not in ACTIVE_PROFILE_PICTURES:
+            logging.info(f'Tempfile management removing profile picture for '
+                         f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
+            continue
+
+        # Look for instances of images in the ACTIVE_PROFILE_PICTURES not having any active users.
+        if not ACTIVE_PROFILE_PICTURES[profile_image[:-len(PFP_FILETYPE)]][1]:
+            logging.info(f'Tempfile management removing profile picture for '
+                         f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            del ACTIVE_PROFILE_PICTURES[profile_image[:-len(PFP_FILETYPE)]]
+            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
 
 
 def load_profile_picture(user):
