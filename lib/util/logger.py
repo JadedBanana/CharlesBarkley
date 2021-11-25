@@ -1,10 +1,12 @@
 """
-Environment file. Helps with managing dozens of environment variables.
+Logging file.
+Sets up the Python logging module as well as hosting the BotLogger class.
 """
 # Imports
 from lib.util import environment
-import logging
 import discord
+import logging
+import os
 
 
 # Storage of logging levels based on numbers.
@@ -16,20 +18,39 @@ LOGGING_LEVELS = [
     logging.CRITICAL
 ]
 
+
 def basic_setup():
     """
     Performs basic setup for the logging module.
-    Sets the logging format and level.
+    Sets the logging format and level, as well as making the logging directory if we are set to log to a file.
     """
-    logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')])
+    # Check if we are supposed to log to a file.
+    if environment.get('LOG_TO_FILE'):
 
+        # Create the logging directory, if it doesn't exist.
+        logging_dir = environment.get('LOGS_DIR')
+        if not os.path.isdir(logging_dir):
+            os.mkdir(logging_dir)
 
-def debug_setup():
-    """
-    Performs debug setup for the logging module.
-    Sets the logging format and level.
-    """
-    logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.DEBUG)
+        # Create the log file.
+        from datetime import datetime
+        logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
+                            level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')],
+                            handlers=[
+                                logging.FileHandler(
+                                    os.path.join(logging_dir, datetime.today().strftime('%Y-%m-%d') + '.log')),
+                                logging.StreamHandler()
+                            ])
+
+        # Log a basic line showing where the thread's logs begin.
+        log_message = 'NEW INSTANCE'
+        logging.critical('=' * len(log_message) * 3)
+        logging.critical(' ' * len(log_message) + log_message)
+        logging.critical('=' * len(log_message) * 3)
+
+    # No logging file, just log to console.
+    else:
+        logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')])
 
 
 class BotLogger:
