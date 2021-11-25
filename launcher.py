@@ -4,6 +4,7 @@ Uses the lib.cron_checker class to make sure that only one instance of the bot i
 If the bot isn't running right now, then the bot gets launched.
 """
 
+
 def launch():
     """
     Launch method.
@@ -13,6 +14,10 @@ def launch():
     # First things first, load up the .env variables.
     from lib.util import environment
     environment.load_dotenv()
+
+    # Then, check the asset files.
+    from lib.util import assets
+    assets.asset_check()
 
     # Next, see if we're supposed to do the croncheck. If so, do that!
     from lib import cron_checker

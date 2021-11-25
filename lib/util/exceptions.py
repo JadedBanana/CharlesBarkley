@@ -10,6 +10,12 @@ class UndefinedVariableError(ValueError):
         self.strerr = reason
 
 
+# MissingAssetFileError is raised when a required asset file is missing.
+class MissingAssetFileError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason
+
+
 # DuplicateCommandError is raised when the command loader finds two commands using the same command name.
 class DuplicateCommandError(ValueError):
     def __init__(self, reason):
