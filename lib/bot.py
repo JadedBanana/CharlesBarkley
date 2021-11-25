@@ -1,12 +1,17 @@
-# ===============================================================
-#                         MAIN BOT CLASS
-# ===============================================================
+"""
+The bot class.
+The main meat of the bot. Inherits from discord.Client, is the main point at which Discord API crosses over
+into self processing.
+"""
+# Imports
 from aiohttp.client_exceptions import ClientConnectorError
 from lib.util import environment, parsing
 from datetime import datetime
 import discord
 import logging
 import socket
+import sys
+
 
 class JadieClient(discord.Client):
 
@@ -164,9 +169,9 @@ def launch():
     # If a connection can't be made, then log that error and exit.
     except ClientConnectorError:
         logging.critical('Cannot connect to Discord.')
-        exit(-1)
+        sys.exit(-1)
 
     # If the client loop ever stops running, the process should terminate.
     finally:
-        logging.critical('Bot terminated unexpectedly')
-        exit(-2)
+        logging.critical('Bot terminated unexpectedly.')
+        sys.exit(0)
