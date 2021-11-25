@@ -124,13 +124,8 @@ class JadieClient(discord.Client):
         # Fourth, parse the command out of the message and get the argument.
         command, argument = parsing.get_command_from_message(message)
 
-        # Fifth, if there ISN'T a command, then mark this as a regular message.
-        regular_message = False
-        if not command:
-            regular_message = True
-
         # Otherwise, try to get the command.
-        else:
+        if command:
             # Grabs command from the regular dict and tries to run it.
             if command in self.public_command_dict:
                 return await self.public_command_dict[command](self, message, argument)
@@ -139,13 +134,9 @@ class JadieClient(discord.Client):
             elif author_is_developer and command in self.developer_command_dict:
                 return await self.developer_command_dict[command](self, message, argument)
 
-            # If a command wasn't detected, then this is a regular message.
-            regular_message = True
-
         # Finally, if this was a regular message, run reactive commands.
-        if regular_message:
-            for reactive_command in self.reactive_command_list:
-                await reactive_command(self, message)
+        for reactive_command in self.reactive_command_list:
+            await reactive_command(self, message)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
