@@ -2,6 +2,10 @@
 Assets loads assets. Not much else to it, really. Just loads assets.
 Checks whether all the assets are present on startup.
 """
+# Imports
+from PIL import Image
+import os
+
 # Assets dir.
 ASSETS_DIR = 'assets'
 
@@ -53,3 +57,13 @@ def asset_check():
     for asset_file in EXPECTED_ASSET_FILES:
         if not os.path.isfile(os.path.join(ASSETS_DIR, asset_file)):
             raise MissingAssetFileError(asset_file)
+
+
+def open_image(filename):
+    """
+    Opens the requested image.
+
+    Arguments:
+        filename (str) : The image's filename.
+    """
+    return Image.open(os.path.join(ASSETS_DIR, filename))
