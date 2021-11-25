@@ -1,6 +1,6 @@
 """
-UWU and OWO command.
-Make a mockery out of people by converting their messages into uwu- or owo-speak.
+Copy command.
+Obnoxiously copies another user's messages.
 """
 # Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
@@ -48,7 +48,7 @@ async def copy_user(bot, message, argument):
         logging.info(message, f"requested copy for user '{argument}', invalid")
         return await messaging.send_text_message(message, 'Please mention a user to copy.')
 
-    # On UnableToFindUserError,
+    # On UnableToFindUserError, tell the user they couldn't find the desired one.
     except UnableToFindUserError:
         logging.info(message, f"requested copy for user '{argument}', invalid")
         return await messaging.send_text_message(message, f"Could not find user '{argument}'.")
