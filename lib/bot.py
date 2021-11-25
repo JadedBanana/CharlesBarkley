@@ -104,7 +104,8 @@ class JadieClient(discord.Client):
         # Check to see if the author was a developer.
         author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
 
-        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
+        # First, if the author is a developer and they're being ignored, check if this message
+        # is a toggleignoredev command.
         if self.ignore_developer and author_is_developer and (\
                 message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or \
                 message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev ')):

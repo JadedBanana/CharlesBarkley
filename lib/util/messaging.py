@@ -14,8 +14,19 @@ async def send_text_message(message, text_str):
         message (discord.message.Message) : The discord message object that triggered the command.
         text_str (str) : The text message's intended text.
     """
-    # Send the message.
-    await message.channel.send(text_str)
+    # Attempt to send the message as a simple text.
+    try:
+        await message.channel.send(text_str)
+
+    # If this happened, then the message was too long. Send as file.
+    except discord.errors.HTTPException:
+        # First, have the tempfiles module create a temporary text file on-disk.
+        text_file_path = tempfiles.save_temporary_text_file(text_str)
+
+        # Next, instantiate the file and send the message.
+        file = discord.File(text_file_path, filename='text_message.txt')
+        await message.channel.send(file=file)
+
 
 
 async def send_image_based_embed(message, image, title, embed_color):

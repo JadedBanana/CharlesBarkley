@@ -38,7 +38,7 @@ def initialize():
 
     # Clear profile pictures not in use, as well as leftover temp images.
     clear_profile_pictures_not_in_use()
-    clear_temporary_images()
+    clear_temporary_files()
 
 
 def checkout_profile_picture_by_user(user, message, command_key, size=None):
@@ -160,7 +160,31 @@ def save_temporary_image(image):
     return image_path
 
 
-def clear_temporary_images():
+def save_temporary_text_file(text_str):
+    """
+    Saves the text message to a text file that will be deleted later.
+
+    Arguments:
+        text_str (str) : The string to be saved to the file.
+
+    Returns:
+        str : The text file's path.
+    """
+    # Get the filename.
+    text_file_path = os.path.join(TEMP_DIR,
+                              ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH))
+                              + TEMP_FILE_FILETYPE)
+
+    # Save.
+    with open(text_file_path, 'w') as file:
+        file.write(text_str)
+
+    # Return the filename.
+    return text_file_path
+
+
+
+def clear_temporary_files():
     """
     Clears (deletes) all the temporary images saved in the temp directory.
     """
