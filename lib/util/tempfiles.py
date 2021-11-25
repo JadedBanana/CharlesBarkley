@@ -5,6 +5,7 @@ Mainly deals with profile pictures (hence, that's what most of the methods are f
 # Imports
 from PIL import Image
 import requests
+import random
 import os
 
 
@@ -16,6 +17,9 @@ ACTIVE_PROFILE_PICTURES = {}
 TEMP_DIR = 'temp'
 PFP_DIR = 'pfps'
 PFP_FILETYPE = '.webp'
+TEMP_FILE_LENGTH = 64
+TEMP_FILE_FILETYPE = '.png'
+TEMP_FILE_CHAR_POSSIBILITIES = '1234567890-=_+qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
 
 
 def checkout_profile_picture_by_user(user, message, command_key, size=None):
@@ -68,7 +72,6 @@ def retire_profile_picture_by_user(user, message, command_key):
     # TODO
 
 
-
 def load_profile_picture(user):
     """
     Gets the profile picture for a user and slots it into the dict.
@@ -92,3 +95,25 @@ def load_profile_picture(user):
 
     # Slots it all into the dict.
     ACTIVE_PROFILE_PICTURES[user.id] = (image, [])
+
+
+def save_temporary_image(image):
+    """
+    Saves a temporary image to a temp file that will be deleted later.
+
+    Arguments:
+        image (PIL.Image) : The Image object to be sent as the embed's image.
+
+    Returns:
+        str : The image's path.
+    """
+    # Get the filename.
+    image_path = TEMP_DIR \
+                     + ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH)) \
+                     + TEMP_FILE_FILETYPE
+
+    # Save.
+    image.save(image_path)
+
+    # Return the filename.
+    return image_path
