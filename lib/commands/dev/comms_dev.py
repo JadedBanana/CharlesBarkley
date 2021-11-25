@@ -13,24 +13,6 @@ import os
 log = None
 
 
-async def update_remote(self, message, argument, is_in_guild):
-    """
-    Uses git to pull the most recent commit down.
-    Reboot will need to be done to apply the changes.
-    """
-    # Import subprocess so we can do the call
-    import subprocess;
-    process = subprocess.Popen(['git', 'pull'], stdout=subprocess.PIPE)
-
-    # Get decoded version of the output.
-    decoded_output = process.communicate()[0].decode('utf-8')
-
-    # Send report and log.
-    log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered remote update.')
-    await message.channel.send('Git output: ```' + decoded_output + '```')
-    await message.channel.send('If update completed successfully, feel free to manually reboot using j!reboot')
-
-
 async def send_log(self, message, argument, is_in_guild):
     """
     Sends a log file through discord.
