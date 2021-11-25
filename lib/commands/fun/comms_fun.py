@@ -5,7 +5,6 @@ from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
 from datetime import datetime, timedelta
 from lib.util.exceptions import *
 import constants
-import wikipedia
 import requests
 import discord
 import random
@@ -219,17 +218,6 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
 
 async def shsl(self, message, argument, is_in_guild):
     await ultimate(self, message, argument, is_in_guild, True)
-
-
-async def randomwiki(self, message, argument, is_in_guild):
-    """
-    Generates a random youtube link.
-    """
-    # Simple call.
-    wiki_page = wikipedia.page(wikipedia.random(1))
-
-    log.debug(misc.get_comm_start(message, is_in_guild) + 'requested random wikipedia page, returned {}'.format(wiki_page))
-    await message.channel.send(wiki_page.url)
 
 
 def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False):
