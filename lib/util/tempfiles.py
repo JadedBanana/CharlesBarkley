@@ -36,8 +36,9 @@ def initialize():
     if not os.path.isdir(os.path.join(TEMP_DIR, PFP_DIR)):
         os.mkdir(os.path.join(TEMP_DIR, PFP_DIR))
 
-    # Clear profile pictures not in use, as well as leftover temp files.
+    # Clear profile pictures not in use, as well as leftover temp images.
     clear_profile_pictures_not_in_use()
+    clear_temporary_images()
 
 
 def checkout_profile_picture_by_user(user, message, command_key, size=None):
@@ -157,3 +158,18 @@ def save_temporary_image(image):
 
     # Return the filename.
     return image_path
+
+
+def clear_temporary_images():
+    """
+    Clears (deletes) all the temporary images saved in the temp directory.
+    """
+    # Iterate through all the images in the directory.
+    for temp_image in os.listdir(TEMP_DIR):
+
+        # Ignore directories.
+        if os.path.isdir(os.path.join(TEMP_DIR, temp_image)):
+            continue
+
+        # Delete the remaining files.
+        os.remove(os.path.join(TEMP_DIR, temp_image))

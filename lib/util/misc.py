@@ -53,38 +53,6 @@ def comb(n, r=None):
     return perm(n, r) / factorial(r)
 
 
-def calculate_time_passage(time_delta):
-    """
-    Creates the time delta string and reports to channel, then returns time delta string.
-
-    Arguments:
-        time_delta (datetime.time_delta) : The time delta (change in time).
-
-    Returns:
-        str : The time passage string (formatted like {days}d {hours}h {mins}m {seconds}s).
-    """
-    # Starts out with empty time string.
-    time_str = ''
-
-    # Add on the days.
-    if time_delta.days:
-        time_str += str(time_delta.days) + 'd '
-
-    # Add on the hours.
-    if int(time_delta.seconds / 3600):
-        time_str += str(int(time_delta.seconds / 3600)) + 'h '
-
-    # Add on the minutes.
-    if int(time_delta.seconds / 60):
-        time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
-
-    # Add on the seconds.
-    time_str += str(time_delta.seconds % 60) + 's '
-
-    # Return the final string.
-    return time_str
-
-
 def get_photogenic_username(user):
     """
     Gets a more photogenic username based on the user's username and nickname.
@@ -97,7 +65,6 @@ def get_photogenic_username(user):
     """
     # Return.
     return user.nick if user.nick else user.name
-
 
 
 def get_applicable_users(message, exclude_bots=True, exclude_users=None):
@@ -147,6 +114,7 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
 
     # Returns.
     return all_users
+
 
 
 async def get_secondmost_recent_message(message):
@@ -200,6 +168,38 @@ def get_multi_index(source, arg):
 
     # Returns.
     return all_indexes
+
+
+def calculate_time_passage(time_delta):
+    """
+    Creates the time delta string and reports to channel, then returns time delta string.
+
+    Arguments:
+        time_delta (datetime.time_delta) : The time delta (change in time).
+
+    Returns:
+        str : The time passage string (formatted like {days}d {hours}h {mins}m {seconds}s).
+    """
+    # Starts out with empty time string.
+    time_str = ''
+
+    # Add on the days.
+    if time_delta.days:
+        time_str += str(time_delta.days) + 'd '
+
+    # Add on the hours.
+    if int(time_delta.seconds / 3600):
+        time_str += str(int(time_delta.seconds / 3600)) + 'h '
+
+    # Add on the minutes.
+    if int(time_delta.seconds / 60):
+        time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
+
+    # Add on the seconds.
+    time_str += str(time_delta.seconds % 60) + 's '
+
+    # Return the final string.
+    return time_str
 
 
 def multiply_color_tuple(color, factor):
