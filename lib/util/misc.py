@@ -149,6 +149,28 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     return all_users
 
 
+async def get_secondmost_recent_message(message):
+    """
+    Gets the second-most recent message in a channel, given a message.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+
+    Returns:
+        discord.message.Message : The previous message in the channel.
+
+    Raises:
+        FirstMessageInChannelError : The message this method was called with is the first message in the channel.
+    """
+    # Simple get statement.
+    try:
+        return (await message.channel.history(limit=2).flatten())[1].content
+
+    # If there's an index error, raise the FirstMessageInChannelError.
+    except IndexError:
+        raise FirstMessageInChannelError()
+
+
 def get_multi_index(source, arg):
     """
     Gets multiple indexes for the argument in the source.
@@ -178,53 +200,6 @@ def get_multi_index(source, arg):
 
     # Returns.
     return all_indexes
-
-
-def get_profile_picture(user, already_id=False):
-    """
-    Gets the profile picture for a user.
-    """
-    # The path for the image.
-    if already_id:
-        image_locale = os.path.join(constants.TEMP_DIR, str(user) + constants.PFP_FILETYPE)
-    else:
-        image_locale = os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
-    # If the image exists, we just open that.
-    if os.path.isfile(image_locale):
-        return Image.open(image_locale), image_locale
-    # Gets the url.
-    pfp_url = user.avatar_url
-    # Downloads image in bytes
-    image_bytes = requests.get(pfp_url).content
-    # Writes image to disk
-    with open(image_locale, 'wb') as w:
-        w.write(image_bytes)
-    # Opens as image
-    img_return = Image.open(image_locale)
-    # Returns image.
-    return img_return, image_locale
-
-
-async def get_secondmost_recent_message(message):
-    """
-    Gets the second-most recent message in a channel, given a message.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-
-    Returns:
-        discord.message.Message : The previous message in the channel.
-
-    Raises:
-        FirstMessageInChannelError : The message this method was called with is the first message in the channel.
-    """
-    # Simple get statement.
-    try:
-        return (await message.channel.history(limit=2).flatten())[1].content
-
-    # If there's an index error, raise the FirstMessageInChannelError.
-    except IndexError:
-        raise FirstMessageInChannelError()
 
 
 def multiply_color_tuple(color, factor):
