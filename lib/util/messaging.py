@@ -9,6 +9,7 @@ import discord
 async def send_text_message(message, text_str):
     """
     Sends a text message back to the channel the trigger message came from.
+    If the message exceeds the allowed 2000 characters, it will be sent as a file.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered the command.
@@ -27,6 +28,37 @@ async def send_text_message(message, text_str):
         file = discord.File(text_file_path, filename='text_message.txt')
         await message.channel.send(file=file)
 
+
+async def send_codeblock_message(message, text_str):
+    """
+    Sends a codeblock message.
+    If the message exceeds the allowed 2000 characters, it will be split into pieces.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        text_str (str) : The text message's intended text.
+    """
+    # Split the text_str into newlines.
+    text_str_by_line = text_str.split('\n')
+
+    # Create a string object to keep the current message.
+    current_message_str = ''
+
+    # Perform a for loop to go through lines.
+    for i in range(len(text_str_by_line) - 1):
+
+        # Append the current line.
+        current_message_str += text_str_by_line[i] + '\n'
+
+        # Check if the next line would push it over the edge.
+        if len(current_message_str) + len(text_str_by_line[i + 1]) + 1 >= 1990:
+
+            # Send the current_message_str, then erase.
+            await message.channel.send(f'```{current_message_str}```')
+            current_message_str = ''
+
+    # Send the remaining text.
+    await message.channel.send(f'```{current_message_str + text_str_by_line[-1]}```')
 
 
 async def send_image_based_embed(message, image, title, embed_color):
