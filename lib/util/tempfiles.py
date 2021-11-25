@@ -14,6 +14,7 @@ ACTIVE_PROFILE_PICTURES = {}
 
 # Image saving.
 TEMP_DIR = 'temp'
+PFP_DIR = 'pfps'
 PFP_FILETYPE = '.webp'
 
 
@@ -82,7 +83,7 @@ def load_profile_picture(user):
     image_bytes = requests.get(pfp_url).content
 
     # Writes image to disk
-    image_locale = os.path.join(TEMP_DIR, str(user.id) + PFP_FILETYPE)
+    image_locale = os.path.join(TEMP_DIR, PFP_DIR, str(user.id) + PFP_FILETYPE)
     with open(image_locale, 'wb') as w:
         w.write(image_bytes)
 
