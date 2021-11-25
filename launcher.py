@@ -47,6 +47,10 @@ def launch():
     from lib.util import logger
     logger.basic_setup()
 
+    # Performing tempfile setup.
+    from lib.util import tempfiles
+    tempfiles.initialize()
+
     # Logging message.
     import logging
     logging.info('Passed startup checks, performing basic setup')
