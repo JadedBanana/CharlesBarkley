@@ -9,9 +9,6 @@ import wikipedia
 import requests
 import discord
 import random
-import string
-import urllib
-import json
 from lib.util import misc
 import os
 
@@ -222,66 +219,6 @@ async def ultimate(self, message, argument, is_in_guild, shsl=False):
 
 async def shsl(self, message, argument, is_in_guild):
     await ultimate(self, message, argument, is_in_guild, True)
-
-
-async def randomyt(self, message, argument, is_in_guild):
-    """
-    Generates a random youtube link.
-    """
-    # Rolls the random chance for a rick roll...
-    if random.random() < constants.YOUTUBE_RICKROLL_CHANCE:
-        log.info(misc.get_comm_start(message, is_in_guild) + 'requested random video, rickrolled them')
-        await message.channel.send(constants.YOUTUBE_RICKROLL_URL)
-        return
-
-    # Otherwise...
-    search_results = {'items': []}
-    while not search_results['items']:
-        # Gets random search term and searches
-        random_search = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(random.choices(constants.YOUTUBE_SEARCH_LENGTHS, weights=constants.YOUTUBE_SEARCH_WEIGHTS)[0]))
-        url_data = constants.YOUTUBE_SEARCH_URL.format(constants.YOUTUBE_API_KEY, constants.YOUTUBE_SEARCH_COUNT, random_search)
-
-        # Opens url
-        try:
-            url_data = urllib.request.urlopen(url_data)
-            data = url_data.read()
-
-        # The only reason we would have an error is if quota has been reached. We tell the user that here.
-        except urllib.error.HTTPError:
-            # First, we get the time delta between now and when the quota should be reset.
-            current_time = datetime.today()
-            target_time = datetime.today()
-
-            # If we are beyond the quota reset time, we add 1 to the target date.
-            if current_time.hour >= constants.YOUTUBE_QUOTA_RESET_HOUR:
-                target_time = target_time + timedelta(days=1)
-
-            # Then we create a new date from the target_time.
-            target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=constants.YOUTUBE_QUOTA_RESET_HOUR)
-
-            # Get time until quota and return that.
-            quota_str = misc.calculate_time_passage(target_time - current_time)
-            await message.channel.send('Youtube quota of 100 videos reached. Try again in {}'.format(quota_str))
-            # We only put out the quota if it's the first time doing so today.
-            if not self.quota_blocked_last_time:
-                log.warning(misc.get_comm_start(message, is_in_guild) + 'requested random video, quota reached')
-                self.quota_blocked_last_time = True
-            return
-
-        # Decodes data and makes it into a dict
-        encoding = url_data.info().get_content_charset('utf-8')
-        search_results = json.loads(data.decode(encoding))
-
-    # Create list of video id's
-    video_ids = [video['id']['videoId'] for video in search_results['items']]
-
-    # Pick one
-    choice = random.randint(0, len(video_ids) - 1)
-
-    # Return selected video.
-    log.debug(misc.get_comm_start(message, is_in_guild) + 'requested random video, returned video id ' + video_ids[choice] + ' which was result ' + str(choice) + ' in results for ' + random_search)
-    await message.channel.send(constants.YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
-    self.quota_blocked_last_time = False
 
 
 async def randomwiki(self, message, argument, is_in_guild):

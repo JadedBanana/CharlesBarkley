@@ -21,17 +21,6 @@ BOT_TOKEN = 'NzQwNjEwMTc2MDM3NTUyMTc4.Xyrg-Q.33fO34mvKyQmbsGwj54oTiojWp4'
 GLOBAL_PREFIX = 'j!'
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
 
-# YouTube
-YOUTUBE_API_KEY = 'AIzaSyAHuBNRF1Ts5VKoqPnln57ojnrUVGUXINU'
-YOUTUBE_QUOTA_RESET_HOUR = 3
-YOUTUBE_RICKROLL_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
-YOUTUBE_RICKROLL_CHANCE = 0.002
-YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search?key={}&maxResults={}&part=snippet&type=video&q={}'
-YOUTUBE_SEARCH_COUNT = 100
-YOUTUBE_SEARCH_LENGTHS = [1, 2, 3, 4, 5]
-YOUTUBE_SEARCH_WEIGHTS = [36, 1296, 46656, 1679616, 60466176]
-YOUTUBE_VIDEO_URL_FORMAT = 'https://www.youtube.com/watch?v={}'
-
 # Ultimates
 ULTIMATE_BACKGROUND_BOTTOM = 'assets/drbottom.png'
 ULTIMATE_BACKGROUND_MIDDLE = 'assets/drmiddle.png'
