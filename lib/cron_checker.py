@@ -12,7 +12,8 @@ import random
 CRONTAB_CHECK_FILE = '.croncheck'
 CRONTAB_WAIT_INTERVAL = 45
 CRONTAB_STR_LENGTH = 64
-CRONTAB_CHAR_POSSIBILITIES = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
+CRONTAB_CHAR_POSSIBILITIES = \
+    '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
 
 
 # get_cronstring is used for the launcher.
@@ -42,6 +43,7 @@ class CronLoop(threading.Thread):
             with open(CRONTAB_CHECK_FILE, 'w') as w:
                 w.write(cron_str)
             time.sleep(CRONTAB_WAIT_INTERVAL)
+
 
 # Starts the cron loop. Used to write new shit to the cron file, forever.
 def start_cron_loop():
