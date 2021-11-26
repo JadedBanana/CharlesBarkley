@@ -42,14 +42,10 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     if message.mentions:
         return message.mentions
 
-    # If there is no argument left to parse, we raise NoUserSpecifiedError.
-    if not argument:
-        raise NoUserSpecifiedError()
-
     # Normalize the argument, split it by its spaces.
     approx_user = parsing.normalize_string(argument).lower()
 
-    # Same as above, but now on the normalized and split str.
+    # If there is no argument left to parse, we raise NoUserSpecifiedError.
     if not approx_user or len(approx_user) < 3:
         raise NoUserSpecifiedError()
 

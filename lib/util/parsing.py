@@ -17,6 +17,10 @@ def normalize_string(input_str, remove_double_spaces=True):
     Returns:
         str : The normalized string.
     """
+    # If it's not a string, then just return it.
+    if not isinstance(input_str, str):
+        return input_str
+
     # Newlines, tabs
     input_str = input_str.replace('\t', ' ').replace('\n', ' ')
 
