@@ -616,6 +616,9 @@ async def weather(bot, message, argument):
     if not weather_dict:
         return
 
+    # Log.
+    logging.info(message, f'requested weather for city {argument}')
+
     # Gather city name and country, as well as longitude and latitude.
     city = get_city(weather_dict)
     country = get_country(weather_dict)
