@@ -3,9 +3,9 @@ Weather command.
 Displays the weather in a given city.
 """
 # Imports
-from lib.util import arguments, environment, messaging, misc, parsing
+from lib.util import environment, messaging, misc, parsing
 from lib.util.logger import BotLogger as logging
-from dateutil.tz import tzoffset, UTC
+from dateutil.tz import tzoffset
 from datetime import datetime
 from iso3166 import countries
 from math import fabs
