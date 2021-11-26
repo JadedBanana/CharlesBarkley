@@ -1,38 +1,57 @@
-async def send_log(self, message, argument, is_in_guild):
+"""
+Send log command.
+Sends the log file for a specific date.
+"""
+# Imports
+from lib.util import environment, messaging, parsing
+from lib.util.logger import BotLogger as logging
+from lib.util import logger
+import discord
+import os
+
+
+# Log file variables
+LOG_FILE_CHARS = '1234567890-'
+
+
+async def send_log(bot, message, argument):
     """
     Sends a log file through discord.
     Argument should be formatted in YYYY-MM-DD.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
     """
     # If there is no argument, we simply grab today's log file.
-    is_today = not argument
-    if is_today:
-        target_log = datetime.today().strftime('%Y-%m-%d') + '.txt'
+    if not argument:
+        target_log = logger.LOG_FILE
+        # If there is no log file today, then we send an error message.
+        if not target_log:
+            logging.info(message, 'Requested log file for today, currently not logging to file')
+            return await messaging.send_text_message(message, 'Not logging to file right now. '
+                                                              'Try to pull a log file from the past.')
 
-    # Otherwise, we grab the argument and try to work it into a good target log.
-    else:
-        # Normalizing the string
-        argument_slim = misc.normalize_string(argument)
-        for i in range(len(argument_slim) - 1, -1, -1):
-            if argument_slim[i] not in string.digits:
-                argument_slim = argument_slim[:i] + argument_slim[i + 1:]
-
-        # If the length of our argument isn't now 8, we tell the user that and return.
-        if len(argument_slim) != 8:
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered log file, invalid date')
-            await message.channel.send('Invalid date format. Should be YYYY-MM-DD')
-            return
-
-        # Now, we form a date.
-        target_log = '{}-{}-{}.txt'.format(argument_slim[:4], argument_slim[4:6], argument_slim[6:8])
-        is_today = target_log == datetime.today().strftime('%Y-%m-%d') + '.txt'
+    # Attempt to grab something from the argument.
+    if not target_log:
+        # Now, get the target_log from the argument.
+        target_log = os.path.join(environment.get('LOGS_DIR'), parsing.normalize_string(argument).lower().strip(' ').replace('/', '-') + '.log')
 
     # We see if that log file exists.
-    if os.path.isfile(os.path.join(constants.LOGS_DIR, target_log)) or is_today:
+    if os.path.isfile(target_log):
+
         # Log then send file.
-        log.info(misc.get_comm_start(message, is_in_guild) + 'Ordered log file {}, sending'.format(target_log))
-        await message.channel.send(file=discord.File(os.path.join(constants.LOGS_DIR, target_log)))
+        logging.info(message, f'Ordered log file {target_log}, sending')
+        await messaging.send_file(message, target_log)
 
     # If the log file doesn't exist, we tell the user that.
     else:
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'Ordered log file, file {} does not exist'.format(target_log))
-        await message.channel.send('Log file {} does not exist.'.format(target_log))
+        logging.info(message, f'Ordered log file, file {target_log} does not exist')
+        await message.channel.send(f'Log file {target_log} does not exist.')
+
+
+# Command values
+DEVELOPER_COMMAND_DICT = {
+    'sendlog': send_log
+}

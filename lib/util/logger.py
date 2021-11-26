@@ -17,6 +17,8 @@ LOGGING_LEVELS = [
     logging.ERROR,
     logging.CRITICAL
 ]
+# Log file name.
+LOG_FILE = None
 
 
 def basic_setup():
@@ -34,13 +36,13 @@ def basic_setup():
 
         # Create the log file.
         from datetime import datetime
+        global LOG_FILE
+        LOG_FILE = os.path.join(logging_dir, datetime.today().strftime('%Y-%m-%d') + '.log')
+
+        # Set the config.
         logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
                             level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')],
-                            handlers=[
-                                logging.FileHandler(
-                                    os.path.join(logging_dir, datetime.today().strftime('%Y-%m-%d') + '.log')),
-                                logging.StreamHandler()
-                            ])
+                            handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()])
 
         # Log a basic line showing where the thread's logs begin.
         log_message = 'NEW INSTANCE'

@@ -61,6 +61,17 @@ async def send_codeblock_message(message, text_str):
     await message.channel.send(f'```{current_message_str + text_str_by_line[-1]}```')
 
 
+async def send_file(message, file_dir):
+    """
+    Sends a file.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        file_dir (str) : The file directory.
+    """
+    await message.channel.send(file=discord.File(file_dir))
+
+
 async def send_image_based_embed(message, image, title, embed_color):
     """
     Sends an image-based embed back to the channel the trigger message came from.
