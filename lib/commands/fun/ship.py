@@ -118,7 +118,7 @@ async def ship(bot, message, argument):
 
     # On CannotAccessUserlistError, log an error and send an apology message.
     except CannotAccessUserlistError:
-        logging.error(message, 'Failed to access the userlist')
+        logging.error(message, 'requested ship, failed to access the userlist')
         return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
 
 

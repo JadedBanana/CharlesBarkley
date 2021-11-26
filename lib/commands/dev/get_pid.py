@@ -21,7 +21,7 @@ async def get_pid(bot, message, argument):
     pid = os.getpid()
 
     # Logs and returns PID
-    logging.info(message, f'Ordered local PID, returned {pid}')
+    logging.info(message, f'ordered local PID, returned {pid}')
     await messaging.send_text_message(message, f'Current running PID is {pid}')
 
 
