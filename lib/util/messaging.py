@@ -92,3 +92,15 @@ async def send_image_based_embed(message, image, title, embed_color):
 
     # Finally, send the message with embed and file as attributes.
     await message.channel.send(embed=embed, file=file)
+
+
+async def send_embed_without_local_image(message, embed):
+    """
+    Sends a pre-made embed (with a web-hosted image) back to the channel the trigger message came from.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        embed (discord.Embed) : The discord embed object that was made by whatever class called this function.
+    """
+    # Send the message.
+    await message.channel.send(embed=embed)

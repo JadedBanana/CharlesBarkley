@@ -202,6 +202,31 @@ def calculate_time_passage(time_delta):
     return time_str
 
 
+def upper_per_word(input_str):
+    """
+    Makes the beginning of every word an uppercase letter, and all others lowercase.
+
+    Arguments:
+        input_str (str) : The input string.
+
+    Returns:
+        str : The fully formatted string.
+    """
+    # Iterate through each letter.
+    for i in range(len(input_str)):
+
+        # If this is the first letter or there was a space before this one, make it uppercase.
+        if i == 0 or input_str[i - 1] == ' ':
+            input_str = input_str[:i] + input_str[i].upper() + input_str[i + 1:]
+
+        # Otherwise, make it lowercase.
+        else:
+            input_str = input_str[:i] + input_str[i].lower() + input_str[i + 1:]
+
+    # Return the updated string.
+    return input_str
+
+
 def multiply_color_tuple(color, factor):
     """
     Multiplies the values in the tuple by the factor.
@@ -220,15 +245,3 @@ def find_color_tuple_midpoint_hsv(color1, color2, factor=0.5):
     color2 = colorsys.rgb_to_hsv(color2[0] / 255, color2[1] / 255, color2[2] / 255)
     color3 = colorsys.hsv_to_rgb(color1[0] * (1 - factor) + color2[0] * factor, color1[1] * (1 - factor) + color2[1] * factor, color1[2] * (1 - factor) + color2[2] * factor)
     return int(color3[0] * 255), int(color3[1] * 255), int(color3[2] * 255)
-
-
-def upper_per_word(input_str):
-    """
-    Makes the beginning of every word an uppercase letter, and all others lowercase.
-    """
-    for i in range(len(input_str)):
-        if i == 0 or input_str[i - 1] == ' ':
-            input_str = input_str[:i] + input_str[i].upper() + input_str[i + 1:]
-        else:
-            input_str = input_str[:i] + input_str[i].lower() + input_str[i + 1:]
-    return input_str
