@@ -46,3 +46,9 @@ class UnableToFindUserError(Exception):
     def __init__(self, completed_users, incomplete_user):
         self.completed_users = completed_users
         self.incomplete_user = incomplete_user
+
+
+# InvalidAssetFileDirError is raised when an invalid asset directory is passed through.
+class InvalidAssetFileDirError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason

@@ -3,7 +3,9 @@ Assets loads assets. Not much else to it, really. Just loads assets.
 Checks whether all the assets are present on startup.
 """
 # Imports
+from lib.util.exceptions import InvalidAssetFileDirError
 from PIL import Image
+import random
 import os
 
 # Assets dir.
@@ -39,6 +41,13 @@ EXPECTED_ASSET_FILES = [
     'danganronpa_chars/yonaga_angie.webp', 'danganronpa_chars/yumeno_himiko.webp',
     'fonts/arial.ttf', 'fonts/arial_bold.ttf', 'fonts/gill_sans.ttf', 'fonts/times_sans_serif.ttf'
 ]
+# List of asset directories that should have at least ONE image in them.
+EXPECTED_POPULATED_ASSET_DIRS = [
+    'feliz/angry/lunes', 'feliz/angry/martes', 'feliz/angry/miercoles', 'feliz/angry/jueves', 'feliz/angry/viernes',
+    'feliz/angry/sabado', 'feliz/angry/domingo',
+    'feliz/happy/lunes', 'feliz/happy/martes', 'feliz/happy/miercoles', 'feliz/happy/jueves', 'feliz/happy/viernes',
+    'feliz/happy/sabado', 'feliz/happy/domingo'
+]
 
 
 def asset_check():
@@ -67,3 +76,29 @@ def open_image(filename):
         filename (str) : The image's filename.
     """
     return Image.open(os.path.join(ASSETS_DIR, filename))
+
+
+def get_random_file_from_foler(folder):
+    """
+    Picks a random file out of the given asset folder.
+
+    Arguments:
+        folder (str) : The folder.
+
+    Raises:
+        InvalidAssetFileDirError : The folder does not exist, or is not a valid populated asset dir.
+    """
+    # Assert that it is a directory.
+    if not os.path.isdir(os.path.join(ASSETS_DIR, folder)):
+        raise InvalidAssetFileDirError(folder)
+
+    # Also assert that it's one we have loaded.
+    if folder not in EXPECTED_POPULATED_ASSET_DIRS:
+        raise InvalidAssetFileDirError(folder)
+
+    # Pick a random file from there and join it with the folder.
+    chosen_file = random.choice(os.listdir(os.path.join(ASSETS_DIR, folder)))
+    chosen_file = os.path.join(ASSETS_DIR, folder, chosen_file)
+
+    # Return.
+    return chosen_file
