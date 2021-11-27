@@ -312,7 +312,7 @@ def calculate_time_passage(time_delta):
         time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
 
     # Add on the seconds.
-    time_str += str(time_delta.seconds % 60) + 's '
+    time_str += str(time_delta.seconds % 60) + 's'
 
     # Return the final string.
     return time_str
