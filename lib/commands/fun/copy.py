@@ -56,7 +56,8 @@ async def copy_user(bot, message, argument):
     # On CannotAccessUserlistError, log an error and send an apology message.
     except CannotAccessUserlistError:
         logging.error(message, 'Failed to access the userlist')
-        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try @ mentioning someone instead.')
+        return await messaging.send_text_message(message, 'There was an error accessing the userlist. '
+                                                          'Try @ mentioning someone instead.')
 
     # Gets the key we'll be using for the copied_users dict.
     copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
