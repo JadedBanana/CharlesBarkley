@@ -1,14 +1,44 @@
-# ===============================================================
-#                 UTILITY METHODS (NOT COMMANDS)
-# ===============================================================
-from math import factorial
+"""
+Misc util methods module.
+Has a lot of very different methods.
+"""
+# Imports
 from lib.util.exceptions import *
-from PIL import Image
-import constants
+from datetime import datetime
+from math import factorial
 import colorsys
-import requests
 import discord
-import os
+import logging
+import pytz
+
+
+# Timezone names for different discord VoiceRegions.
+DISCORD_REGION_TIMEZONE_NAMES = {
+    'us-west': 'America/Los_Angeles',
+    'us-east': 'America/New_York',
+    'us-south': 'America/Chicago',
+    'us-central': 'America/Chicago',
+    'eu_west': 'Europe/London',
+    'eu_central': 'Europe/Berlin',
+    'singapore': 'Singapore',
+    'london': 'Europe/London',
+    'sydney': 'Australia/Sydney',
+    'amsterdam': 'Europe/Amsterdam',
+    'frankfurt': 'Europe/Berlin',
+    'brazil': 'Brazil/East',
+    'hongkong': 'Hongkong',
+    'russia': 'Europe/Moscow',
+    'japan': 'Asia/Tokyo',
+    'southafrica': 'Egypt',
+    'south-korea': 'Asia/Seoul',
+    'india': 'Asia/Kolkata',
+    'europe': 'Europe/Berlin',
+    'dubai': 'Asia/Dubai',
+    'vip-us-east': 'America/New_York',
+    'vip-us-west': 'America/Los_Angeles',
+    'vip-amsterdam': 'Europe/Amsterdam'
+}
+
 
 def prod(iterable,*, start=1):
     """
@@ -137,6 +167,92 @@ async def get_secondmost_recent_message(message):
     # If there's an index error, raise the FirstMessageInChannelError.
     except IndexError:
         raise FirstMessageInChannelError()
+
+
+def get_guild_regions_weighted(message):
+    """
+    Gets the supposed region for a guild.
+    This depends on the region overrides for each voice channel.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+
+    Returns:
+        dict : A list of voice regions and how often they appear in each voice channel.
+    """
+    # First, make sure this is a guild. If it isn't, just return an empty dict.
+    if not isinstance(message.channel, discord.TextChannel):
+        return {}
+
+    # Now, we keep a tally (score).
+    region_count = {}
+
+    # Iterate through voice channels.
+    for voice_channel in message.guild.voice_channels:
+
+        # Get rtc region.
+        region = voice_channel.rtc_region
+
+        # If it's None, then continue.
+        if not region:
+            continue
+
+        # Add it to the region_count.
+        if region in region_count:
+            region_count[region] += 1
+        else:
+            region_count[region] = 1
+
+    # Return the region_count.
+    return region_count
+
+
+def get_guild_time(message):
+    """
+    Gets a guild's average local time.
+    This is basicaly guessed by using the weighted guild regions.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+
+    Returns:
+        datetime.datetime : The average datetime across all the guild's channels.
+    """
+    # First, get the weighted guild regions.
+    guild_regions = get_guild_regions_weighted(message)
+
+    # List for keeping track of time weights.
+    time_weights = []
+
+    # Iterate through each guild region.
+    for region, weight in guild_regions.items():
+
+        # If the region is NOT In the discord region timezone names list, log an error and continue.
+        if region.value not in DISCORD_REGION_TIMEZONE_NAMES:
+            logging.error(f'VoiceRegion {region.value} completely unexpected')
+            continue
+
+        # Otherwise, add the timezone's current time to the list.
+        time_weights.append((datetime.now(pytz.timezone(DISCORD_REGION_TIMEZONE_NAMES[region.value])), weight))
+
+    # If there are no time_weights, just send the local time.
+    if not time_weights:
+        return datetime.now()
+
+    # Now that all the time weights are acquired, start adding.
+    time_total = 0
+
+    # Iterate through time and weights.
+    for time, weight in time_weights:
+
+        # Add up the times.
+        time_total += (time.timestamp() + time.tzinfo.utcoffset(time).total_seconds()) * weight
+
+    # Now, average it.
+    time_average = time_total / sum([weight for time, weight in time_weights])
+
+    # Create a datetime object from that average time and return.
+    return datetime.fromtimestamp(time_average)
 
 
 def get_multi_index(source, arg):
