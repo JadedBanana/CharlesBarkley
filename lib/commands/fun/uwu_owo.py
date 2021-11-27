@@ -159,13 +159,12 @@ def do_uwu_owo_replace(text, use_owo):
     return replaced_text
 
 
-async def uwu_owo_master(bot, message, argument, use_owo=False):
+async def uwu_owo_master(message, argument, use_owo=False):
     """
     Converts a message into uwu- or owo-speak.
     Since the code for both commands are very similar, they're combined into one method here.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
         use_owo (bool) : Whether or not to use owo. If true, will be converted to owo-speak. If false, will be converted to uwu-speak.
@@ -197,7 +196,7 @@ async def uwuify(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Run master method
-    await uwu_owo_master(bot, message, argument, False)
+    await uwu_owo_master(message, argument, False)
 
 
 async def owoify(bot, message, argument):
@@ -210,7 +209,7 @@ async def owoify(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Run master method
-    await uwu_owo_master(bot, message, argument, True)
+    await uwu_owo_master(message, argument, True)
 
 
 # Command values
