@@ -6,4 +6,5 @@ iso3166>=2.0.0
 requests>=2.0.0
 Pillow>=8.0.0
 python-dateutil>=2.5.0
+python-dotenv
 pytz

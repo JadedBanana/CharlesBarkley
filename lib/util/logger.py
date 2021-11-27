@@ -42,7 +42,7 @@ def basic_setup():
         # Set the config.
         logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
                             level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')],
-                            handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()])
+                            handlers=[logging.FileHandler(LOG_FILE, encoding='utf-8'), logging.StreamHandler()])
 
         # Log a basic line showing where the thread's logs begin.
         log_message = 'NEW INSTANCE'
