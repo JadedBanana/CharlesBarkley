@@ -78,7 +78,7 @@ def open_image(filename):
     return Image.open(os.path.join(ASSETS_DIR, filename))
 
 
-def get_random_file_from_foler(folder):
+def get_random_file_from_folder(folder):
     """
     Picks a random file out of the given asset folder.
 
@@ -93,7 +93,7 @@ def get_random_file_from_foler(folder):
         raise InvalidAssetFileDirError(folder)
 
     # Also assert that it's one we have loaded.
-    if folder not in EXPECTED_POPULATED_ASSET_DIRS:
+    if folder.replace('\\', '/') not in EXPECTED_POPULATED_ASSET_DIRS:
         raise InvalidAssetFileDirError(folder)
 
     # Pick a random file from there and join it with the folder.

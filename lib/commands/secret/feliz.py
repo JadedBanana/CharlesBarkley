@@ -277,7 +277,7 @@ async def feliz_send_image(message, day, angry):
     image_folder = os.path.join('feliz', 'angry' if angry else 'happy', NUMBER_DAYS[day])
 
     # Get the random picture.
-    picture = assets.get_random_file_from_foler(image_folder)
+    picture = assets.get_random_file_from_folder(image_folder)
 
     # Send the message.
     await messaging.send_file(message, picture)
