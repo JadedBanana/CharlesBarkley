@@ -40,61 +40,36 @@ DISCORD_REGION_TIMEZONE_NAMES = {
 }
 
 
-def prod(iterable,*, start=1):
+def calculate_time_passage(time_delta):
     """
-    Returns product of all values in iterable, starting at start
-    """
-    for i in iterable:
-        start*= i
-    return start
-
-def perm(n, r=None):
-    """
-    nPr function.
-    """
-    # Setting r to n for bad values
-    if r is None:
-        r = n
-        
-    # Return for non-ints
-    if not isinstance(n, int):
-        raise TypeError('must be a nonzero integer value, not ' + str(type(n)))
-    if not isinstance(r, int):
-        raise TypeError('must be a nonzero integer value, not ' + str(type(r)))
-        
-    # Return for negatives
-    if n < 0 or r < 0:
-        raise ValueError('must be a nonzero integer value')
-    
-    # Return if r > n
-    if r > n:
-        return 0
-    
-    # Returns
-    return factorial(n) / factorial(n - r)
-
-def comb(n, r=None):
-    """
-    nCr function.
-    Simple modification of perm function.
-    """
-    if r is None:
-        r = n
-    return perm(n, r) / factorial(r)
-
-
-def get_photogenic_username(user):
-    """
-    Gets a more photogenic username based on the user's username and nickname.
+    Creates the time delta string and reports to channel, then returns time delta string.
 
     Arguments:
-        user (discord.user.User) : The user.
+        time_delta (datetime.time_delta) : The time delta (change in time).
 
     Returns:
-        str : The photogenic username.
+        str : The time passage string (formatted like {days}d {hours}h {mins}m {seconds}s).
     """
-    # Return.
-    return user.nick if user.nick else user.name
+    # Starts out with empty time string.
+    time_str = ''
+
+    # Add on the days.
+    if time_delta.days:
+        time_str += str(time_delta.days) + 'd '
+
+    # Add on the hours.
+    if int(time_delta.seconds / 3600):
+        time_str += str(int(time_delta.seconds / 3600)) + 'h '
+
+    # Add on the minutes.
+    if int(time_delta.seconds / 60):
+        time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
+
+    # Add on the seconds.
+    time_str += str(time_delta.seconds % 60) + 's'
+
+    # Return the final string.
+    return time_str
 
 
 def get_applicable_users(message, exclude_bots=True, exclude_users=None):
@@ -145,28 +120,6 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     # Returns.
     return all_users
 
-
-
-async def get_secondmost_recent_message(message):
-    """
-    Gets the second-most recent message in a channel, given a message.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-
-    Returns:
-        discord.message.Message : The previous message in the channel.
-
-    Raises:
-        FirstMessageInChannelError : The message this method was called with is the first message in the channel.
-    """
-    # Simple get statement.
-    try:
-        return (await message.channel.history(limit=2).flatten())[1].content
-
-    # If there's an index error, raise the FirstMessageInChannelError.
-    except IndexError:
-        raise FirstMessageInChannelError()
 
 
 def get_guild_regions_weighted(message):
@@ -255,6 +208,20 @@ def get_guild_time(message):
     return datetime.fromtimestamp(time_average)
 
 
+def get_photogenic_username(user):
+    """
+    Gets a more photogenic username based on the user's username and nickname.
+
+    Arguments:
+        user (discord.user.User) : The user.
+
+    Returns:
+        str : The photogenic username.
+    """
+    # Return.
+    return user.nick if user.nick else user.name
+
+
 def get_multi_index(source, arg):
     """
     Gets multiple indexes for the argument in the source.
@@ -286,36 +253,26 @@ def get_multi_index(source, arg):
     return all_indexes
 
 
-def calculate_time_passage(time_delta):
+async def get_secondmost_recent_message(message):
     """
-    Creates the time delta string and reports to channel, then returns time delta string.
+    Gets the second-most recent message in a channel, given a message.
 
     Arguments:
-        time_delta (datetime.time_delta) : The time delta (change in time).
+        message (discord.message.Message) : The discord message object that triggered the command.
 
     Returns:
-        str : The time passage string (formatted like {days}d {hours}h {mins}m {seconds}s).
+        discord.message.Message : The previous message in the channel.
+
+    Raises:
+        FirstMessageInChannelError : The message this method was called with is the first message in the channel.
     """
-    # Starts out with empty time string.
-    time_str = ''
+    # Simple get statement.
+    try:
+        return (await message.channel.history(limit=2).flatten())[1].content
 
-    # Add on the days.
-    if time_delta.days:
-        time_str += str(time_delta.days) + 'd '
-
-    # Add on the hours.
-    if int(time_delta.seconds / 3600):
-        time_str += str(int(time_delta.seconds / 3600)) + 'h '
-
-    # Add on the minutes.
-    if int(time_delta.seconds / 60):
-        time_str += str(int(time_delta.seconds % 3600 / 60)) + 'm '
-
-    # Add on the seconds.
-    time_str += str(time_delta.seconds % 60) + 's'
-
-    # Return the final string.
-    return time_str
+    # If there's an index error, raise the FirstMessageInChannelError.
+    except IndexError:
+        raise FirstMessageInChannelError()
 
 
 def upper_per_word(input_str):
