@@ -111,3 +111,12 @@ PUBLIC_COMMAND_DICT = {
 REACTIVE_COMMAND_LIST = [
     copy_msg
 ]
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'copy',
+        'category': 'fun',
+        'description': 'Can be used to make the bot copy someone else. How annoying!',
+        'examples': [('copy @dummy#0000', 'Copies the user @dummy#0000.')],
+        'usages': ['copy < user >']
+    }
+]

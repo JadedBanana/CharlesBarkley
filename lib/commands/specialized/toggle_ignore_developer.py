@@ -6,6 +6,7 @@ Specialized command in that it can be called even when the developer is being ig
 from lib.util import environment
 from lib.util import messaging
 
+
 async def toggle_ignore_dev(bot, message, argument=None):
     """
     Toggles whether or not to ignore the developer.
@@ -28,8 +29,21 @@ async def toggle_ignore_dev(bot, message, argument=None):
 
 # Command values
 DEVELOPER_COMMAND_DICT = {
-    'toggleignoredev': toggle_ignore_dev
+    'toggleignoredev': toggle_ignore_dev,
+    'toggleignoredevs': toggle_ignore_dev,
+    'toggleignoredeveloper': toggle_ignore_dev,
+    'toggleignoredevelopers': toggle_ignore_dev
 }
 SPECIALIZED_COMMAND_DICT = {
     'toggleignoredev': toggle_ignore_dev
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'toggleignoredev',
+        'category': 'dev_only',
+        'description': 'Toggles whether or not to ignore developers. Can only be used by developers, and only works on deployment verions.',
+        'examples': [('toggleignoredev', 'Toggles whether or not to ignore the developer.')],
+        'aliases': ['toggleignoredevs', 'toggleignoredeveloper', 'toggleignoredevelopers'],
+        'usages': ['toggleignoredev']
+    }
+]

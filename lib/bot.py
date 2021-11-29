@@ -15,7 +15,6 @@ import sys
 
 class JadieClient(discord.Client):
 
-
     def __init__(self):
         """
         Instantiates the bot.
@@ -35,6 +34,7 @@ class JadieClient(discord.Client):
         self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = commands.load_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
+        specialized_command_dict['help_init']()
 
         # Set variable for whether or not to ignore the developer.
         self.ignore_developer = False
