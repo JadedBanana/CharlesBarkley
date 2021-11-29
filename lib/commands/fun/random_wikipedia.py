@@ -30,3 +30,13 @@ PUBLIC_COMMAND_DICT = {
     'randomwiki': random_wikipedia,
     'randomwikipedia': random_wikipedia
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'randomwiki',
+        'category': 'fun',
+        'description': 'Generates a random Wikipedia page.',
+        'examples': [('randomwiki', 'Generates a random Wikipedia page.')],
+        'aliases': ['randomwikipedia'],
+        'usages': ['randomwiki']
+    }
+]

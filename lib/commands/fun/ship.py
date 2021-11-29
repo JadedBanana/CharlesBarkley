@@ -126,3 +126,14 @@ async def ship(bot, message, argument):
 PUBLIC_COMMAND_DICT = {
     'ship': ship,
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'ship',
+        'category': 'fun',
+        'description': 'Ships two users together.',
+        'examples': [('ship', 'Creates a ship with two random users.'),
+                     ('ship @dummy#0000', 'Creates a ship with the user @dummy#0000 as one of the partners.'),
+                     ('ship dummy', "Creates a ship with the user with the name closest to 'dummy' as one of the partners.")],
+        'usages': ['ship', 'ship < user >']
+    }
+]

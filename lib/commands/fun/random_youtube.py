@@ -123,3 +123,13 @@ PUBLIC_COMMAND_DICT = {
     'randomyt': random_youtube_master,
     'randomyoutube': random_youtube_master
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'randomyt',
+        'category': 'fun',
+        'description': 'Generates a random YouTube video. Due to Google API limitations, can only be used 100 times per day.',
+        'examples': [('randomyt', 'Generates a random YouTube video.')],
+        'aliases': ['randomyoutube'],
+        'usages': ['randomyt']
+    }
+]
