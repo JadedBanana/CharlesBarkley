@@ -697,3 +697,14 @@ async def weather(bot, message, argument):
 PUBLIC_COMMAND_DICT = {
     'weather': weather
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'weather',
+        'category': 'util',
+        'description': 'Displays the weather for a given city.',
+        'examples': [('weather new york', 'Shows the weather for New York City, USA.'),
+                     ('weather london', 'Shows the weather for London, UK.'),
+                     ('weather dubai', 'Shows the weather for Dubai, UAE.')],
+        'usages': ['weather < city >']
+    }
+]
