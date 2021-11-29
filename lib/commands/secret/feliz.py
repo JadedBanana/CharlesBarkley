@@ -53,7 +53,7 @@ async def feliz(bot, message, argument):
     # If an argument was supplied, then see if any of the feliz arguments appeared in there.
     # If so, overwrite the intended date to be something else.
     if argument:
-        for word in parsing.normalize_string(argument).lower().split(' ').reverse():
+        for word in parsing.normalize_string(argument).lower().split(' '):
             if word in FELIZ_ARGUMENTS:
                 intended_date = FELIZ_ARGUMENTS[word]
 
