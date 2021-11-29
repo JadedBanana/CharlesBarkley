@@ -51,4 +51,4 @@ def start_cron_loop():
     Starts the cron loop.
     """
     # Just starts a cron loop.
-    CronLoop().start()
+    CronLoop(daemon=True).start()
