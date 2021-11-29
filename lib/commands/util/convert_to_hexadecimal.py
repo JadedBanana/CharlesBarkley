@@ -37,3 +37,15 @@ PUBLIC_COMMAND_DICT = {
     'hexadec': hexadecimal,
     'hexadecimal': hexadecimal
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'hexadecimal',
+        'category': 'util',
+        'description': 'Converts a given number to hexadecimal.',
+        'examples': [('hexadecimal 45', 'Converts the number 45 from decimal to hexadecimal.'),
+                     ('hexadecimal 0b110101', 'Converts the number 110101 from binary to hexadecimal.'),
+                     ('hexadecimal 0o71', 'Converts the number 71 from octal to hexadecimal.')],
+        'aliases': ['hex', 'hexadec'],
+        'usages': ['hexadecimal < number >']
+    }
+]

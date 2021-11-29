@@ -37,3 +37,15 @@ PUBLIC_COMMAND_DICT = {
     'duoadec': duodecimal,
     'duodecimal': duodecimal
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'duodecimal',
+        'category': 'util',
+        'description': 'Converts a given number to duodecimal.',
+        'examples': [('duodecimal 45', 'Converts the number 45 from decimal to duodecimal.'),
+                     ('duodecimal 0b110101', 'Converts the number 110101 from binary to duodecimal.'),
+                     ('duodecimal 0x1A', 'Converts the number 1A from hexadecimal to duodecimal.')],
+        'aliases': ['duo', 'duodec'],
+        'usages': ['duodecimal < number >']
+    }
+]
