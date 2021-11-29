@@ -29,3 +29,12 @@ async def get_pid(bot, message, argument):
 DEVELOPER_COMMAND_DICT = {
     'getpid': get_pid
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'getpid',
+        'category': 'dev_only',
+        'description': 'Get the PID that the bot is running under. Can only be used by developers.',
+        'examples': [('getpid', 'Gets the PID.')],
+        'usages': ['getpid']
+    }
+]

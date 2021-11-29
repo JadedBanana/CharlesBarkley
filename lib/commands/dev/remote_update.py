@@ -30,3 +30,12 @@ async def remote_update(bot, message, argument):
 DEVELOPER_COMMAND_DICT = {
     'update': remote_update
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'update',
+        'category': 'dev_only',
+        'description': 'Calls git pull to update the bot. Can only be used by developers.',
+        'examples': [('update', 'Opens a subprocess to call git pull.')],
+        'usages': ['update']
+    }
+]

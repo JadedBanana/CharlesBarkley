@@ -55,3 +55,13 @@ async def send_log(bot, message, argument):
 DEVELOPER_COMMAND_DICT = {
     'sendlog': send_log
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'sendlog',
+        'category': 'dev_only',
+        'description': 'Sends the current / specified log file. Can only be used by developers.',
+        'examples': [('sendlog', 'Sends the current log file.'),
+                     ('sendlog 2020-08-30', 'Sends the log from August 30, 2020.')],
+        'usages': ['sendlog', 'sendlog < date (YYYY-MM-DD) >']
+    }
+]

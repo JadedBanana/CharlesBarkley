@@ -94,3 +94,12 @@ DEVELOPER_COMMAND_DICT = {
 REACTIVE_COMMAND_LIST = [
     confirm_reboot
 ]
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'reboot',
+        'category': 'dev_only',
+        'description': 'Reboots (terminates) the bot. Requires a secondary confirmation afterwards. Can only be used by developers.',
+        'examples': [('reboot', 'Reboots the bot.')],
+        'usages': ['reboot']
+    }
+]

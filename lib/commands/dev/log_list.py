@@ -48,3 +48,12 @@ async def log_list(bot, message, argument):
 DEVELOPER_COMMAND_DICT = {
     'loglist': log_list
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'loglist',
+        'category': 'dev_only',
+        'description': 'Get a list of the files in the log folder. Can only be used by developers.',
+        'examples': [('loglist', 'Gets the log files in the log folder.')],
+        'usages': ['loglist']
+    }
+]
