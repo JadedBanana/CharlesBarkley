@@ -292,7 +292,12 @@ async def help_command(bot, message, argument):
     # If there's a command found in there, then use that.
     if intended_command:
         logging.info(message, f'requested help page for command {intended_command}')
-        await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
+
+        # If it's a string, send the base command.
+        if isinstance(COMMAND_SPECIFIC_HELP_EMBEDS[word], str):
+            await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[COMMAND_SPECIFIC_HELP_EMBEDS[word]])
+        else:
+            await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
 
     # Otherwise, send a different one depending on whether or not the author is a developer.
     elif str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS"):
