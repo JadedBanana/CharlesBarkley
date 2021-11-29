@@ -4,7 +4,8 @@ Pulls all the help documentation on a per-command basis and displays it when the
 Must be initialized with the initialize() method before actually running anything.
 """
 # Imports.
-from lib.util import environment, messaging
+from lib.util import environment, messaging, parsing
+from lib.util.logger import BotLogger as logging
 
 
 # Help embed variables.
@@ -37,8 +38,14 @@ def initialize():
     # Second, the command-specific help embeds.
     global COMMAND_SPECIFIC_HELP_EMBEDS
     for command_name, command_specific_help_page_dict in command_specific_help_page_dicts.items():
+
+        # Add them on with their command_name as keys.
         COMMAND_SPECIFIC_HELP_EMBEDS[command_name] = generate_command_specific_help_page_embeds(command_name,
                                                                                                 command_specific_help_page_dict)
+        # For aliases, add them as the aliases as keys and the parent name as the data.
+        if 'aliases' in command_specific_help_page_dict:
+            for alias in command_specific_help_page_dict['aliases']:
+                COMMAND_SPECIFIC_HELP_EMBEDS[alias] = command_name
 
 
 def get_command_dicts():
@@ -243,13 +250,40 @@ def generate_command_specific_help_page_embeds(command_name, command_specific_he
     return embed
 
 
-async def help(bot, message, argument):
-    await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS['toggleignoredev'])
+async def help_command(bot, message, argument):
+    """
+    The help command function.
+    Displays the appropriate help page for the argument / author specified.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Try to get an argument (command name) out of the chaos.
+    intended_command = None
+    if argument:
+        for word in parsing.normalize_string(argument).lower().split(' '):
+            if word in COMMAND_SPECIFIC_HELP_EMBEDS:
+                intended_command = word
+
+    # If there's a command found in there, then use that.
+    if intended_command:
+        logging.info(message, f'requested help page for command {intended_command}')
+        await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
+
+    # Otherwise, send a different one depending on whether or not the author is a developer.
+    elif str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS"):
+        logging.info(message, 'requested developer home help page')
+        await messaging.send_embed_without_local_image(message, DEVELOPER_HOME_HELP_EMBED)
+    else:
+        logging.info(message, 'requested public home help page')
+        await messaging.send_embed_without_local_image(message, PUBLIC_HOME_HELP_EMBED)
 
 
 # Command values
 PUBLIC_COMMAND_DICT = {
-    'help': help
+    'help': help_command
 }
 SPECIALIZED_COMMAND_DICT = {
     'help_init': initialize
