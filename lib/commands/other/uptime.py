@@ -36,3 +36,12 @@ async def uptime(bot, message, argument):
 PUBLIC_COMMAND_DICT = {
     'uptime': uptime
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'uptime',
+        'category': 'info',
+        'description': 'Displays the time the bot has been up for.',
+        'examples': [('uptime', 'Displays the time the bot has been up for.')],
+        'usages': ['uptime']
+    }
+]

@@ -36,3 +36,12 @@ async def runtime(bot, message, argument):
 PUBLIC_COMMAND_DICT = {
     'runtime': runtime
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'runtime',
+        'category': 'info',
+        'description': 'Displays the time the bot has been running for.',
+        'examples': [('runtime', 'Displays the time the bot has been running for.')],
+        'usages': ['runtime']
+    }
+]
