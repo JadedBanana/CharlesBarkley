@@ -94,6 +94,24 @@ async def send_image_based_embed(message, image, title, embed_color):
     await message.channel.send(embed=embed, file=file)
 
 
+async def send_embed_with_local_image_as_thumbnail(message, embed, filepath):
+    """
+    Sends a pre-made embed (with a local image as the thumbnail) back to the channel the trigger message came from.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        embed (discord.Embed) : The discord embed object that was made by whatever class called this function.
+        filepath (str) : The local image's filepath.
+    """
+    # Load the file and insert it into the embed.
+    file = discord.File(filepath, filename='embed_image.png')
+    embed.set_thumbnail(url='attachment://embed_image.png')
+
+    # Finally, send the message with embed and file as attributes.
+    await message.channel.send(embed=embed, file=file)
+
+
+
 async def send_embed_without_local_image(message, embed):
     """
     Sends a pre-made embed (with a web-hosted image) back to the channel the trigger message came from.

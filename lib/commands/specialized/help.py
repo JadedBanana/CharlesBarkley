@@ -4,7 +4,7 @@ Pulls all the help documentation on a per-command basis and displays it when the
 Must be initialized with the initialize() method before actually running anything.
 """
 # Imports.
-from lib.util import environment, messaging, parsing
+from lib.util import assets, environment, messaging, parsing
 from lib.util.logger import BotLogger as logging
 
 
@@ -21,6 +21,7 @@ HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS = {
 PUBLIC_HOME_HELP_EMBED = None
 DEVELOPER_HOME_HELP_EMBED = None
 COMMAND_SPECIFIC_HELP_EMBEDS = {}
+HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
 def initialize():
@@ -302,10 +303,12 @@ async def help_command(bot, message, argument):
     # Otherwise, send a different one depending on whether or not the author is a developer.
     elif str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS"):
         logging.info(message, 'requested developer home help page')
-        await messaging.send_embed_without_local_image(message, DEVELOPER_HOME_HELP_EMBED)
+        await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,
+                                                                 assets.get_asset_path(HOME_HELP_PAGE_ICON))
     else:
         logging.info(message, 'requested public home help page')
-        await messaging.send_embed_without_local_image(message, PUBLIC_HOME_HELP_EMBED)
+        await messaging.send_embed_with_local_image_as_thumbnail(message, PUBLIC_HOME_HELP_EMBED,
+                                                                 assets.get_asset_path(HOME_HELP_PAGE_ICON))
 
 
 # Command values

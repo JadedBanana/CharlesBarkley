@@ -13,7 +13,7 @@ ASSETS_DIR = 'assets'
 
 # List of asset files we should expect to see in the asset folder.
 EXPECTED_ASSET_FILES = [
-    'heart.png',
+    'heart.png', 'Jadi3Pi.png',
     'danganronpa_bg/drbottom.png', 'danganronpa_bg/drmiddle.png', 'danganronpa_bg/drtop.png',
     'danganronpa_chars/akamatsu_kaede.webp', 'danganronpa_chars/amami_rantaro.webp',
     'danganronpa_chars/asahina_aoi.webp', 'danganronpa_chars/chabashira_tenko.webp',
@@ -75,7 +75,20 @@ def open_image(filename):
     Arguments:
         filename (str) : The image's filename.
     """
-    return Image.open(os.path.join(ASSETS_DIR, filename))
+    return Image.open(get_asset_path(filename))
+
+
+def get_asset_path(filename):
+    """
+    Gets the filepath for an asset.
+
+    Arguments:
+        filename (str) : The asset's path.
+
+    Returns:
+        str : The asset's path.
+    """
+    return os.path.join(ASSETS_DIR, filename)
 
 
 def get_random_file_from_folder(folder):
@@ -89,7 +102,7 @@ def get_random_file_from_folder(folder):
         InvalidAssetFileDirError : The folder does not exist, or is not a valid populated asset dir.
     """
     # Assert that it is a directory.
-    if not os.path.isdir(os.path.join(ASSETS_DIR, folder)):
+    if not os.path.isdir(get_asset_path(folder)):
         raise InvalidAssetFileDirError(folder)
 
     # Also assert that it's one we have loaded.
@@ -97,8 +110,8 @@ def get_random_file_from_folder(folder):
         raise InvalidAssetFileDirError(folder)
 
     # Pick a random file from there and join it with the folder.
-    chosen_file = random.choice(os.listdir(os.path.join(ASSETS_DIR, folder)))
-    chosen_file = os.path.join(ASSETS_DIR, folder, chosen_file)
+    chosen_file = random.choice(os.listdir(get_asset_path(folder)))
+    chosen_file = os.path.join(get_asset_path(folder), chosen_file)
 
     # Return.
     return chosen_file
