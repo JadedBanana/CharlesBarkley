@@ -11,6 +11,9 @@ from lib.util.logger import BotLogger as logging
 # Help embed variables.
 HELP_EMBED_COLOR = (107 << 16) + (115 << 8) + 135
 HELP_EMBED_DESCRIPTION = '''Type `{0}help [command]` for more help eg. `{0}help randomwiki`'''
+HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS = {
+    'fun': 'Fun'
+}
 
 
 # Stored embeds.
@@ -27,6 +30,9 @@ def initialize():
     Raises:
         DuplicateCommandError : 2 commands are using the same name for the help docs.
     """
+    # Imports.
+    from lib.util.exceptions import DuplicateCommandError
+
     # First, get all the command dicts.
     home_help_page_dict, command_specific_help_page_dicts = get_command_dicts()
 
@@ -45,6 +51,12 @@ def initialize():
         # For aliases, add them as the aliases as keys and the parent name as the data.
         if 'aliases' in command_specific_help_page_dict:
             for alias in command_specific_help_page_dict['aliases']:
+
+                # Detect duplicates.
+                if alias in COMMAND_SPECIFIC_HELP_EMBEDS:
+                    raise DuplicateCommandError(alias)
+
+                # Add.
                 COMMAND_SPECIFIC_HELP_EMBEDS[alias] = command_name
 
 
@@ -87,6 +99,10 @@ def get_command_dicts():
 
                     # Get the command name.
                     command_name = help_doc_dict['command_name']
+
+                    # Detect duplicate commands.
+                    if command_name in COMMAND_SPECIFIC_HELP_EMBEDS:
+                        raise DuplicateCommandError(command_name)
 
                     # Log and add 1 to the help_pages_implemented.
                     log.info(f"Loading help documentation from '{package_name + '.' + subpackage_name}' for command '{command_name}'")
@@ -186,9 +202,14 @@ def generate_home_help_page_embeds(home_help_page_dict):
         if category == 'dev_only':
             continue
 
+        # If the category is in the HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS, then use that instead.
+        category_clean = category
+        if category in HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS:
+            category_clean = HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS[category]
+
         # Add the field.
-        public_embed.add_field(name=category, value=' '.join([f'`{command}`' for command in commands]), inline=True)
-        developer_embed.add_field(name=category, value=' '.join([f'`{command}`' for command in commands]), inline=True)
+        public_embed.add_field(name=category_clean, value=' '.join([f'`{command}`' for command in commands]), inline=True)
+        developer_embed.add_field(name=category_clean, value=' '.join([f'`{command}`' for command in commands]), inline=True)
 
     # Add the dev_only commands to the developer embed.
     if 'dev_only' in home_help_page_dict:
