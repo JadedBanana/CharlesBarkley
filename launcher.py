@@ -10,6 +10,18 @@ def launch():
     Launch method.
     Performs some checks, then launches the bot.
     """
+    # First things first, see if any working directory was provided in the running arguments.
+    import sys
+    import os
+    # Iterate through arguments and test for what they start with.
+    for arg in sys.argv:
+        if arg.startswith('working_dir='):
+
+            # Found a new working dir, switch to there.
+            try:
+                os.chdir(arg[12:])
+            except FileNotFoundError:
+                pass
 
     # First things first, load up the .env variables.
     from lib.util import environment
