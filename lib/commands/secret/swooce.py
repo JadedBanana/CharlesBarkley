@@ -29,3 +29,11 @@ async def swooce(bot, message, argument):
 PUBLIC_COMMAND_DICT = {
     'swooce': swooce
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'swooce',
+        'description': 'Watch me swooce right in!',
+        'examples': [('swooce', 'Swooce swooce!')],
+        'usages': ['swooce']
+    }
+]

@@ -315,3 +315,13 @@ PUBLIC_COMMAND_DICT = {
 SPECIALIZED_COMMAND_DICT = {
     'help_init': initialize
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'help',
+        'category': 'info',
+        'description': 'Displays the command list, or the specific use cases for one command.',
+        'examples': [('help', 'Displays the basic list of commands.'),
+                     ('help weather', 'Displays the help page for the `weather` command.')],
+        'usages': ['help', 'help < command >']
+    }
+]

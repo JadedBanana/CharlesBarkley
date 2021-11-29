@@ -300,3 +300,12 @@ PUBLIC_COMMAND_DICT = {
     'felizsunday': feliz_domingo,
     'felizdomingo': feliz_domingo
 }
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'feliz',
+        'description': 'Celebrates whatever day of the week it is.',
+        'examples': [('feliz', 'Celebrates the day that is today!'),
+                     ('feliz jueves', "Celebrates that it's Thursday (but ONLY on Thursday).")],
+        'usages': ['feliz', 'feliz < day of the week >']
+    }
+]
