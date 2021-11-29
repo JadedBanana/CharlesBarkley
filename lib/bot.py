@@ -126,13 +126,19 @@ class JadieClient(discord.Client):
 
         # Otherwise, try to get the command.
         if command:
-            # Grabs command from the regular dict and tries to run it.
-            if command in self.public_command_dict:
-                return await self.public_command_dict[command](self, message, argument)
 
-            # If the author is a developer, grab the command from the developer dict.
-            elif author_is_developer and command in self.developer_command_dict:
-                return await self.developer_command_dict[command](self, message, argument)
+            try:
+                # Grabs command from the regular dict and tries to run it.
+                if command in self.public_command_dict:
+                    return await self.public_command_dict[command](self, message, argument)
+
+                # If the author is a developer, grab the command from the developer dict.
+                elif author_is_developer and command in self.developer_command_dict:
+                    return await self.developer_command_dict[command](self, message, argument)
+
+            # If any unchecked error occurred at all, log and return.
+            except Exception as e:
+                return logging.error(repr(e))
 
         # Finally, if this was a regular message, run reactive commands.
         for reactive_command in self.reactive_command_list:
