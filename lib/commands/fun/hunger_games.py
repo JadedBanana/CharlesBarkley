@@ -1,21 +1,17 @@
-# =================================================================
-#                         FUN COMMANDS
-# =================================================================
+"""
+Hunger Games command.
+Essentially a BrantSteele simulator simulator.
+"""
+# Imports.
 from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
-from datetime import datetime, timedelta
 from lib.util.exceptions import *
+from datetime import datetime
+from lib.util import misc
 import constants
 import requests
 import discord
 import random
-from lib.util import misc
 import os
-
-# Logger
-log = None
-
-
-
 
 
 def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False):
@@ -1136,11 +1132,3 @@ async def hunger_games_start(self, message, argument, is_in_guild):
             # Send the initial cast
             await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
             log.debug(misc.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
-
-async def thank_you(self, message, argument, is_in_guild):
-    """
-    Thanks the bot!
-    :D
-    """
-    log.debug(misc.get_comm_start(message, is_in_guild) + 'thanked the bot')
-    await message.channel.send(random.choice(constants.THANKYOU_RESPONSES))
