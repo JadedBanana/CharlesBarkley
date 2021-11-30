@@ -12,9 +12,9 @@ import os
 
 
 # SHSL variables, used for easy bug testing / finnicking.
-SHSL_NAME_FONT = 'assets/fonts/gill_sans.ttf'
+SHSL_NAME_FONT = 'gill_sans.ttf'
 SHSL_NAME_MAX_ORD = 8805
-SHSL_TALENT_FONT = 'assets/fonts/times_sans_serif.ttf'
+SHSL_TALENT_FONT = 'times_sans_serif.ttf'
 SHSL_SPRITE_FILETYPE = '.webp'
 SHSL_EMBED_COLOR = (221 << 16) + (115 << 8) + 215
 
@@ -886,7 +886,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
 
     # Creates standard user name (white).
     user_writer = ImageDraw.Draw(user_name)
-    user_font = ImageFont.truetype(SHSL_NAME_FONT, size=100)
+    user_font = assets.open_font(SHSL_NAME_FONT, 100)
     user_writer.text((835 - int(user_font.getsize(student_name)[0] / 2), 0), student_name, font=user_font, fill=255)
     user_name = user_name.rotate(-12.5, center=(-8, 200), resample=Image.BILINEAR, translate=(0, 154))
 
@@ -903,7 +903,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
 
     # Creates talent text.
     talent_writer = ImageDraw.Draw(talent_text)
-    talent_font = ImageFont.truetype(SHSL_TALENT_FONT, size=54)
+    talent_font = assets.open_font(SHSL_TALENT_FONT, 54)
     talent_writer.text((855 - int(talent_font.getsize(('SHSL ' if use_shsl else 'Ultimate ') + talent)[0] / 2), 0),
                        ('SHSL ' if use_shsl else 'Ultimate ') + talent, font=talent_font, fill=255)
     talent_text = talent_text.rotate(-12.5, center=(0, 205), resample=Image.BILINEAR, translate=(-40, 279))
@@ -972,6 +972,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
                                           ultimate_image.size[1] - student_sprite.size[1] + 30), student_sprite)
 
     # Sends the message.
+    logging.info(message, 'requested ultimate/shsl talent')
     await messaging.send_image_based_embed(message, ultimate_image, title_str, SHSL_EMBED_COLOR)
 
 
