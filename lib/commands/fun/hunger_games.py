@@ -3,30 +3,287 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Imports.
-from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
-from lib.util.exceptions import *
+from lib.util.exceptions import CannotAccessUserlistError
+from lib.util import assets, messaging, misc, parsing, tempfiles
+from PIL import Image, ImageOps, ImageFont, ImageDraw
+from lib.util.logger import BotLogger as logging
 from datetime import datetime
-from lib.util import misc
-import constants
-import requests
 import discord
 import random
 import os
 
 
-def hunger_games_makeimage_pfp(playerid, image, drawer, pfp_x, pfp_y, dead=False):
+# Keeps track of current games.
+CURRENT_GAMES = {}
+
+
+# Hunger Games constants.
+# Game generation
+HG_MAX_GAMESIZE = 64
+HG_MIN_GAMESIZE = 2
+HG_DEFAULT_GAMESIZE = 24
+
+# Embeds.
+HG_EMBED_COLOR = (251 << 16) + (130 << 8)
+
+# Image drawing.
+HG_FONT_SIZE = 16
+HG_FONT = 'arial_bold.ttf'
+HG_TEXT_BUFFER = 6
+HG_ICON_BUFFER = 25
+HG_ICON_SIZE = 128
+HG_BACKGROUND_COLOR = (93, 80, 80)
+
+# Playerstatus embed.
+HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8,
+                          8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+HG_PLAYERSTATUS_ROWHEIGHT = 172
+HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
+HG_STATUS_ALIVE_COLOR = (0, 255, 0)
+HG_STATUS_DEAD_COLOR = (255, 102, 102)
+
+# Action embed.
+HG_ACTION_ROWHEIGHT = 175
+
+# Pregame
+HG_PREGAME_TITLE = 'The Reaping'
+HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed' \
+                         '\t\tC: Cancel'
+
+
+# Miscellaneous
+NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
+
+
+
+async def hunger_games_start(bot, message, argument):
+    """
+    Creates a hunger games simulator right inside the bot.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Make sure this command isn't being used in a DM.
+    if isinstance(message.channel, discord.DMChannel):
+        logging.info(message, 'requested ship, but in DMs, so invalid')
+        return await messaging.send_text_message(message, 'This command cannot be used in DMs.')
+
+    # Gets the hunger games key (channel id).
+    hg_key = str(message.channel.id)
+
+    # If a game is already in progress, we forward this message to the update function.
+    if hg_key in CURRENT_GAMES:
+        return await hunger_games_update(bot, message)
+
+    # Otherwise, we instantiate a game.
+    # Gets argument for how many users to start hg with.
+    if argument:
+        try:
+            # Get a number from the argument.
+            player_count = int(parsing.normalize_string(argument))
+            # If the player count is more than the max or less than the minimum, set them to their capstone values.
+            player_count = min(player_count, HG_MAX_GAMESIZE)
+            player_count = max(player_count, HG_MIN_GAMESIZE)
+        # If the conversion doesn't work, use the default.
+        except ValueError:
+            player_count = HG_DEFAULT_GAMESIZE
+    # No argument, use the default player count.
+    else:
+        player_count = HG_DEFAULT_GAMESIZE
+
+    # Get the user list. If user list is < player_count people, we add bots as well.
+    try:
+        user_list = misc.get_applicable_users(message, exclude_bots=True)
+        uses_bots = False
+        if len(user_list) < player_count:
+            user_list = misc.get_applicable_users(message, exclude_bots=False)
+            uses_bots = True
+
+    # If we can't access the userlist, send an error.
+    except CannotAccessUserlistError:
+        logging.error(message, 'requested hunger games, failed to access the userlist')
+        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
+
+    # Otherwise, we generate the players and ask if we should proceed.
+    hg_players = []
+    # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
+    for i in range(min(player_count, len(user_list))):
+        next_player = random.choice(user_list)
+        hg_players.append(next_player)
+        user_list.remove(next_player)
+
+    # Set in players and actions.
+    hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots, 'updated': datetime.today()}
+    CURRENT_GAMES[hg_key] = hg_full_game
+
+    # Send the initial cast
+    await send_pregame_embed(message, hg_full_game)
+    logging.info(message, f'started Hunger Games instance with {len(hg_players)} players')
+
+
+async def send_pregame_embed(message, full_game_dict, title=HG_PREGAME_TITLE):
+    """
+    Sends the pregame roster thing.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        full_game_dict (dict) : The full game dict.
+        title (str) : The title of the embed, if any.
+    """
+    # Get all the player data.
+    player_data = [(misc.get_photogenic_username(player),
+                    tempfiles.checkout_profile_picture_by_user(player, message, 'hg_pregame', (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
+                   for player in full_game_dict['players']]
+
+    # Generate the player statuses image.
+    image = makeimage_player_statuses(player_data)
+
+    # Sends image, logs.
+    await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
+                                           footer=HG_PREGAME_DESCRIPTION.format('Disallow' if full_game_dict['uses_bots'] else 'Allow'))
+
+
+def makeimage_player_statuses(players, placement=False, kills=False):
+    """
+    Generates a player status image.
+    This can also be used to make player placement images and kill count lists.
+
+    Arguments:
+        players (str, PIL.Image, int)[] : The players, organized as a list of tuples.
+                                          The first entry should be the player's photogenic username.
+                                          The second entry should be the player's icon.
+                                          The third entry should be one of three values if both placement and kills are False:
+                                              0: Alive
+                                              1: Newly Dead
+                                              2: Dead
+                                         Otherwise, they should be the placement or the kill count of each player.
+        placement (bool) : Whether or not the third value in players is player placements.
+        kills (str) : Whether or not the third value in players is kills.
+    """
+    # Splits all the players into their own rows.
+    players_split = []
+    current_split = []
+    for player in players:
+        if len(current_split) == HG_PLAYERSTATUS_WIDTHS[len(players)]:
+            players_split.append(current_split)
+            current_split = []
+        current_split.append(player)
+    players_split.append(current_split)
+
+    # Gets the image width and height.
+    image_width = HG_ICON_SIZE * len(players_split[0]) + HG_ICON_BUFFER * (len(players_split[0]) + 1)
+    image_height = HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + HG_ICON_BUFFER * (len(players_split) + 1)
+
+    # Creates all the images and drawers that will help us make the new image.
+    player_statuses = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    player_drawer = ImageDraw.Draw(player_statuses)
+    player_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
+
+    # Sets the current y at the buffer between the top and the first icon.
+    current_y = HG_ICON_BUFFER
+
+    # Iterate through each row.
+    for split in players_split:
+        # Set the starting x position.
+        current_x = int((image_width - (len(split) * HG_ICON_SIZE + (len(split) - 1) * HG_ICON_BUFFER)) / 2)
+
+        # Then, iterate through each player in each row.
+        for player in split:
+
+            # Gets pfp, pastes onto image.
+            hunger_games_makeimage_pfp(player[1].copy(), player_statuses, player_drawer, current_x, current_y,
+                                       player[2] and not placement and not kills)
+
+            # Writes name and status / placement.
+            player_name = player[0]
+
+            # If the name is too long, we put a ... at the end (thx alex!!!!!)
+            if player_font.getsize(player_name)[0] > HG_ICON_SIZE:
+                while player_font.getsize(player_name + '...')[0] > HG_ICON_SIZE:
+                    player_name = player_name[:-1]
+                player_name+= '...'
+
+            # Draw the player name.
+            player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2),
+                                current_y + HG_ICON_SIZE + HG_TEXT_BUFFER), player_name,
+                               font=player_font, fill=(255, 255, 255))
+
+            # Placement
+            if placement:
+                place = f'{player[2]}{NTH_SUFFIXES[player[2] % 10]} Place'
+                player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2),
+                                    current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), place, font=player_font,
+                                   fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_ALIVE_COLOR, HG_STATUS_DEAD_COLOR,
+                                                                           (player[2] - 1) / placement))
+
+            # Killcount
+            elif kills:
+                if isinstance(kills, int):
+                    kill_str = f'{player[2]} {" Kill" if player[2] == 1 else " Kills"}'
+                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
+                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str, font=player_font,
+                                       fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR, HG_STATUS_ALIVE_COLOR,
+                                                                               player[2] / kills))
+                else:
+                    kill_str = '0 Kills'
+                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
+                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str, font=player_font,
+                                       fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR, HG_STATUS_ALIVE_COLOR,
+                                                                               player[2] / kills))
+
+            # Status
+            else:
+                status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
+                player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(status)[0] / 2),
+                                    current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), status, font=player_font,
+                                   fill=HG_STATUS_ALIVE_COLOR if not player[2] else HG_STATUS_DEAD_COLOR)
+
+            # Adds to current_x.
+            current_x += HG_ICON_SIZE + HG_ICON_BUFFER
+
+        # Adds to current_y.
+        current_y += HG_PLAYERSTATUS_ROWHEIGHT + HG_ICON_BUFFER
+
+    return player_statuses
+
+
+def getfont():
+    """
+    Gets the font that is used across the whole simulator.
+
+    Returns:
+        PIL.ImageFont : The font.
+    """
+
+
+def hunger_games_makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
     """
     Draws a player's pfp at the given x and y.
+
+    Arguments:
+        player_pfp (PIL.Image) : The loaded profile picture.
+        image (PIL.Image) : The base image.
+        drawer (PIL.ImageDraw) : The drawer.
+        pfp_x (int) : The x position of where to draw the icon.
+        pfp_y (int) : The y position of where to draw the icon.
+        dead (bool) : Whether or not this player is dead.
+                      If they are dead, then their icon will be in grayscale and slightly darkened.
     """
-    # Gathers the profile picture.
-    player_pfp = misc.get_profile_picture(playerid, True)[0]
-    player_pfp = player_pfp.resize((constants.HG_ICON_SIZE, constants.HG_ICON_SIZE), Image.LANCZOS if player_pfp.width > constants.HG_ICON_SIZE else Image.NEAREST)
     # If player dead, recolor to black and white.
     if dead:
-        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0), white=misc.multiply_color_tuple((255, 255, 255), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR), mid=misc.multiply_color_tuple((128, 128, 128), constants.HG_STATUS_DEAD_PFP_DARKEN_FACTOR))
+        player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
+                                       white=misc.multiply_color_tuple((255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
+                                       mid=misc.multiply_color_tuple((128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
     image.paste(player_pfp, (pfp_x, pfp_y))
-    # Draws border around player icons.
-    drawer.line([(pfp_x - 1, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y - 1), (pfp_x + constants.HG_ICON_SIZE, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y + constants.HG_ICON_SIZE), (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
+
+    # Draws border around player icon.
+    drawer.line([(pfp_x - 1, pfp_y - 1),
+                 (pfp_x + HG_ICON_SIZE, pfp_y - 1),
+                 (pfp_x + HG_ICON_SIZE, pfp_y + HG_ICON_SIZE),
+                 (pfp_x - 1, pfp_y + HG_ICON_SIZE),
+                 (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
 
 
 def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_font):
@@ -54,81 +311,13 @@ def hunger_games_makeimage_action_text(remaining_text, players, drawer, txt_x, t
         remaining_text = remaining_text[next_bracket + 3:]
 
 
-def hunger_games_makeimage_player_statuses(players, placement=False, kills=False):
-    """
-    Generates a player status image.
-    The players should be a 2-dimensional list with each entry as:
-    1. User ID (number)
-    2. User name / nick
-    3. Status (int, 0 = alive, 1 = newly dead, 2 = dead)
-    This can also be used to make player placement images and kill count lists.
-    """
-    # Splits all the players into their own rows.
-    players_split = []
-    current_split = []
-    for player in players:
-        if len(current_split) == constants.HG_PLAYERSTATUS_WIDTHS[len(players)]:
-            players_split.append(current_split)
-            current_split = []
-        current_split.append(player)
-    players_split.append(current_split)
-
-    # Preps to draw.
-    image_width = constants.HG_ICON_SIZE * len(players_split[0]) + constants.HG_ICON_BUFFER * (len(players_split[0]) + 1)
-    image_height = constants.HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + constants.HG_ICON_BUFFER * (len(players_split) + 1)
-    player_statuses = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(player_statuses)
-    player_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
-
-    # Draws each row, one after another.
-    current_y = constants.HG_ICON_BUFFER
-    for split in players_split:
-        current_x = int((image_width - (len(split) * constants.HG_ICON_SIZE + (len(split) - 1) * constants.HG_ICON_BUFFER)) / 2)
-        for player in split:
-            # Gets pfp, pastes onto image.
-            hunger_games_makeimage_pfp(player[0], player_statuses, player_drawer, current_x, current_y, player[2] and not placement and not kills)
-
-            # Writes name and status / placement.
-            player_name = player[1]
-            # If the name is too long, we put a ... at the end (thx alex!!!!!)
-            if player_font.getsize(player_name)[0] > constants.HG_ICON_SIZE:
-                while player_font.getsize(player_name + '...')[0] > constants.HG_ICON_SIZE:
-                    player_name = player_name[:-1]
-                player_name+= '...'
-            player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(player_name)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER), player_name, font=player_font, fill=(255, 255, 255))
-            # Placement
-            if placement:
-                place = str(player[2]) + constants.NTH_SUFFIXES[player[2] % 10] + ' Place'
-                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), place, font=player_font, fill=misc.find_color_tuple_midpoint_hsv(constants.HG_STATUS_ALIVE_COLOR, constants.HG_STATUS_DEAD_COLOR, (player[2] - 1) / placement))
-            # Killcount
-            elif kills:
-                if isinstance(kills, int):
-                    kill_str = str(player[2]) + (' Kill' if player[2] == 1 else ' Kills')
-                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=misc.find_color_tuple_midpoint_hsv(constants.HG_STATUS_DEAD_COLOR, constants.HG_STATUS_ALIVE_COLOR, player[2] / kills))
-                else:
-                    kill_str = '0 Kills'
-                    player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), kill_str, font=player_font, fill=constants.HG_STATUS_DEAD_COLOR)
-            # Status
-            else:
-                status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
-                player_drawer.text((current_x + int(constants.HG_ICON_SIZE / 2 - player_font.getsize(status)[0] / 2), current_y + constants.HG_ICON_SIZE + constants.HG_FONT_SIZE + constants.HG_TEXT_BUFFER), status, font=player_font, fill=constants.HG_STATUS_ALIVE_COLOR if not player[2] else constants.HG_STATUS_DEAD_COLOR)
-
-            # Adds to current_x.
-            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
-
-        # Adds to current_y.
-        current_y+= constants.HG_PLAYERSTATUS_ROWHEIGHT + constants.HG_ICON_BUFFER
-
-    return player_statuses
-
-
 def hunger_games_makeimage_winner(players, desc=None):
     """
     Displays the winner(s).
     Like the makeimage_action method, but without all the previous and count and whatnot.
     """
     # Makes the font
-    action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
+    action_font = ImageFont.truetype()
 
     # Gets action desc width, if any.
     action_desc_width = action_font.getsize(desc)[0]
@@ -218,7 +407,6 @@ def hunger_games_makeimage_winner(players, desc=None):
         hunger_games_makeimage_action_text(constants.HG_WINNER_DEAD_EVENT if players[0][2] else constants.HG_WINNER_EVENT, players, player_drawer, current_x, current_y, action_font)
 
     return action_image
-
 
 def hunger_games_makeimage_action(actions, start, count=1, action_desc=None):
     """
@@ -346,6 +534,7 @@ def hunger_games_generate_statuses(hg_statuses, action):
                     hg_statuses[action['players'][ind][0]]['inv'].append(action['give'][ind])
 
     del action['full']
+
 
 def hunger_games_generate_bloodbath(hg_dict):
     """
@@ -625,31 +814,6 @@ def hunger_games_set_embed_image(image, embed):
     return file
 
 
-async def hunger_games_send_pregame(message, players, title, uses_bots):
-    """
-    Sends the pregame roster thing.
-    """
-    # Makes sure all the player icons are downloaded.
-    for user in players:
-        image_locale = os.path.join(constants.TEMP_DIR, str(user.id) + constants.PFP_FILETYPE)
-        if not os.path.isfile(image_locale):
-            image_bytes = requests.get(user.avatar_url).content
-            # Writes image to disk
-            with open(image_locale, 'wb') as w:
-                w.write(image_bytes)
-
-    # Creates embed.
-    embed = discord.Embed(title=title, colour=constants.HG_EMBED_COLOR)
-    embed.set_footer(text=constants.HG_PREGAME_DESCRIPTION.format('Disallow' if uses_bots else 'Allow'))
-
-    # Has image created, sets image on embed.
-    player_statuses = hunger_games_makeimage_player_statuses([(player.id, player.nick if player.nick else player.name, 0) for player in players])
-    file = hunger_games_set_embed_image(player_statuses, embed)
-
-    # Sends image, logs.
-    await message.channel.send(file=file, embed=embed)
-
-
 async def hunger_games_send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False, do_increment=True):
     """
     Sends all midgame embeds, regardless of type.
@@ -797,7 +961,7 @@ async def hunger_games_pregame_shuffle(self, message, is_in_guild, player_count,
         self.curr_hg[str(message.channel.id)] = hg_full_game
 
         # Send the updated cast
-        await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
+        await send_pregame_embed(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
         log.debug(misc.get_comm_start(message, is_in_guild) + 'shuffled Hunger Games instance with {} players'.format(player_count))
 
 
@@ -934,7 +1098,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 else:
                     hg_dict['players'].insert(hg_dict['players'].index(modified_players[0]), modified_players[1])
                     hg_dict['players'].remove(modified_players[0])
-                    await hunger_games_send_pregame(message, hg_dict['players'], 'Replaced {} with {}.'.format(modified_players[0].nick if modified_players[0].nick else modified_players[0].name, modified_players[1].nick if modified_players[1].nick else modified_players[1].name), hg_dict['uses_bots'])
+                    await send_pregame_embed(message, hg_dict['players'], 'Replaced {} with {}.'.format(modified_players[0].nick if modified_players[0].nick else modified_players[0].name, modified_players[1].nick if modified_players[1].nick else modified_players[1].name), hg_dict['uses_bots'])
                     log.debug(misc.get_comm_start(message, is_in_guild) + 'replaced a player in Hunger Games instance')
             else:
                 # First player not in game
@@ -959,7 +1123,7 @@ async def hunger_games_update(self, message, is_in_guild):
                 else:
                     added_player = random.choice(able_users)
                     hg_dict['players'].append(added_player)
-                    await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
+                    await send_pregame_embed(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
                     log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
@@ -984,7 +1148,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, already there')
                 else:
                     hg_dict['players'].append(added_player)
-                    await hunger_games_send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
+                    await send_pregame_embed(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
                     log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
@@ -998,7 +1162,7 @@ async def hunger_games_update(self, message, is_in_guild):
             else:
                 # Removes player on the end.
                 removed_player = hg_dict['players'].pop(-1)
-                await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
+                await send_pregame_embed(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
                 log.debug(misc.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
@@ -1020,7 +1184,7 @@ async def hunger_games_update(self, message, is_in_guild):
                     return True
                 if removed_player in hg_dict['players']:
                     hg_dict['players'].remove(removed_player)
-                    await hunger_games_send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
+                    await send_pregame_embed(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
                     log.debug(misc.get_comm_start(message, is_in_guild) + 'removed a player from Hunger Games instance')
                 else:
                     await message.channel.send('{} isn\'t in the game.'.format(removed_player))
@@ -1049,11 +1213,11 @@ async def hunger_games_update(self, message, is_in_guild):
                 # Allows it.
                 hg_dict['uses_bots'] = False
                 hg_dict['players'] = hg_players_no_bots
-                await hunger_games_send_pregame(message, hg_dict['players'], 'Removed bots from the game.', hg_dict['uses_bots'])
+                await send_pregame_embed(message, hg_dict['players'], 'Removed bots from the game.', hg_dict['uses_bots'])
                 log.debug(misc.get_comm_start(message, is_in_guild) + 'removed bots from Hunger Games instance')
             else:
                 hg_dict['uses_bots'] = True
-                await hunger_games_send_pregame(message, hg_dict['players'], 'Allowed bots into the game.', hg_dict['uses_bots'])
+                await send_pregame_embed(message, hg_dict['players'], 'Allowed bots into the game.', hg_dict['uses_bots'])
                 log.debug(misc.get_comm_start(message, is_in_guild) + 'added bots to Hunger Games instance')
             hg_dict['updated'] = datetime.today()
             return True
@@ -1077,58 +1241,7 @@ async def hunger_games_update(self, message, is_in_guild):
             return True
 
 
-async def hunger_games_start(self, message, argument, is_in_guild):
-    """
-    Creates a hunger games simulator right inside the bot.
-    """
-    hg_key = str(message.channel.id)
-
-    # If a game is already in progress, we forward this message.
-    if hg_key in self.curr_hg.keys():
-        await hunger_games_update(self, message, is_in_guild)
-
-    else:
-        # Gets argument for how many users to start hg with.
-        if argument:
-            try:
-                player_count = int(argument)
-                if player_count > constants.HG_MAX_GAMESIZE:
-                    player_count = constants.HG_MAX_GAMESIZE
-                elif player_count < constants.HG_MIN_GAMESIZE:
-                    player_count = constants.HG_MIN_GAMESIZE
-            except ValueError:
-                player_count = 24
-        else:
-            player_count = 24
-
-        # Get the user list. If user list is < player_count people, we add bots as well.
-        user_list = misc.get_applicable_users(message, is_in_guild, True)
-        uses_bots = False
-        if len(user_list) < player_count:
-            user_list = misc.get_applicable_users(message, is_in_guild, False)
-            uses_bots = True
-        # If there still aren't enough users, we send error.
-        if len(user_list) < constants.HG_MIN_GAMESIZE:
-            if len(user_list) == 1:
-                await message.channel.send('There was an error accessing userlist.')
-                log.error(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, bugged userlist')
-            else:
-                await message.channel.send('Not enough users in server.')
-                log.debug(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
-
-        # Otherwise, we generate the players and ask if we should proceed.
-        else:
-            # Get the players.
-            hg_players = []
-            for i in range(min(player_count, len(user_list))):
-                next_player = random.choice(user_list)
-                hg_players.append(next_player)
-                user_list.remove(next_player)
-
-            # Set in players and actions.
-            hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots, 'updated': datetime.today()}
-            self.curr_hg.update({hg_key: hg_full_game})
-
-            # Send the initial cast
-            await hunger_games_send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'started Hunger Games instance with {} players'.format(len(hg_players)))
+# Command values
+DEVELOPER_COMMAND_DICT = {
+    'hg': hunger_games_start
+}

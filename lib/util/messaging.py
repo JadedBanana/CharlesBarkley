@@ -72,7 +72,7 @@ async def send_file(message, file_dir):
     await message.channel.send(file=discord.File(file_dir))
 
 
-async def send_image_based_embed(message, image, title, embed_color):
+async def send_image_based_embed(message, image, title, embed_color, footer=''):
     """
     Sends an image-based embed back to the channel the trigger message came from.
 
@@ -89,6 +89,10 @@ async def send_image_based_embed(message, image, title, embed_color):
     embed = discord.Embed(title=title, colour=embed_color)
     file = discord.File(image_path, filename='embed_image.png')
     embed.set_image(url='attachment://embed_image.png')
+
+    # If there's a footer, set it.
+    if footer:
+        embed.set_footer(text=footer)
 
     # Finally, send the message with embed and file as attributes.
     await message.channel.send(embed=embed, file=file)

@@ -4,7 +4,7 @@ Checks whether all the assets are present on startup.
 """
 # Imports
 from lib.util.exceptions import InvalidAssetFileDirError
-from PIL import Image
+from PIL import Image, ImageFont
 import random
 import os
 
@@ -74,8 +74,24 @@ def open_image(filename):
 
     Arguments:
         filename (str) : The image's filename.
+
+    Returns:
+        PIL.Image : The opened image.
     """
     return Image.open(get_asset_path(filename))
+
+
+def open_font(filename, size):
+    """
+    Opens the requested font.
+
+    Arguments:
+        filename (str) : The font's filename.
+
+    Returns:
+        PIL.ImageFont : The opened font.
+    """
+    return ImageFont.truetype(os.path.join(ASSETS_DIR, 'fonts', filename), size=size)
 
 
 def get_asset_path(filename):

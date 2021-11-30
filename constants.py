@@ -217,11 +217,6 @@ HG_TORNADO_EVENT = {
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
-# Pregame
-HG_MIN_GAMESIZE = 2
-HG_MAX_GAMESIZE = 48
-HG_PREGAME_TITLE = 'The Reaping'
-HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed\t\tC: Cancel'
 # Winner / Ties
 HG_WINNER_TITLE = 'The Winner'
 HG_TIE_TITLE = 'The Winners'
@@ -230,24 +225,12 @@ HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort
 HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
 HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 # Graphics
-HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
-HG_PLAYERSTATUS_ROWHEIGHT = 172
-HG_PLAYERNAME_FONT = 'assets/arial_bold.ttf'
-HG_ACTION_ROWHEIGHT = 175
-HG_FONT_SIZE = 16
-HG_ICON_SIZE = 128
-HG_ICON_BUFFER = 25
-HG_TEXT_BUFFER = 6
+
 HG_HEADER_BORDER_BUFFER = 7
-HG_BACKGROUND_COLOR = (93, 80, 80)
 HG_HEADER_TEXT_COLOR = (255, 207, 39)
-HG_STATUS_ALIVE_COLOR = (0, 255, 0)
-HG_STATUS_DEAD_COLOR = (255, 102, 102)
-HG_STATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
 HG_ACTION_PLAYER_COLOR = (251, 130, 0)
 HG_HEADER_BORDER_COLOR = (255, 255, 255)
 HG_HEADER_BACKGROUND_COLOR = (35, 35, 35)
-HG_EMBED_COLOR = (251 << 16) + (130 << 8)
 # Descriptions
 HG_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nC: Cancel Game'
 HG_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nC: Cancel Game'
