@@ -267,15 +267,7 @@ HG_EVENTS = [
 HG_IMAGE_PATH = 'current_hg_image.png'
 
 # Thank you
-THANKYOU_RESPONSES = [
-    ':)',
-    ':D',
-    'You\'re welcome!',
-    'It\'s my pleasure.',
-    'I aim to please!',
-    'Hehe, I\'m just doing my job!',
-    ':blush:'
-]
+
 
 # Help message
 HELP_MSG = '''```
