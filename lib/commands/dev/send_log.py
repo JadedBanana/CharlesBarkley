@@ -3,8 +3,8 @@ Send log command.
 Sends the log file for a specific date.
 """
 # Imports
-from lib.util import environment, messaging, parsing
 from lib.util.logger import BotLogger as logging
+from lib.util import messaging, parsing
 from lib.util import logger
 import discord
 import os
@@ -36,7 +36,7 @@ async def send_log(bot, message, argument):
     # Attempt to grab something from the argument.
     if not target_log:
         # Now, get the target_log from the argument.
-        target_log = os.path.join(environment.get('LOGS_DIR'), parsing.normalize_string(argument).lower().strip(' ').replace('/', '-') + '.log')
+        target_log = os.path.join(logger.LOGS_DIR, parsing.normalize_string(argument).lower().strip(' ').replace('/', '-') + '.log')
 
     # We see if that log file exists.
     if os.path.isfile(target_log):

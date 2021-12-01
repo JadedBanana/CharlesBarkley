@@ -24,10 +24,13 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize():
+def initialize(global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
+
+    Arguments:
+        global_prefix (str) : The global prefix.
 
     Raises:
         DuplicateCommandError : 2 commands are using the same name for the help docs.
@@ -41,14 +44,14 @@ def initialize():
     # Then, create embeds for all of those commands.
     # First, the home embed.
     global PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED
-    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(home_help_page_dict)
+    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(self.global_prefix, home_help_page_dict)
 
     # Second, the command-specific help embeds.
     global COMMAND_SPECIFIC_HELP_EMBEDS
     for command_name, command_specific_help_page_dict in command_specific_help_page_dicts.items():
 
         # Add them on with their command_name as keys.
-        COMMAND_SPECIFIC_HELP_EMBEDS[command_name] = generate_command_specific_help_page_embeds(command_name,
+        COMMAND_SPECIFIC_HELP_EMBEDS[command_name] = generate_command_specific_help_page_embeds(self.global_prefix, command_name,
                                                                                                 command_specific_help_page_dict)
         # For aliases, add them as the aliases as keys and the parent name as the data.
         if 'aliases' in command_specific_help_page_dict:
@@ -174,11 +177,12 @@ def get_command_dicts():
     return home_help_page_dict, command_specific_help_page_dict
 
 
-def generate_home_help_page_embeds(home_help_page_dict):
+def generate_home_help_page_embeds(global_prefix, home_help_page_dict):
     """
     Generates both the public and developer embeds for the home help page.
 
     Arguments:
+        global_prefix (str) : The global prefix.
         home_help_page_dict (dict) : The home help page dict.
 
     Returns:
@@ -187,15 +191,18 @@ def generate_home_help_page_embeds(home_help_page_dict):
     # Imports
     import discord
 
+    # Gets the version number.
+    version_number = environment.get("VERSION_NUMBER")
+
     # Create the public embed.
     public_embed = discord.Embed(title='Standard Commands', colour=HELP_EMBED_COLOR,
-                          description=HELP_EMBED_DESCRIPTION.format(environment.get('GLOBAL_PREFIX')))
-    public_embed.set_footer(text=f'Jadi3Pi Version {environment.get("VERSION_NUMBER")}')
+                          description=HELP_EMBED_DESCRIPTION.format(global_prefix))
+    public_embed.set_footer(text=f'Jadi3Pi Version {version_number}')
 
     # Create the developer embed.
     developer_embed = discord.Embed(title='Standard Commands', colour=HELP_EMBED_COLOR,
-                                    description=HELP_EMBED_DESCRIPTION.format(environment.get('GLOBAL_PREFIX')))
-    developer_embed.set_footer(text=f'Jadi3Pi Version {environment.get("VERSION_NUMBER")}')
+                                    description=HELP_EMBED_DESCRIPTION.format(global_prefix))
+    developer_embed.set_footer(text=f'Jadi3Pi Version {version_number}')
 
     # For each category, add a field.
     for category, commands in home_help_page_dict.items():
@@ -223,11 +230,12 @@ def generate_home_help_page_embeds(home_help_page_dict):
     return public_embed, developer_embed
 
 
-def generate_command_specific_help_page_embeds(command_name, command_specific_help_page_dict):
+def generate_command_specific_help_page_embeds(global_prefix, command_name, command_specific_help_page_dict):
     """
     Generates both the public and developer embeds for the home help page.
 
     Arguments:
+        global_prefix (str) : The global prefix.
         command_name (str) : The command's name.
         command_specific_help_page_dict (dict) : The command-specific help page dict.
 
@@ -243,20 +251,20 @@ def generate_command_specific_help_page_embeds(command_name, command_specific_he
     # Create the first field (command name and description).
     # If the description is available, it will be the value of the field. Otherwise, a message.
     if 'description' in command_specific_help_page_dict:
-        embed.add_field(name=f'Help - {environment.get("GLOBAL_PREFIX")}{command_name}',
+        embed.add_field(name=f'Help - {global_prefix}{command_name}',
                         value=f'```{command_specific_help_page_dict["description"]}```', inline=False)
     else:
-        embed.add_field(name=f'Help - {environment.get("GLOBAL_PREFIX")}{command_name}',
+        embed.add_field(name=f'Help - {global_prefix}{command_name}',
                         value='```Description for this command is not available.```', inline=False)
 
     # Create the second field (examples).
     if 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Examples*', value=f'\n'.join([f'`{environment.get("GLOBAL_PREFIX")}{example[0]}`\n{example[1]}'
+        embed.add_field(name='*Examples*', value=f'\n'.join([f'`{global_prefix}{example[0]}`\n{example[1]}'
                                                              for example in command_specific_help_page_dict['examples']]), inline=True)
 
     # If example field was made, then make the usages field.
     if 'usages' in command_specific_help_page_dict and 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{environment.get("GLOBAL_PREFIX")}{usage}`'
+        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{global_prefix}{usage}`'
                                                              for usage in command_specific_help_page_dict['usages']]), inline=True)
 
     # Create the aliases field.
@@ -266,7 +274,7 @@ def generate_command_specific_help_page_embeds(command_name, command_specific_he
 
     # If example field was not made earlier, then make the usages field here.
     if 'usages' in command_specific_help_page_dict and not 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{environment.get("GLOBAL_PREFIX")}{usage[0]}`'
+        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{global_prefix}{usage[0]}`'
                                                            for usage in command_specific_help_page_dict['usages']]), inline=True)
 
     # Return.
@@ -301,7 +309,7 @@ async def help_command(bot, message, argument):
             await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
 
     # Otherwise, send a different one depending on whether or not the author is a developer.
-    elif str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS"):
+    elif message.author.id in bot.developer_ids:
         logging.info(message, 'requested developer home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,
                                                                  assets.get_asset_path(HOME_HELP_PAGE_ICON))

@@ -14,6 +14,7 @@ import json
 
 
 # A lot of constants important for the Youtube API.
+YOUTUBE_API_KEY = environment.get('YOUTUBE_API_KEY')
 YOUTUBE_QUOTA_RESET_HOUR = 3
 YOUTUBE_VIDEO_URL_FORMAT = 'https://www.youtube.com/watch?v={}'
 YOUTUBE_SEARCH_URL_FORMAT = \
@@ -22,6 +23,7 @@ YOUTUBE_SEARCH_RESULTS_LIMIT = 100
 YOUTUBE_SEARCH_LENGTHS = [1, 2, 3, 4, 5]
 YOUTUBE_SEARCH_WEIGHTS = [36, 1296, 46656, 1679616, 60466176]
 YOUTUBE_RICKROLL_URL = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+YOUTUBE_RICKROLL_CHANCE = 1 / environment.get('YOUTUBE_RICKROLL_CHANCE')
 YOUTUBE_QUOTA_REACHED = False
 
 
@@ -34,7 +36,7 @@ async def get_random_video(message):
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Rolls the random chance for a rick roll...
-    if random.random() < 1/environment.get('YOUTUBE_RICKROLL_CHANCE'):
+    if random.random() < YOUTUBE_RICKROLL_CHANCE:
         logging.info(message, 'requested random video, rickrolled them')
         return await messaging.send_text_message(message, YOUTUBE_RICKROLL_URL)
 
@@ -49,8 +51,7 @@ async def get_random_video(message):
             for i in range(random.choices(YOUTUBE_SEARCH_LENGTHS, weights=YOUTUBE_SEARCH_WEIGHTS)[0]))
 
         # Generates the URL from the format.
-        url = YOUTUBE_SEARCH_URL_FORMAT.format(
-            environment.get('YOUTUBE_API_KEY'), YOUTUBE_SEARCH_RESULTS_LIMIT, random_search)
+        url = YOUTUBE_SEARCH_URL_FORMAT.format(YOUTUBE_API_KEY, YOUTUBE_SEARCH_RESULTS_LIMIT, random_search)
 
         # Open the URL and load the results.
         url_data = urllib.request.urlopen(url)

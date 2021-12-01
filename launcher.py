@@ -13,6 +13,7 @@ def launch():
     # First things first, see if any working directory was provided in the running arguments.
     import sys
     import os
+
     # Iterate through arguments and test for what they start with.
     for arg in sys.argv:
         if arg.startswith('working_dir='):

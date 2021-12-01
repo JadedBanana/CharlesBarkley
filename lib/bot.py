@@ -29,15 +29,21 @@ class JadieClient(discord.Client):
         self.connected_before = False
         self.reconnected_since = False
 
+        # Store environment variables.
+        self.global_prefix = environment.get("GLOBAL_PREFIX")
+        self.deployment_client = environment.get("DEPLOYMENT_CLIENT")
+
         # Load the commands.
         from lib import commands
-        self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = commands.load_commands()
+        self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = \
+            commands.load_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
-        specialized_command_dict['help_init']()
+        specialized_command_dict['help_init'](self.global_prefix)
 
-        # Set variable for whether or not to ignore the developer.
+        # Set variable for whether or not to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False
+        self.developer_ids = [int(dev_id) for dev_id in environment.get("DEVELOPER_DISCORD_IDS")]
 
         # Discord client init
         intents = discord.Intents.all()
@@ -102,13 +108,13 @@ class JadieClient(discord.Client):
             return
 
         # Check to see if the author was a developer.
-        author_is_developer = str(message.author.id) in environment.get("DEVELOPER_DISCORD_IDS")
+        author_is_developer = message.author.id in self.developer_ids
 
         # First, if the author is a developer and they're being ignored, check if this message
         # is a toggleignoredev command.
         if self.ignore_developer and author_is_developer:
-            if message.content == f'{environment.get("GLOBAL_PREFIX")}toggleignoredev' or \
-                    message.content.startswith(f'{environment.get("GLOBAL_PREFIX")}toggleignoredev '):
+            if message.content == f'{self.global_prefix}toggleignoredev' or \
+                    message.content.startswith(f'{self.global_prefix}toggleignoredev '):
                 # If so, run the command!
                 return await self.toggle_ignore_developer(self, message)
             else:
@@ -116,7 +122,7 @@ class JadieClient(discord.Client):
                 return
 
         # Second, if the author ISN'T a developer and this is a development version, then ignore them.
-        if not (author_is_developer or environment.get("DEPLOYMENT_CLIENT")):
+        if not (author_is_developer or self.deployment_client):
             return
 
         # Third, if the message's guild is bugged out, then return.
@@ -125,23 +131,18 @@ class JadieClient(discord.Client):
             return
 
         # Fourth, parse the command out of the message and get the argument.
-        command, argument = parsing.get_command_from_message(message)
+        command, argument = parsing.get_command_from_message(self.global_prefix, message)
 
         # Otherwise, try to get the command.
         if command:
 
-            try:
-                # Grabs command from the regular dict and tries to run it.
-                if command in self.public_command_dict:
-                    return await self.public_command_dict[command](self, message, argument)
+            # Grabs command from the regular dict and tries to run it.
+            if command in self.public_command_dict:
+                return await self.public_command_dict[command](self, message, argument)
 
-                # If the author is a developer, grab the command from the developer dict.
-                elif author_is_developer and command in self.developer_command_dict:
-                    return await self.developer_command_dict[command](self, message, argument)
-
-            # If any unchecked error occurred at all, log and return.
-            except Exception as e:
-                return logging.error(repr(e))
+            # If the author is a developer, grab the command from the developer dict.
+            elif author_is_developer and command in self.developer_command_dict:
+                return await self.developer_command_dict[command](self, message, argument)
 
         # Finally, if this was a regular message, run reactive commands.
         for reactive_command in self.reactive_command_list:

@@ -41,20 +41,24 @@ def normalize_string(input_str, remove_double_spaces=True):
     return input_str
 
 
-def get_command_from_message(message):
+def get_command_from_message(global_prefix, message):
     """
     Splits a message's contents into command and argument.
     If either one can't be found, then None is returned in its stead.
+
+    Arguments:
+        global_prefix (str) : The global prefix.
+        message (discord.message.Message) : The discord message object that triggered this command.
 
     Returns:
         str, str : The command, then the argument in that order.
     """
     # Immediately returns if command prefix is missing
-    if not message.content.lower().startswith(environment.get("GLOBAL_PREFIX")):
+    if not message.content.lower().startswith(global_prefix):
         return None, None
 
     # Removes global prefix from message
-    message = message.content[len(environment.get("GLOBAL_PREFIX")):]
+    message = message.content[len(global_prefix):]
 
     # Finds space or end of line -- whichever comes first, and returns
     end_index = message.find(' ')

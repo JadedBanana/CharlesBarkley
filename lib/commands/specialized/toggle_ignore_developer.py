@@ -18,7 +18,7 @@ async def toggle_ignore_dev(bot, message, argument=None):
         argument (str) : The command's argument, if any.
     """
     # For deployment client, toggle the ignoring developer status.
-    if environment.get("DEPLOYMENT_CLIENT"):
+    if bot.deployment_client:
         bot.ignore_developer = not bot.ignore_developer
         logging.info(message, f'Requested ignore developer, now{" " if bot.ignore_developer else " no longer "}ignoring developers')
         await messaging.send_text_message(message, f'Deployment version speaking, now{" " if bot.ignore_developer else " no longer "}ignoring developers')

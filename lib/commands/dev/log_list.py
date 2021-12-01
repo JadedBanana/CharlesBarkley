@@ -4,7 +4,7 @@ Lists the available log files in the logs dir.
 """
 # Imports
 from lib.util.logger import BotLogger as logging
-from lib.util import environment, messaging
+from lib.util import messaging, logger
 import os
 
 
@@ -18,7 +18,7 @@ async def log_list(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the log folder.
-    log_folder = environment.get('LOGS_DIR')
+    log_folder = logger.LOGS_DIR
 
     # Check to make sure that the log folder exists.
     if not os.path.exists(log_folder):

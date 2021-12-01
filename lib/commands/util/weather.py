@@ -14,6 +14,7 @@ import discord
 
 
 # Weather constants
+WEATHER_API_KEY = environment.get('WEATHER_API_KEY')
 WEATHER_API_URL = 'http://api.openweathermap.org/data/2.5/weather?appid={}&q={}'
 WEATHER_ALT_COUNTRY_CODES = {
     'BO': 'Bolivia', 'FK': 'Falkland Islands', 'FM': 'Micronesia', 'GB': 'United Kingdom', 'IR': 'Iran',
@@ -60,7 +61,7 @@ async def get_weather_dict(message, argument):
         return await messaging.send_text_message(message, 'Invalid city.')
 
     # Simple request call to get our weather.
-    response = requests.get(WEATHER_API_URL.format(environment.get('WEATHER_API_KEY'), argument))
+    response = requests.get(WEATHER_API_URL.format(WEATHER_API_KEY, argument))
     weather_json = response.json()
 
     # If we didn't get weather_json or it's broken, we tell the user that.

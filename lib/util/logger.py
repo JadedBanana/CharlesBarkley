@@ -17,6 +17,8 @@ LOGGING_LEVELS = [
     logging.ERROR,
     logging.CRITICAL
 ]
+# Logs dir.
+LOGS_DIR = environment.get('LOGS_DIR')
 # Log file name.
 LOG_FILE = None
 
@@ -30,7 +32,7 @@ def basic_setup():
     if environment.get('LOG_TO_FILE'):
 
         # Create the logging directory, if it doesn't exist.
-        logging_dir = environment.get('LOGS_DIR')
+        logging_dir = LOGS_DIR
         if not os.path.isdir(logging_dir):
             os.mkdir(logging_dir)
 
@@ -52,7 +54,8 @@ def basic_setup():
 
     # No logging file, just log to console.
     else:
-        logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')])
+        logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
+                            level=LOGGING_LEVELS[environment.get('LOGGING_LEVEL')])
 
 
 class BotLogger:
