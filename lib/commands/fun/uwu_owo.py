@@ -11,6 +11,10 @@ import random
 # Emote replacement variables
 EMOTE_CHARACTERS = '0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVQXYZ'
 BASIC_REPLACE_DICT = {
+    'wr': 'w',
+    'WR': 'W',
+    'Wr': 'W',
+    'wR': 'w',
     'r': 'w',
     'R': 'W',
     'l': 'w',
