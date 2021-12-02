@@ -44,14 +44,14 @@ def initialize(global_prefix):
     # Then, create embeds for all of those commands.
     # First, the home embed.
     global PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED
-    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(self.global_prefix, home_help_page_dict)
+    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(global_prefix, home_help_page_dict)
 
     # Second, the command-specific help embeds.
     global COMMAND_SPECIFIC_HELP_EMBEDS
     for command_name, command_specific_help_page_dict in command_specific_help_page_dicts.items():
 
         # Add them on with their command_name as keys.
-        COMMAND_SPECIFIC_HELP_EMBEDS[command_name] = generate_command_specific_help_page_embeds(self.global_prefix, command_name,
+        COMMAND_SPECIFIC_HELP_EMBEDS[command_name] = generate_command_specific_help_page_embeds(global_prefix, command_name,
                                                                                                 command_specific_help_page_dict)
         # For aliases, add them as the aliases as keys and the parent name as the data.
         if 'aliases' in command_specific_help_page_dict:

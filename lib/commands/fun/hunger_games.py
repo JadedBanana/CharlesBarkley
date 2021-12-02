@@ -1374,4 +1374,4 @@ DEVELOPER_COMMAND_DICT = {
 
 
 # Unfortunately, one variable has to be established all the way down here.
-HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'], + [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]
+HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]

@@ -6,6 +6,7 @@ into self processing.
 # Imports
 from aiohttp.client_exceptions import ClientConnectorError
 from lib.util import environment, parsing
+from discord.errors import LoginFailure
 from datetime import datetime
 import discord
 import logging
@@ -171,6 +172,11 @@ def launch():
     # If a connection can't be made, then log that error and exit.
     except ClientConnectorError:
         logging.critical('Cannot connect to Discord.')
+        sys.exit(-1)
+
+    # If the login was bad, then log that error and exit.
+    except LoginFailure:
+        logging.critical('Failed to log in to Discord.')
         sys.exit(-1)
 
     # If the client loop ever stops running, the process should terminate.
