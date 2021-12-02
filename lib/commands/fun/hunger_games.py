@@ -48,7 +48,8 @@ HG_ACTION_ROWHEIGHT = 175
 # Pregame
 HG_PREGAME_TITLE = 'The Reaping'
 HG_PREGAME_DESCRIPTION = 'Respond one of the following:\n' \
-                         'S: Shuffle\t\tA: Add\t\t\tD: Delete\tB: {} bots\n' \
+                         'A: Add\t\t\tD: Delete\n' \
+                         'S: Shuffle\t\tB: {} bots\n' \
                          'P: Proceed\t\tC: Cancel'
 HG_PREGAME_ADD_TERMS = ['a', 'add']
 HG_PREGAME_DELETE_TERMS = ['d', 'del', 'delete']
@@ -56,9 +57,75 @@ HG_PREGAME_TOGGLE_BOTS_TERMS = ['b', 'bot', 'bots']
 HG_PREGAME_PROCEED_TERMS = ['p', 'proceed']
 HG_PREGAME_CANCEL_TERMS = ['c', 'cancel']
 
+# Item List
+# # =================DEBUG==================
+# # 0: nothing
+# # 3000: 1 - 3 random items
+# # 4000: 1 weapon, 1 food item, 1 health item
+# # 8888: make net from rope, give food
+# # 9999: take away everything and give it to everyone else
+# # ================WEAPONS================
+# # 1: mace
+# # 2: sword
+# # 3: spear
+# # 4: explosives
+# # 5: throwing knives
+# # 6: hatchet
+# # 7: slingshot
+# # 8: rope
+# # 9: shovel
+# # 10: net
+# # 11: molotov cocktail
+# # 12: bow
+# # 13: poison
+# # 14: scissors
+# # ==================FOOD=================
+# # 101: clean water
+# # 102: river water
+# # 103: loaf of bread
+# # 104: raw meat
+# # =================HEALTH================
+# # 201: bandages
+# # 202: medicine
+# # 203: first aid kit
+# # ==================OTHER================
+# # 301: shack
+# # 302: camouflage
+# # 303: cave
+# # 304: high ground
+HG_WEAPON_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+HG_FOOD_ITEMS = [101, 102, 103, 104]
+HG_HEALTH_ITEMS = [201, 202, 203]
+HG_ALL_ITEMS = HG_WEAPON_ITEMS + HG_FOOD_ITEMS + HG_HEALTH_ITEMS
+
+# Actions
+HG_BLOODBATH_ACTIONS = [
+    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
+    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
+    {'players': 0, 'act': '{0} grabs a sword.', 'give': [2]},
+    {'players': 0, 'act': '{0} takes a spear from the Cornucopia.', 'give': [3]},
+    {'players': 0, 'act': '{0} finds a bag full of explosives.', 'give': [4]},
+    {'players': 0, 'act': '{0} grabs a backpack and retreats.', 'give': [4000]},
+    {'players': 0, 'act': '{0} takes only a pair of scissors.', 'give': [14]},
+    {'players': 0, 'act': '{0} takes a handful of throwing knives.', 'give': [5]},
+    {'players': 0, 'act': '{0} accidentally steps on a landmine and explodes.', 'kill': [0]},
+    {'players': 0, 'act': '{0} grabs a bottle of alcohol and a rag.', 'give': [11]},
+    {'players': 0, 'act': '{0} grabs a first aid kit and runs away.', 'give': [203]},
+    {'players': 0, 'act': '{0} grabs a bow and makes a getaway.', 'give': [12]},
+    {'players': 0, 'act': '{0} stubs their toe on a grenade. It explodes, killing them.', 'kill': [0]},
+    {'players': 0, 'act': '{0} escapes with a lighter and some rope.', 'give': [8]},
+    {'players': 1, 'act': '{0} rips a mace out of {1}\'s hands.', 'give': [1, 0]},
+    {'players': 1, 'act': '{0} throws a knife into {1}\'s head.', 'kill': [1]},
+    {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1], 'credit': [0]},
+    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1], 'credit': [0]},
+    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1], 'credit': [0]},
+    {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.', 'give': [3000, 3000, 3000]},
+    {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2], 'credit': [0, 1]},
+    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2], 'credit': [1]}
+]
+
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
-
 
 
 async def hunger_games_start(bot, message, argument):
@@ -1008,20 +1075,24 @@ async def generate_full_game(hg_dict, message):
     """
     Generates an entire Hunger Games from the users specified in the hg_dict.
     Depends on external methods to do most of the dirty work.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Get rid of redundant tag.
     del hg_dict['uses_bots']
 
-    # Create player statuses.
+    # Create player statuses dict in the hg_dict.
     statuses = {}
     for player in hg_dict['players']:
-        statuses[str(player.id)] = {'name': player.nick if player.nick else player.name, 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
+        statuses[str(player.id)] = {'name': misc.get_photogenic_username(player), 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
     hg_dict['statuses'] = statuses
 
     # Makes the phases.
     hg_dict['phases'] = []
 
-    # First, we have the bloodbath.
+    # First, we generate the bloodbath.
     generate_bloodbath(hg_dict)
 
     # Loop variables.
@@ -1181,14 +1252,64 @@ async def generate_full_game(hg_dict, message):
     hg_dict['complete'] = False
 
 
+def generate_bloodbath(hg_dict):
+    """
+    Generates all the actions for each player in the bloodbath.
+    This is just like any other list of actions, but they're a lot more simplified because there are no prerequisite ones.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # Player_actions stores the user id of everyone who hasn't had an action yet.
+    player_actions = [uid for uid in hg_dict['statuses']]
+    # Actions stores all the actions.
+    actions = []
+
+    # Iterates through all the actions, picking them at random for the player_actions.
+    while player_actions:
+
+        # Creates necessary prerequisites for do while loop.
+        # Create a current action with a length of player actions so that the while loop will trigger.
+        curr_action = {'players': len(player_actions)}
+        # Take a player out and use it as the base player.
+        chosen_players = [random.choice(player_actions)]
+        player_actions.remove(chosen_players[0])
+
+        # While loop, finds a good action.
+        while curr_action['players'] > len(player_actions):
+            curr_action = random.choice(HG_BLOODBATH_ACTIONS)
+
+        # Adds more players to current action, if necessary.
+        for i in range(curr_action['players']):
+            chosen_players.append(random.choice(player_actions))
+            player_actions.remove(chosen_players[-1])
+
+        # Add the actions to the list.
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'],
+                        'full': curr_action})
+
+        # Generate statuses
+        generate_statuses(hg_dict['statuses'], actions[-1])
+
+    # Adds to the phases.
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1,
+                              'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
+
+
 def generate_statuses(hg_statuses, action):
     """
     Updates the statuses of players post-action in the hg_dict.
+
+    Arguments:
+        hg_statuses (dict) : The statuses of every player in the game.
+        action (dict) : The action that needs to trigger this status check.
     """
     # First, we handle deaths.
     if 'kill' in action['full']:
+        # Mark player as dead.
         for ind in action['full']['kill']:
             hg_statuses[action['players'][ind][0]]['dead'] = True
+        # Mark player's place in the game.
         for ind in action['full']['kill']:
             hg_statuses[action['players'][ind][0]]['dead_num'] = [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
 
@@ -1200,7 +1321,7 @@ def generate_statuses(hg_statuses, action):
     # Kill credit.
     if 'credit' in action['full']:
         for ind in action['full']['credit']:
-            hg_statuses[action['players'][ind][0]]['kills']+= 1
+            hg_statuses[action['players'][ind][0]]['kills'] += 1
 
     # Healing.
     if 'heal' in action['full']:
@@ -1210,70 +1331,53 @@ def generate_statuses(hg_statuses, action):
     # Items.
     if 'give' in action:
         for ind in range(len(action['give'])):
-            # Item 0.
+
+            # Item 0 (nothing).
             if action['give'][ind] == 0:
                 continue
+
+            # Negative item (remove their thing).
             elif action['give'][ind] < 0:
                 hg_statuses[action['players'][ind][0]]['inv'].remove(-action['give'][ind])
+
+            # Other items.
             else:
+
                 # Special items
                 # 3000, 1 - 3 random items
                 if action['full']['give'][ind] == 3000:
                     for i in range(random.randint(1, 3)):
-                        hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_ALL_ITEMS))
+                        hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_ALL_ITEMS))
+
+                # 4000, one of each item type
                 elif action['full']['give'][ind] == 4000:
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_WEAPON_ITEMS))
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_HEALTH_ITEMS))
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(constants.HG_FOOD_ITEMS))
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_WEAPON_ITEMS))
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_HEALTH_ITEMS))
+                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_FOOD_ITEMS))
+
+                # 8888, take away rope, give food
                 elif action['full']['give'][ind] == 8888:
                     hg_statuses[action['players'][ind][0]]['inv'].remove(8)
                     hg_statuses[action['players'][ind][0]]['inv'].append(10)
                     hg_statuses[action['players'][ind][0]]['inv'].append(104)
+
+                # 9999, take away everything and give it to everyone else
                 elif action['full']['give'][ind] == 9999:
+                    # Iterate through and give it to other folks one at a time.
                     ind2 = 0
                     for item in hg_statuses[action['players'][ind][0]]['inv']:
                         hg_statuses[action['players'][ind][0]]['inv'].remove(item)
                         if ind2 % len(action['players']) == ind:
-                            ind2+= 1
+                            ind2 += 1
                         hg_statuses[action['players'][ind2][0]]['inv'].append(item)
-                        ind2+= 1
+                        ind2 += 1
+
+                # Any other item, just give it to them normally.
                 else:
                     hg_statuses[action['players'][ind][0]]['inv'].append(action['give'][ind])
 
+    # Delete the 'full' tag on the action.
     del action['full']
-
-
-def generate_bloodbath(hg_dict):
-    """
-    Generates all the actions for each player in the bloodbath.
-    """
-    player_actions = [uid for uid in hg_dict['statuses']]
-    actions = []
-
-    # Iterates through all the actions, picking them at random for the player_actions.
-    while player_actions:
-        # Creates necessary prerequisites for do while loop.
-        curr_action = {'players': len(player_actions)}
-        chosen_players = [random.choice(player_actions)]
-        player_actions.remove(chosen_players[0])
-
-        # While loop, finds a good action.
-        while curr_action['players'] > len(player_actions):
-            curr_action = random.choice(constants.HG_BLOODBATH_ACTIONS)
-
-        # Adds more players to current action.
-        for i in range(curr_action['players']):
-            chosen_players.append(random.choice(player_actions))
-            player_actions.remove(chosen_players[-1])
-
-        # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'], 'full': curr_action})
-
-        # Generate statuses
-        generate_statuses(hg_dict['statuses'], actions[-1])
-
-    # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1, 'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
 def generate_normal_actions(hg_dict, action_dict, title, desc=None):

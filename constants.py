@@ -1,68 +1,7 @@
 
-# Hunger Games
-# =================DEBUG==================
-# 0: nothing
-# 3000: 1 - 3 random items
-# 4000: 1 weapon, 1 food item, 1 health item
-# 8888: make net from rope, give food
-# 9999: take away everything and give it to everyone else
-# ================WEAPONS================
-# 1: mace
-# 2: sword
-# 3: spear
-# 4: explosives
-# 5: throwing knives
-# 6: hatchet
-# 7: slingshot
-# 8: rope
-# 9: shovel
-# 10: net
-# 11: molotov cocktail
-# 12: bow
-# 13: poison
-# 14: scissors
-# ==================FOOD=================
-# 101: clean water
-# 102: river water
-# 103: loaf of bread
-# 104: raw meat
-# =================HEALTH================
-# 201: bandages
-# 202: medicine
-# 203: first aid kit
-# ==================OTHER================
-# 301: shack
-# 302: camouflage
-# 303: cave
-# 304: high ground
-HG_WEAPON_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-HG_FOOD_ITEMS = [101, 102, 103, 104]
-HG_HEALTH_ITEMS = [201, 202, 203]
-HG_ALL_ITEMS = HG_WEAPON_ITEMS + HG_FOOD_ITEMS + HG_HEALTH_ITEMS
-HG_BLOODBATH_ACTIONS = [
-    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
-    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
-    {'players': 0, 'act': '{0} grabs a sword.', 'give': [2]},
-    {'players': 0, 'act': '{0} takes a spear from the Cornucopia.', 'give': [3]},
-    {'players': 0, 'act': '{0} finds a bag full of explosives.', 'give': [4]},
-    {'players': 0, 'act': '{0} grabs a backpack and retreats.', 'give': [4000]},
-    {'players': 0, 'act': '{0} takes only a pair of scissors.', 'give': [14]},
-    {'players': 0, 'act': '{0} takes a handful of throwing knives.', 'give': [5]},
-    {'players': 0, 'act': '{0} accidentally steps on a landmine and explodes.', 'kill': [0]},
-    {'players': 0, 'act': '{0} grabs a bottle of alcohol and a rag.', 'give': [11]},
-    {'players': 0, 'act': '{0} grabs a first aid kit and runs away.', 'give': [203]},
-    {'players': 0, 'act': '{0} grabs a bow and makes a getaway.', 'give': [12]},
-    {'players': 0, 'act': '{0} stubs their toe on a grenade. It explodes, killing them.', 'kill': [0]},
-    {'players': 0, 'act': '{0} escapes with a lighter and some rope.', 'give': [8]},
-    {'players': 1, 'act': '{0} rips a mace out of {1}\'s hands.', 'give': [1, 0]},
-    {'players': 1, 'act': '{0} throws a knife into {1}\'s head.', 'kill': [1]},
-    {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1], 'credit': [0]},
-    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1], 'credit': [0]},
-    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1], 'credit': [0]},
-    {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.', 'give': [3000, 3000, 3000]},
-    {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2], 'credit': [0, 1]},
-    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2], 'credit': [1]}
-]
+
+
+
 HG_NORMAL_DAY_ACTIONS = {
     'trigger': [
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'}, {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}], 'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
