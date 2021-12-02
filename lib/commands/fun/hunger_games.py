@@ -44,6 +44,11 @@ HG_STATUS_DEAD_COLOR = (255, 102, 102)
 
 # Action embed.
 HG_ACTION_ROWHEIGHT = 175
+HG_HEADER_BORDER_BUFFER = 7
+HG_HEADER_TEXT_COLOR = (255, 207, 39)
+HG_ACTION_PLAYER_COLOR = (251, 130, 0)
+HG_HEADER_BORDER_COLOR = (255, 255, 255)
+HG_HEADER_BACKGROUND_COLOR = (35, 35, 35)
 
 # Pregame
 HG_PREGAME_TITLE = 'The Reaping'
@@ -56,6 +61,22 @@ HG_PREGAME_DELETE_TERMS = ['d', 'del', 'delete']
 HG_PREGAME_TOGGLE_BOTS_TERMS = ['b', 'bot', 'bots']
 HG_PREGAME_PROCEED_TERMS = ['p', 'proceed']
 HG_PREGAME_CANCEL_TERMS = ['c', 'cancel']
+
+# Midgame
+HG_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nC: Cancel Game'
+HG_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nC: Cancel Game'
+HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nN: Next Action\tP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+
+# Winner / Ties
+HG_WINNER_TITLE = 'The Winner'
+HG_TIE_TITLE = 'The Winners'
+HG_WINNER_EVENT = 'The winner is {0}!'
+HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
+HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
+HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 
 # Item List
 # # =================DEBUG==================
@@ -1015,68 +1036,93 @@ def makeimage_player_statuses(players, placement=False, kills=False):
     return player_statuses
 
 
-def makeimage_action(actions, start, count=1, action_desc=None):
+def makeimage_action(player_images, actions, start, count=1, action_desc=None):
     """
     Displays count number of actions at once.
-    """
-    # Makes the font
-    action_font = ImageFont.truetype(constants.HG_PLAYERNAME_FONT, size=constants.HG_FONT_SIZE)
 
-    # Gets action desc width, if any.
+    player_images (dict) : A dict of player profile pictures, with the profile pictures keyed by player ids.
+    actions (dict[]) : A list of dicts detailing all the actions in this phase.
+    start (int) : What index to start at.
+    count (int) : How many actions to put into this image.
+    action_desc (str) : The action description, if any.
+    """
+    # Makes the font and gets the action description width, if any.
+    action_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
     action_desc_width = action_font.getsize(action_desc)[0] if action_desc else 0
 
-    # Gets the image width.
+    # Gets the image height.
     # Also makes the full action text while we're at it.
-    image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
-    image_height = constants.HG_ACTION_ROWHEIGHT * count + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
+    image_height = HG_ACTION_ROWHEIGHT * count + HG_ICON_BUFFER + (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
     text_sizes = []
 
+    # Get the image width.
+    # The image width is diffcult to gather, because we have to test the widths of everything.
+    image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
+
+    # Iterate through each action in the range.
     for ind in range(start, start + count):
+
         # Tests for text boundaries
         full_action_text = actions[ind]['act']
         for ind2 in range(len(actions[ind]['players'])):
             full_action_text = full_action_text.replace('{' + str(ind2) + '}', actions[ind]['players'][ind2][1])
+
         # Calculates text widths and appends them to the text_sizes list.
         text_width = action_font.getsize(full_action_text)[0]
-        image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
+        image_width = max(image_width, text_width + HG_ICON_BUFFER * 2)
         text_sizes.append(text_width)
-        # Tests for image boundaries
-        image_width = max(image_width, constants.HG_ICON_SIZE * len(actions[ind]['players']) + constants.HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
 
-    # Preps to draw.
-    action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
+        # Tests for image boundaries
+        image_width = max(image_width, HG_ICON_SIZE * len(actions[ind]['players']) + HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
+
+    # Creates all the images and drawers that will help us make the new image.
+    action_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(action_image)
-    current_y = constants.HG_ICON_BUFFER
+
+    # Sets the current y at the buffer between the top and the first icon.
+    current_y = HG_ICON_BUFFER
 
     # Draw the description, if any.
     if action_desc:
+
+        # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
         player_drawer.rectangle(
-            [(current_x - constants.HG_HEADER_BORDER_BUFFER, current_y - constants.HG_HEADER_BORDER_BUFFER),
-             (current_x + action_desc_width + constants.HG_HEADER_BORDER_BUFFER, current_y + constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER)],
-            constants.HG_HEADER_BACKGROUND_COLOR,
-            constants.HG_HEADER_BORDER_COLOR
+            [(current_x - HG_HEADER_BORDER_BUFFER, current_y - HG_HEADER_BORDER_BUFFER),
+             (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER, current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
+            HG_HEADER_BACKGROUND_COLOR,
+            HG_HEADER_BORDER_COLOR
         )
-        player_drawer.text((current_x, constants.HG_ICON_BUFFER), action_desc, font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
-        current_y+= constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3
 
-    # Draw the icons.
+        # Draws the text and adds to the current y.
+        player_drawer.text((current_x, HG_ICON_BUFFER), action_desc, font=action_font, fill=HG_HEADER_TEXT_COLOR)
+        current_y += HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3
+
+    # Num keeps track of the text sizes.
     num = 0
+
+    # Iterate through all the actions.
     for ind in range(start, start + count):
-        current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * constants.HG_ICON_SIZE) - int((len(actions[ind]['players']) - 1) / 2 * constants.HG_ICON_BUFFER)
+
+        # Set the current x.
+        current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * HG_ICON_SIZE) - \
+                    int((len(actions[ind]['players']) - 1) / 2 * HG_ICON_BUFFER)
+
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
-            makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y)
-            current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
+            print(player_images)
+            print(player[0])
+            makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y)
+            current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
-        current_y+= constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
+        current_y += HG_ICON_SIZE + HG_TEXT_BUFFER
         makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y, action_font)
 
         # Adds to the current_y and num.
-        current_y+= constants.HG_FONT_SIZE + constants.HG_ICON_BUFFER
-        num+= 1
+        current_y += HG_FONT_SIZE + HG_ICON_BUFFER
+        num += 1
 
     return action_image
 
@@ -1208,6 +1254,7 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
 
 
 def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_font):
+    # TODO
     while remaining_text:
         # Get the index of the NEXT {n}.
         next_bracket = len(remaining_text)
@@ -1225,7 +1272,7 @@ def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_
         if next_bracket == len(remaining_text):
             break
         ind = int(remaining_text[next_bracket + 1])
-        drawer.text((txt_x, txt_y), players[ind][1], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
+        drawer.text((txt_x, txt_y), players[ind][1], font=action_font, fill=HG_ACTION_PLAYER_COLOR)
         txt_x+= action_font.getsize(players[ind][1])[0]
 
         # Trim remaining_text.
@@ -1247,7 +1294,7 @@ async def generate_full_game(hg_dict, message):
     # Create player statuses dict in the hg_dict.
     statuses = {}
     for player in hg_dict['players']:
-        statuses[str(player.id)] = {'name': misc.get_photogenic_username(player), 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
+        statuses[player.id] = {'name': misc.get_photogenic_username(player), 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
     hg_dict['statuses'] = statuses
 
     # Makes the phases.
@@ -1295,123 +1342,98 @@ async def generate_full_game(hg_dict, message):
             generate_normal_actions(hg_dict, HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(day_night))
             day_night += 1
 
-            # If we're past day/night 3, increment turns_since_event.
-            if day_night >= 4:
-                turns_since_event += 1
-
         # Test for dead people.
         tie, continue_game = generate_detect_dead(hg_dict)
         if not continue_game:
             break
 
-        # Do player statuses.
+        # Add a new player status page.
         player_statuses = []
         new_deaths = 0
+
+        # Iterate through all the players.
         for player in hg_dict['statuses']:
-            player_statuses.append((player, hg_dict['statuses'][player]['name'], (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
+            player_statuses.append((player, hg_dict['statuses'][player]['name'],
+                                    (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
+
+            # Adds to dead_last_loop if they're dead THIS loop.
             if player not in dead_last_loop and hg_dict['statuses'][player]['dead']:
                 dead_last_loop.append(player)
-                new_deaths+= 1
+                new_deaths += 1
+
+        # Add the player status dict to the phases.
         hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
 
         # Increase chances of encountering disaster next time.
         if day_night >= 4:
-            turns_since_event+= 1
+            turns_since_event += 1
 
     # Now that the loop is broken, display cannon shots and declare winner.
+    # First, make a new player status page.
     player_statuses = []
     new_deaths = 0
+
+    # Iterate through all the players.
     for player in hg_dict['statuses']:
-        player_statuses.append((player, hg_dict['statuses'][player]['name'], (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
-        if player not in dead_last_loop and hg_dict['statuses'][player]['dead']:
-            dead_last_loop.append(player)
-            new_deaths+= 1
+        player_statuses.append((player, hg_dict['statuses'][player]['name'],
+                                (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
+
+    # Add the player status dict to the phases.
     hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
 
+    # If there's a tie, run this part.
     if tie:
+
         # Determine who tied
         tiees = []
+        # Get the maximum death number for placement purposes.
         max_deathnum = -1
+
+        # Get the max death num.
         for player in hg_dict['statuses']:
-            if hg_dict['statuses'][player]['dead_num'] > max_deathnum:
-                max_deathnum = hg_dict['statuses'][player]['dead_num']
+            max_deathnum = max(max_deathnum, hg_dict['statuses'][player]['dead_num'])
+
+        # For each player, if their death num equals the max, then append that to the tiees.
         for player in hg_dict['statuses']:
             if max_deathnum == hg_dict['statuses'][player]['dead_num']:
                 tiees.append(player)
+
         # Add tie phase to phases ONLY if there's more than one.
         if len(tiees) > 1:
-            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name'], True) for tienum in tiees], 'title': constants.HG_TIE_TITLE, 'desc': constants.HG_TIE_TITLE})
+            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name'], True) for tienum in tiees],
+                                      'title': HG_TIE_TITLE, 'desc': HG_TIE_TITLE})
+
         # Otherwise, it's a victory, but dead.
         else:
-            hg_dict['phases'].append({'type': 'win', 'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)], 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE})
+            hg_dict['phases'].append({'type': 'win', 'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)],
+                                      'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
 
+    # Not a tie, run this next part.
     else:
-        # Determine winner
+
+        # Determine winner by who doesn't have a death number.
         winner = None
         for player in hg_dict['statuses']:
-            if not 'dead_num' in hg_dict['statuses'][player]:
+            if 'dead_num' not in hg_dict['statuses'][player]:
                 winner = player
                 break
+
         # Add win phase to phases
-        hg_dict['phases'].append({'type': 'win', 'players': [(winner, hg_dict['statuses'][winner]['name'], False)], 'title': constants.HG_WINNER_TITLE, 'desc': constants.HG_WINNER_TITLE})
+        hg_dict['phases'].append({'type': 'win', 'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
+                                  'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
 
-    # Makes the placement screen
-    pre_placement_players = [k for k in hg_dict['statuses']]
-    placements = []
-    while pre_placement_players:
-        min_placement = len(hg_dict['statuses'])
-        current_placement_players = []
-        for player in pre_placement_players:
-            if 'dead_num' in hg_dict['statuses'][player]:
-                if min_placement > hg_dict['statuses'][player]['dead_num']:
-                    current_placement_players = [player]
-                    min_placement = hg_dict['statuses'][player]['dead_num']
-                elif min_placement == hg_dict['statuses'][player]['dead_num']:
-                    current_placement_players.append(player)
-        # If there is no change in min_placement, then the victor is found.
-        if min_placement == len(hg_dict['statuses']):
-            current_placement_players = pre_placement_players
-            min_placement-= 1
-        # Adds player to the dict.
-        for player in current_placement_players:
-            placements.append((player, hg_dict['statuses'][player]['name'], len(hg_dict['statuses']) - min_placement))
-            pre_placement_players.remove(player)
-    # Reverses placements list to sort from first to last and makes it a phase
-    placements.reverse()
-    hg_dict['phases'].append({'type': 'place', 'all': placements, 'max': max([place[2] for place in placements]) - 1})
+    # Makes the placement screen.
+    generate_placement_screen(hg_dict)
 
-    # Makes the kill screen pretty much the same way as the placement screen.
-    pre_placement_players = [k for k in hg_dict['statuses']]
-    kill_placements = []
-    while pre_placement_players:
-        max_placement = 0
-        current_placement_players = []
-        for player in pre_placement_players:
-            if max_placement < hg_dict['statuses'][player]['kills']:
-                current_placement_players = [player]
-                max_placement = hg_dict['statuses'][player]['kills']
-            elif max_placement == hg_dict['statuses'][player]['kills']:
-                current_placement_players.append(player)
-        # Adds player to the dict.
-        for player in current_placement_players:
-            kill_placements.append((player, hg_dict['statuses'][player]['name'], max_placement))
-            pre_placement_players.remove(player)
-    # Reverses placements list to sort from first to last and makes it a phase
-    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in kill_placements])})
+    # Makes the kill count screen.
+    generate_kill_count_screen(hg_dict)
 
-    # Sends the first message.
-    # Creates the embed.
-    embed = discord.Embed(title='The Bloodbath, Action 1', colour=constants.HG_EMBED_COLOR)
-    embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
-
-    action_image = makeimage_action(hg_dict['phases'][0]['act'], 0, 1, hg_dict['phases'][0]['desc'])
-    current_playerstatus_filepath = os.path.join(constants.TEMP_DIR, 'hg_player_statuses.png')
-    action_image.save(current_playerstatus_filepath)
-    file = discord.File(current_playerstatus_filepath, filename='hg_player_statuses.png')
-
-    # Sends image, logs.
-    embed.set_image(url='attachment://hg_player_statuses.png')
-    await message.channel.send(file=file, embed=embed)
+    # Re-do the playerlist in the hg_dict.
+    new_players = {}
+    for player in hg_dict['players']:
+        new_players[player.id] = tempfiles.checkout_profile_picture_by_user(player, message, 'hunger_games_full',
+                                                                            (HG_ICON_SIZE, HG_ICON_SIZE))
+    hg_dict['players'] = new_players
 
     # Updates hunger games dict.
     del hg_dict['statuses']
@@ -1419,6 +1441,14 @@ async def generate_full_game(hg_dict, message):
     hg_dict['confirm_cancel'] = False
     hg_dict['generated'] = True
     hg_dict['complete'] = False
+
+    # Sends the first message and logs.
+    logging.info(message, 'generated complete hunger games instance')
+    await messaging.send_image_based_embed(
+        message,
+        makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 1, hg_dict['phases'][0]['desc']),
+        'The Bloodbath, Action 1', HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
+    )
 
 
 def generate_bloodbath(hg_dict):
@@ -1473,22 +1503,29 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
         hg_dict (dict) : The full game dict.
         action_dict (dict) : The action dict.
         title (str) : The action title.
-        desc (str) : The action description.
+        desc (str) : The action description, if any.
     """
+    # Player_actions stores the user id of everyone who hasn't had an action yet.
+    # Unlike in generate_bloodbath, this version excludes people who are dead.
     player_actions = []
     for uid in hg_dict['statuses']:
         if not hg_dict['statuses'][uid]['dead']:
             player_actions.append(uid)
+    # Actions stores all the actions.
     actions = []
 
     # Iterates through triggers.
+    # TODO: Add trigger actions
     for trigger in action_dict['trigger']:
         pass
 
     # Iterates through all the actions, picking them at random for the player_actions.
     while player_actions:
+
         # Creates necessary prerequisites for do while loop.
+        # Create a current action with a length of player actions so that the while loop will trigger.
         curr_action = {'players': len(player_actions)}
+        # Take a player out and use it as the base player.
         chosen_players = [random.choice(player_actions)]
         player_actions.remove(chosen_players[0])
 
@@ -1496,13 +1533,14 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
         while curr_action['players'] > len(player_actions):
             curr_action = random.choice(action_dict['normal'])
 
-        # Adds more players to current action.
+        # Adds more players to current action, if necessary.
         for i in range(curr_action['players']):
             chosen_players.append(random.choice(player_actions))
             player_actions.remove(chosen_players[-1])
 
         # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'], 'full': curr_action})
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'],
+                        'full': curr_action})
 
     # Shuffles the actions and generates statuses.
     random.shuffle(actions)
@@ -1613,6 +1651,85 @@ def generate_detect_dead(hg_dict):
             else:
                 everyone_dead = False
     return everyone_dead, two_alive
+
+
+def generate_placement_screen(hg_dict):
+    """
+    Generates the placement screen.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # First, makes a list of placements.
+    pre_placement_players = [k for k in hg_dict['statuses']]
+    placements = []
+
+    # While not everyone has been placed, iterate through the loop.
+    while pre_placement_players:
+
+        # The min_placement keeps track of the minimum placement.
+        min_placement = len(hg_dict['statuses'])
+        current_placement_players = []
+
+        # Iterate through the players.
+        # Get the minimum placement and the players in that placement.
+        for player in pre_placement_players:
+            if 'dead_num' in hg_dict['statuses'][player]:
+                if min_placement > hg_dict['statuses'][player]['dead_num']:
+                    current_placement_players = [player]
+                    min_placement = hg_dict['statuses'][player]['dead_num']
+                elif min_placement == hg_dict['statuses'][player]['dead_num']:
+                    current_placement_players.append(player)
+
+        # If there is no change in min_placement, then the victor is found.
+        if min_placement == len(hg_dict['statuses']):
+            current_placement_players = pre_placement_players
+            min_placement -= 1
+
+        # Adds player to the dict.
+        for player in current_placement_players:
+            placements.append((player, hg_dict['statuses'][player]['name'], len(hg_dict['statuses']) - min_placement))
+            pre_placement_players.remove(player)
+
+    # Reverses placements list to sort from first to last and adds the placement to the phases.
+    placements.reverse()
+    hg_dict['phases'].append({'type': 'place', 'all': placements, 'max': max([place[2] for place in placements]) - 1})
+
+
+def generate_kill_count_screen(hg_dict):
+    """
+    Generates the kill count screen.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # First, makes a list of placements.
+    pre_placement_players = [k for k in hg_dict['statuses']]
+    kill_placements = []
+
+    # While not everyone has been placed, iterate through the loop.
+    while pre_placement_players:
+
+        # The max_placement keeps track of the maximum placement.
+        max_placement = 0
+        current_placement_players = []
+
+        # Iterate through the players.
+        # Get the maximum placement and the players in that placement.
+        for player in pre_placement_players:
+            if max_placement < hg_dict['statuses'][player]['kills']:
+                current_placement_players = [player]
+                max_placement = hg_dict['statuses'][player]['kills']
+            elif max_placement == hg_dict['statuses'][player]['kills']:
+                current_placement_players.append(player)
+
+        # Adds player to the dict.
+        for player in current_placement_players:
+            kill_placements.append((player, hg_dict['statuses'][player]['name'], max_placement))
+            pre_placement_players.remove(player)
+
+    # Reverses placements list to sort from first to last and makes it a phase
+    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in kill_placements])})
 
 
 def hunger_games_set_embed_image(image, embed):
