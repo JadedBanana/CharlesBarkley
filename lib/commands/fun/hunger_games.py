@@ -3,8 +3,8 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Imports.
-from lib.util.exceptions import CannotAccessUserlistError
-from lib.util import assets, environment, messaging, misc, parsing, tempfiles
+from lib.util.exceptions import CannotAccessUserlistError, NoUserSpecifiedError, UnableToFindUserError
+from lib.util import arguments, assets, environment, messaging, misc, parsing, tempfiles
 from PIL import Image, ImageOps, ImageFont, ImageDraw
 from lib.util.logger import BotLogger as logging
 from datetime import datetime
@@ -187,13 +187,7 @@ async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
     # Change the 'updated' thing.
     hg_dict['updated'] = datetime.today()
 
-    # Replace command (improper use).
-    if any([response == 'r', response == 'replace']):
-        await message.channel.send('Mention two users to replace one with the other.')
-
-        return True
-
-    elif any([response.startswith('r '), response.startswith('replace ')]):
+    if any([response.startswith('r '), response.startswith('replace ')]):
         # Gets the first two users in the thing.
         try:
             modified_players = misc.get_closest_users(message, response[2:] if response.startswith('r ') else response[8:], is_in_guild, not hg_dict['uses_bots'], limit=2)
@@ -218,91 +212,6 @@ async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
             # First player not in game
             await message.channel.send('{} isn\'t in the game.'.format(modified_players[0]))
             log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, first isn\'t there')
-
-        return True
-
-    # Add command.
-    elif any([response == 'a', response == 'add']):
-        # Cancels if the game is already max size.
-        if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
-            await message.channel.send('Max size already reached.')
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
-        else:
-            # Cancels if no more members to add to game.
-            able_users = misc.get_applicable_users(message, is_in_guild, hg_dict['uses_bots'], hg_dict['players'])
-            if not able_users:
-                await message.channel.send('No more users not already in the game.')
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, no more users')
-            # Otherwise, goes on.
-            else:
-                added_player = random.choice(able_users)
-                hg_dict['players'].append(added_player)
-                await send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
-
-        return True
-
-    # Add command, but specific user
-    elif any([response.startswith('a '), response.startswith('add ')]):
-        # Cancels if the game is already max size.
-        if len(hg_dict['players']) == constants.HG_MAX_GAMESIZE:
-            await message.channel.send('Max size already reached.')
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to add player to Hunger Games instance, max size reached')
-        else:
-            # Attempts to add a player.
-            try:
-                added_player = misc.get_closest_users(message, response[2:] if response.startswith('a ') else response[4:], is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
-            except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
-                await message.channel.send('Invalid user.')
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
-
-                return True
-            if added_player in hg_dict['players']:
-                await message.channel.send('{} is already in the game.'.format(added_player))
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, already there')
-            else:
-                hg_dict['players'].append(added_player)
-                await send_pregame(message, hg_dict['players'], 'Added {} to the game.'.format(added_player.nick if added_player.nick else added_player.name), hg_dict['uses_bots'])
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'added a player to Hunger Games instance')
-
-        return True
-
-    # Delete command.
-    elif any([response == 'd', response == 'del', response == 'delete']):
-        # Cancels if the game is already min size.
-        if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
-            await message.channel.send('Min size already reached.')
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
-        else:
-            # Removes player on the end.
-            removed_player = hg_dict['players'].pop(-1)
-            await send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'removed player from Hunger Games instance')
-
-        return True
-
-    # Delete command, but specific user
-    elif any([response.startswith('d '), response.startswith('del '), response.startswith('delete ')]):
-        # Cancels if the game is already min size.
-        if len(hg_dict['players']) == constants.HG_MIN_GAMESIZE:
-            await message.channel.send('Min size already reached.')
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to remove player to Hunger Games instance, min size reached')
-        else:
-            # Attempts to find player.
-            try:
-                removed_player = misc.get_closest_users(message, response[2:] if response.startswith('d ') else (response[4:] if response.starswith('del ') else response[7:]), is_in_guild, not hg_dict['uses_bots'], limit=1)[0]
-            except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
-                await message.channel.send('Invalid user.')
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, invalid')
-
-                return True
-            if removed_player in hg_dict['players']:
-                hg_dict['players'].remove(removed_player)
-                await send_pregame(message, hg_dict['players'], 'Removed {} from the game.'.format(removed_player.nick if removed_player.nick else removed_player.name), hg_dict['uses_bots'])
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'removed a player from Hunger Games instance')
-            else:
-                await message.channel.send('{} isn\'t in the game.'.format(removed_player))
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to remove a player from Hunger Games instance, not there')
 
         return True
 
@@ -337,13 +246,156 @@ async def hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message
     if not worked:
         return
 
+    # Otherwise, send a new embed.
+    await send_pregame(message, hg_dict)
 
-async def hunger_games_update_pregame_add(hg_key, hg_dict, response):
-    pass
+
+async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
+    """
+    Adds a player to the hunger games dict.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Cancels if the game is already max size.
+    if len(hg_dict['players']) == HG_MAX_GAMESIZE:
+        logging.info(message, 'tried to add player to Hunger Games instance, max size reached')
+        return await messaging.send_text_message('Maximum game size already reached.')
+
+    # Try/catch to catch CannotAccessUserlistError.
+    try:
+
+        # First, see if there's a second argument.
+        if len(response) > 1:
+
+            # Recreate the original response (full length), and feed it into the get_closest_users thing.
+            argument_str = ' '.join(response[1:])
+            try:
+                closest_players = arguments.get_closest_users(message, argument_str, exclude_bots=not hg_dict['uses_bots'])
+
+                # Iterate through the closest users and stop at the first one that's NOT in the game.
+                for player in closest_players:
+                    if player not in hg_dict['players']:
+                        hg_dict['players'].append(player)
+                        logging.info(message, f'added player {player} to Hunger Games instance')
+                        return await send_pregame(message, hg_dict, f'Added {misc.get_photogenic_username(player)} to the game.')
+
+                # If we didn't find a player, then send an invalid user thing.
+                logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
+                return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
+
+            # If no user was specified, then call this method again with only one term in the response.
+            except NoUserSpecifiedError:
+                return await hunger_games_update_pregame_add(hg_key, hg_dict, [response[0]], message)
+
+            # If no user could be found, then send back old reliable.
+            except UnableToFindUserError:
+                logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
+                return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
+
+        # If there isn't a second argument, attempt to get a completely random player.
+        # First, try it without bots.
+        if not hg_dict['uses_bots']:
+
+            # Get the user list.
+            user_list = misc.get_applicable_users(message, exclude_bots=True, exclude_users=hg_dict['players'])
+
+            # If the user list is empty, then send an appropriate message back depending on whether or not there are bots available.
+            if not user_list:
+                user_list_with_bots = misc.get_applicable_users(message, exclude_bots=False, exclude_users=hg_dict['players'])
+                if user_list_with_bots:
+                    logging.info(message, 'attempted to add random user to hunger games instance, no non-bot users available')
+                    return await messaging.send_text_message(message, "Every user who isn't a bot is already in the game.")
+                else:
+                    logging.info(message, 'attempted to add random user to hunger games instance, no more users available')
+                    return await messaging.send_text_message(message, "Every user in the server is already in the game.")
+
+        # Next, try it with bots.
+        else:
+
+            # Get the user list.
+            user_list = misc.get_applicable_users(message, exclude_bots=False, exclude_users=hg_dict['players'])
+
+            # If the user list is empty, then tell the users that.
+            if not user_list:
+                logging.info(message, 'attempted to add random user to hunger games instance, no more users available')
+                return await messaging.send_text_message(message, "Every user in the server is already in the game.")
+
+        # With the user list, grab a random user.
+        added_user = random.choice(user_list)
+        hg_dict['players'].append(added_user)
+
+        # Send the message and junk.
+        logging.info(message, f'added player {added_user} to Hunger Games instance')
+        await send_pregame(message, hg_dict, f'Added {misc.get_photogenic_username(added_user)} to the game.')
+
+    # If we can't access the userlist, send an error.
+    except CannotAccessUserlistError:
+        logging.error(message, 'requested add random player to hunger games, failed to access the userlist')
+        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
 
 
-async def hunger_games_update_pregame_delete(hg_key, hg_dict, response):
-    pass
+async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message):
+    """
+    Deletes a player from the hunger games dict.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Cancels if the game is already min size.
+    if len(hg_dict['players']) == HG_MIN_GAMESIZE:
+        logging.info(message, 'tried to remove player from Hunger Games instance, min size reached')
+        return await messaging.send_text_message('Minimum game size already reached.')
+
+    # Try/catch to catch CannotAccessUserlistError.
+    try:
+
+        # First, see if there's a second argument.
+        if len(response) > 1:
+
+            # Recreate the original response (full length), and feed it into the get_closest_users thing.
+            argument_str = ' '.join(response[1:])
+            try:
+                closest_players = arguments.get_closest_users(message, argument_str, exclude_bots=not hg_dict['uses_bots'])
+
+                # Iterate through the closest users and stop at the first one that's actually in the game.
+                for player in closest_players:
+                    if player in hg_dict['players']:
+                        hg_dict['players'].remove(player)
+                        logging.info(message, f'removed player {player} from Hunger Games instance')
+                        return await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(player)} from the game.')
+
+                # If we didn't find a player, then send an invalid user thing.
+                logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
+                return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
+
+            # If no user was specified, then call this method again with only one term in the response.
+            except NoUserSpecifiedError:
+                return await hunger_games_update_pregame_delete(hg_key, hg_dict, [response[0]], message)
+
+            # If no user could be found, then send back old reliable.
+            except UnableToFindUserError:
+                logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
+                return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
+
+        # If there isn't a second argument, remove the last player in the game.
+        removed_player = hg_dict['players'][-1]
+        hg_dict['players'].remove(removed_player)
+
+        # Send the message and junk.
+        logging.info(message, f'removed player {removed_player} from Hunger Games instance')
+        await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(removed_player)} from the game.')
+
+    # If we can't access the userlist, send an error.
+    except CannotAccessUserlistError:
+        logging.error(message, 'requested add random player to hunger games, failed to access the userlist')
+        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
 
 
 async def hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message):
