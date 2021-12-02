@@ -47,9 +47,9 @@ HG_ACTION_ROWHEIGHT = 175
 
 # Pregame
 HG_PREGAME_TITLE = 'The Reaping'
-HG_PREGAME_DESCRIPTION = 'Respond one of the following:\nS: Shuffle\t\tR: Replace\nA: Add\t\t\tD: Delete\t\tB: {} bots\nP: Proceed' \
-                         '\t\tC: Cancel'
-HG_PREGAME_REPLACE_TERMS = ['r', 'rep', 'replace'],
+HG_PREGAME_DESCRIPTION = 'Respond one of the following:\n' \
+                         'S: Shuffle\t\tA: Add\t\t\tD: Delete\tB: {} bots\n' \
+                         'P: Proceed\t\tC: Cancel'
 HG_PREGAME_ADD_TERMS = ['a', 'add']
 HG_PREGAME_DELETE_TERMS = ['d', 'del', 'delete']
 HG_PREGAME_TOGGLE_BOTS_TERMS = ['b', 'bot', 'bots']
@@ -172,10 +172,6 @@ async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
     elif any(response[0] == value for value in HG_PREGAME_PROCEED_TERMS):
         await hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message)
 
-    # Replace command.
-    elif any(response[0] == value for value in HG_PREGAME_REPLACE_TERMS):
-        await hunger_games_update_pregame_replace(hg_key, hg_dict, response, message)
-
     # Cancel command.
     elif any(response[0] == value for value in HG_PREGAME_CANCEL_TERMS):
         await hunger_games_update_pregame_cancel(hg_key, hg_dict, response, message)
@@ -186,34 +182,6 @@ async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
 
     # Change the 'updated' thing.
     hg_dict['updated'] = datetime.today()
-
-    if any([response.startswith('r '), response.startswith('replace ')]):
-        # Gets the first two users in the thing.
-        try:
-            modified_players = misc.get_closest_users(message, response[2:] if response.startswith('r ') else response[8:], is_in_guild, not hg_dict['uses_bots'], limit=2)
-        except (NoUserSpecifiedError, ArgumentTooShortError, UnableToFindUserError):
-            await message.channel.send('Invalid user(s).')
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'attempted to add a player to Hunger Games instance, invalid')
-
-            return True
-        # Conditional
-        if modified_players[0] in hg_dict['players']:
-            # Both players are in the game
-            if modified_players[1] in hg_dict['players']:
-                await message.channel.send('{} is already in the game.'.format(modified_players[1]))
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, second already there')
-            # First player in game, second not
-            else:
-                hg_dict['players'].insert(hg_dict['players'].index(modified_players[0]), modified_players[1])
-                hg_dict['players'].remove(modified_players[0])
-                await send_pregame(message, hg_dict['players'], 'Replaced {} with {}.'.format(modified_players[0].nick if modified_players[0].nick else modified_players[0].name, modified_players[1].nick if modified_players[1].nick else modified_players[1].name), hg_dict['uses_bots'])
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'replaced a player in Hunger Games instance')
-        else:
-            # First player not in game
-            await message.channel.send('{} isn\'t in the game.'.format(modified_players[0]))
-            log.debug(misc.get_comm_start(message, is_in_guild) + 'tried to replace a player in Hunger Games instance, first isn\'t there')
-
-        return True
 
 
 async def hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message):
@@ -263,7 +231,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
     # Cancels if the game is already max size.
     if len(hg_dict['players']) == HG_MAX_GAMESIZE:
         logging.info(message, 'tried to add player to Hunger Games instance, max size reached')
-        return await messaging.send_text_message('Maximum game size already reached.')
+        return await messaging.send_text_message(message, 'Maximum game size already reached.')
 
     # Try/catch to catch CannotAccessUserlistError.
     try:
@@ -351,7 +319,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
     # Cancels if the game is already min size.
     if len(hg_dict['players']) == HG_MIN_GAMESIZE:
         logging.info(message, 'tried to remove player from Hunger Games instance, min size reached')
-        return await messaging.send_text_message('Minimum game size already reached.')
+        return await messaging.send_text_message(message, 'Minimum game size already reached.')
 
     # Try/catch to catch CannotAccessUserlistError.
     try:
@@ -410,7 +378,7 @@ async def hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message
     """
     # Log and send message.
     logging.info(message, 'initiated Hunger Games')
-    await messaging.send_text_message('Generating Hunger Games instance...')
+    await messaging.send_text_message(message, 'Generating Hunger Games instance...')
 
     # Set hunger games variables.
     hg_dict['past_pregame'] = True
@@ -418,10 +386,6 @@ async def hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message
 
     # Run the generation method.
     await generate_full_game(hg_dict, message)
-
-
-async def hunger_games_update_pregame_replace(hg_key, hg_dict, response):
-    pass
 
 
 async def hunger_games_update_pregame_cancel(hg_key, hg_dict, response, message):
@@ -472,23 +436,27 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
             # Otherwise, send an error message.
             else:
                 logging.info(message, 'attempted to remove bots from Hunger Games instance, not enough users')
-                return await messaging.send_text_message('Not enough non-bots to disallow bots.')
+                return await messaging.send_text_message(message, 'Not enough non-bots to disallow bots.')
 
         # Allows it.
         # Copy over the new players list.
         hg_dict['players'] = hg_players_no_bots
 
+        # Invert the uses_bots thing.
+        hg_dict['uses_bots'] = not hg_dict['uses_bots']
+
         # Send message and log.
         logging.info(message, 'removed bots from Hunger Games instance')
-        await send_pregame(message, hg_dict['players'], 'Removed bots from the game.', hg_dict['uses_bots'])
+        await send_pregame(message, hg_dict, 'Removed bots from the game.')
 
     # Otherwise, use this one.
     else:
+        # Invert the uses_bots thing.
+        hg_dict['uses_bots'] = not hg_dict['uses_bots']
+
+        # Log and send message.
         logging.info(message, 'added bots to Hunger Games instance')
         await send_pregame(message, hg_dict, 'Allowed bots into the game.')
-
-    # Invert the uses_bots thing.
-    hg_dict['uses_bots'] = not hg_dict['uses_bots']
 
 
 async def hunger_games_update_midgame(hg_key, hg_dict, response):
@@ -1425,6 +1393,9 @@ async def pregame_shuffle(message, player_count, hg_dict):
 DEVELOPER_COMMAND_DICT = {
     'hg': hunger_games_start
 }
+REACTIVE_COMMAND_LIST = [
+    hunger_games_update
+]
 
 
 # Unfortunately, one variable has to be established all the way down here.
