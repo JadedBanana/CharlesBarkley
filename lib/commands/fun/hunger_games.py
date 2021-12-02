@@ -708,7 +708,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         await send_pregame(message, hg_dict, 'Allowed bots into the game.')
 
 
-async def hunger_games_update_midgame(hg_key, hg_dict, response):
+async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
 
     if hg_dict['generated']:
         # First, cancel confirmations.
@@ -782,10 +782,23 @@ async def hunger_games_update_midgame(hg_key, hg_dict, response):
                 return True
 
     # If the game isn't finished generating yet.
-    elif any([response.startswith(pre) for pre in ['j!hg ', 'j!hunger ', 'j!hungergames ', 'j!hungry ']] + [response == 'j!hg', response == 'j!hunger', response == 'j!hungergames', response == 'j!hungry']):
-        await message.channel.send('Still generating, be patient.')
-        hg_dict['updated'] = datetime.today()
-        return True
+    elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
+        await hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message)
+
+
+async def hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message):
+    """
+    Tells the players to be patient.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Logs and sends message.
+    logging.info(message, 'requested hunger games, still generating (impatient little sack of shit)')
+    await message.channel.send('Still generating, be patient.')
 
 
 async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
@@ -1110,8 +1123,6 @@ def makeimage_action(player_images, actions, start, count=1, action_desc=None):
 
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
-            print(player_images)
-            print(player[0])
             makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y)
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
@@ -1794,5 +1805,6 @@ REACTIVE_COMMAND_LIST = [
 ]
 
 
-# Unfortunately, one variable has to be established all the way down here.
+# Unfortunately, one or two variables have to be established all the way down here.
 HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]
+HG_MIDGAME_BE_PATIENT_TERMS = [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]
