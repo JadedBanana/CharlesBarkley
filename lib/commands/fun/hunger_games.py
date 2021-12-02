@@ -88,9 +88,6 @@ async def hunger_games_start(bot, message, argument):
         try:
             # Get a number from the argument.
             player_count = int(parsing.normalize_string(argument))
-            # If the player count is more than the max or less than the minimum, set them to their capstone values.
-            player_count = min(player_count, HG_MAX_GAMESIZE)
-            player_count = max(player_count, HG_MIN_GAMESIZE)
         # If the conversion doesn't work, use the default.
         except ValueError:
             player_count = HG_DEFAULT_GAMESIZE
@@ -98,34 +95,22 @@ async def hunger_games_start(bot, message, argument):
     else:
         player_count = HG_DEFAULT_GAMESIZE
 
-    # Get the user list. If user list is < player_count people, we add bots as well.
-    try:
-        user_list = misc.get_applicable_users(message, exclude_bots=True)
-        uses_bots = False
-        if len(user_list) < player_count:
-            user_list = misc.get_applicable_users(message, exclude_bots=False)
-            uses_bots = True
+    # Generate the playerlist.
+    hg_dict = {}
+    worked = await pregame_shuffle(message, player_count, hg_dict)
 
-    # If we can't access the userlist, send an error.
-    except CannotAccessUserlistError:
-        logging.error(message, 'requested hunger games, failed to access the userlist')
-        return await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
+    # If it didn't work, return.
+    if not worked:
+        return
 
-    # Otherwise, we generate the players and ask if we should proceed.
-    hg_players = []
-    # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
-    for i in range(min(player_count, len(user_list))):
-        next_player = random.choice(user_list)
-        hg_players.append(next_player)
-        user_list.remove(next_player)
-
-    # Set in players and actions.
-    hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots, 'updated': datetime.today()}
-    CURRENT_GAMES[hg_key] = hg_full_game
+    # Set in the hunger games dict.
+    hg_dict['past_pregame'] = False
+    hg_dict['updated'] = datetime.today()
+    CURRENT_GAMES[hg_key] = hg_dict
 
     # Send the initial cast
-    await send_pregame(message, hg_full_game)
-    logging.info(message, f'started Hunger Games instance with {len(hg_players)} players')
+    await send_pregame(message, hg_dict)
+    logging.info(message, f'started Hunger Games instance with {len(hg_dict["players"])} players')
 
 
 async def hunger_games_update(bot, message):
@@ -334,14 +319,10 @@ async def hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message
     """
     # First, see if there's a second argument.
     if len(response) > 1:
-
         # Attempt to pull a number from that second argument (and parse it so that it's correct).
         try:
             player_count = int(response[1])
-            player_count = min(player_count, HG_MAX_GAMESIZE)
-            player_count = max(player_count, HG_MIN_GAMESIZE)
-
-        # Set to the current length.
+        # If that doesn't work, set it to the current length.
         except ValueError:
             player_count = len(hg_dict['players'])
 
@@ -350,7 +331,11 @@ async def hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message
         player_count = len(hg_dict['players'])
 
     # Do the pregame shuffle.
-    await pregame_shuffle(message, player_count, hg_dict)
+    worked = await pregame_shuffle(message, player_count, hg_dict)
+
+    # If it didn't work, return.
+    if not worked:
+        return
 
 
 async def hunger_games_update_pregame_add(hg_key, hg_dict, response):
@@ -847,6 +832,7 @@ def makeimage_action(actions, start, count=1, action_desc=None):
 
     return action_image
 
+
 def makeimage_winner(players, desc=None):
     """
     Displays the winner(s).
@@ -1338,33 +1324,49 @@ def hunger_games_set_embed_image(image, embed):
     return file
 
 
-async def pregame_shuffle(self, message, is_in_guild, player_count, uses_bots):
+async def pregame_shuffle(message, player_count, hg_dict):
     """
     Shuffles a pregame hunger games cast.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        player_count (int) : The amount of players to use.
+        hg_dict (dict) : The full game dict.
     """
-    # Get the user list.
-    user_list = misc.get_applicable_users(message, is_in_guild, not uses_bots)
-    if len(user_list) < constants.HG_MIN_GAMESIZE:
-        self.curr_hg.pop(str(message.channel.id))
-        await message.channel.send('Not enough users in server.')
-        log.debug(misc.get_comm_start(message, is_in_guild) + ' requested hunger games, not enough people')
+    # If the player count is more than the max or less than the minimum, set them to their capstone values.
+    player_count = min(player_count, HG_MAX_GAMESIZE)
+    player_count = max(player_count, HG_MIN_GAMESIZE)
+
+    # Get the user list. If user list is < player_count people, we add bots as well.
+    try:
+        user_list = misc.get_applicable_users(message, exclude_bots=True)
+        uses_bots = False
+        if len(user_list) < player_count:
+            user_list = misc.get_applicable_users(message, exclude_bots=False)
+            uses_bots = True
+
+    # If we can't access the userlist, send an error.
+    except CannotAccessUserlistError:
+        logging.error(message, 'requested hunger games, failed to access the userlist')
+        await messaging.send_text_message(message, 'There was an error accessing the userlist. Try again later.')
+
+        # Return False to signal failure.
+        return False
 
     # Otherwise, we generate the players and ask if we should proceed.
-    else:
-        # Get the players.
-        hg_players = []
-        for i in range(min(player_count, len(user_list))):
-            next_player = random.choice(user_list)
-            hg_players.append(next_player)
-            user_list.remove(next_player)
+    hg_players = []
+    # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
+    for i in range(min(player_count, len(user_list))):
+        next_player = random.choice(user_list)
+        hg_players.append(next_player)
+        user_list.remove(next_player)
 
-        # Set in players and actions.
-        hg_full_game = {'players': hg_players, 'past_pregame': False, 'uses_bots': uses_bots}
-        self.curr_hg[str(message.channel.id)] = hg_full_game
+    # Set in players and bot bool.
+    hg_dict['players'] = hg_players
+    hg_dict['uses_bots'] = uses_bots
 
-        # Send the updated cast
-        await send_pregame(message, hg_players, constants.HG_PREGAME_TITLE, uses_bots)
-        log.debug(misc.get_comm_start(message, is_in_guild) + 'shuffled Hunger Games instance with {} players'.format(player_count))
+    # Return True to signal success.
+    return True
 
 
 # Command values
