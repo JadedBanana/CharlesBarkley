@@ -160,7 +160,8 @@ def launch():
     """
     # Logging new instance
     logging.info('Starting new instance of JadieClient')
-    logging.info(f'Running on {socket.gethostname()} ({"Deployment" if environment.get("DEPLOYMENT_CLIENT") else "Development"} Version)')
+    logging.info(f'Running on {socket.gethostname()} '
+                 f'({"Deployment" if environment.get("DEPLOYMENT_CLIENT") else "Development"} Version)')
 
     # Right here, instantiating the client object!
     client = JadieClient()

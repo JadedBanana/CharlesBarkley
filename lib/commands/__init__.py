@@ -2,6 +2,7 @@
 This __init__.py file has a method for loading the commands.
 """
 
+
 def load_commands():
     """
     Loads all the commands from the sub-folders and puts them into three command dicts (one developer-only, one for general users, and
