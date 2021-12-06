@@ -138,7 +138,7 @@ async def run_standard_command(command_name, command_method, bot, message, argum
     except Exception as e:
         # Get the traceback_str.
         import traceback
-        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)]).replace('\n\n', '\n')
+        traceback_str = traceback.format_exc().replace('\n\n', '\n')
         while traceback_str[-1] == '\n':
             traceback_str = traceback_str[:-1]
 
@@ -168,7 +168,7 @@ async def run_reactive_command(command_method, bot, message):
     except Exception as e:
         # Get the traceback_str.
         import traceback
-        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)]).replace('\n\n', '\n')
+        traceback_str = traceback.format_exc().replace('\n\n', '\n')
         while traceback_str[-1] == '\n':
             traceback_str = traceback_str[:-1]
 
