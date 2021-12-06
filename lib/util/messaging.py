@@ -3,7 +3,6 @@ Module handling message sending between the bot and Discord.
 """
 # Imports
 from lib.util import tempfiles
-import traceback
 import discord
 
 
