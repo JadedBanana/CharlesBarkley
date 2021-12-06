@@ -175,19 +175,18 @@ async def uwu_owo_master(message, argument, use_owo=False):
     """
     # If an argument was provided, we run the uwu / owo replace on that argument.
     if argument:
-        await messaging.send_text_message(message, do_uwu_owo_replace(argument, use_owo))
+        return await messaging.send_text_message(message, do_uwu_owo_replace(argument, use_owo))
 
     # Otherwise, we attempt to do it on the second-most recent message.
-    else:
-        try:
-            # Attempt to grab the second-most recent message and run the thing.
-            content = await misc.get_secondmost_recent_message(message)
-            if content:
-                await messaging.send_text_message(message, do_uwu_owo_replace(content, use_owo))
+    try:
+        # Attempt to grab the second-most recent message and run the thing.
+        content = await misc.get_secondmost_recent_message(message)
+        if content:
+            await messaging.send_text_message(message, do_uwu_owo_replace(content, use_owo))
 
-        # If we got a little error, we just pass.
-        except FirstMessageInChannelError:
-            pass
+    # If we got a little error, we just pass.
+    except FirstMessageInChannelError:
+        pass
 
 
 async def uwuify(bot, message, argument):
