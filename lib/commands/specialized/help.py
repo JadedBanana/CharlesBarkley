@@ -24,12 +24,13 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize(global_prefix):
+def initialize(version_number, global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
 
     Arguments:
+        version_number (str) : The bot's version number.
         global_prefix (str) : The global prefix.
 
     Raises:
@@ -44,7 +45,7 @@ def initialize(global_prefix):
     # Then, create embeds for all of those commands.
     # First, the home embed.
     global PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED
-    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(global_prefix, home_help_page_dict)
+    PUBLIC_HOME_HELP_EMBED, DEVELOPER_HOME_HELP_EMBED = generate_home_help_page_embeds(version_number, global_prefix, home_help_page_dict)
 
     # Second, the command-specific help embeds.
     global COMMAND_SPECIFIC_HELP_EMBEDS
@@ -177,11 +178,12 @@ def get_command_dicts():
     return home_help_page_dict, command_specific_help_page_dict
 
 
-def generate_home_help_page_embeds(global_prefix, home_help_page_dict):
+def generate_home_help_page_embeds(version_number, global_prefix, home_help_page_dict):
     """
     Generates both the public and developer embeds for the home help page.
 
     Arguments:
+        version_number (str) : The bot's version number.
         global_prefix (str) : The global prefix.
         home_help_page_dict (dict) : The home help page dict.
 
@@ -191,12 +193,9 @@ def generate_home_help_page_embeds(global_prefix, home_help_page_dict):
     # Imports
     import discord
 
-    # Gets the version number.
-    version_number = environment.get("VERSION_NUMBER")
-
     # Create the public embed.
     public_embed = discord.Embed(title='Standard Commands', colour=HELP_EMBED_COLOR,
-                          description=HELP_EMBED_DESCRIPTION.format(global_prefix))
+                                 description=HELP_EMBED_DESCRIPTION.format(global_prefix))
     public_embed.set_footer(text=f'Jadi3Pi Version {version_number}')
 
     # Create the developer embed.

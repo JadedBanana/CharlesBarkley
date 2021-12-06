@@ -17,6 +17,7 @@ import sys
 
 # Global bot variables
 GLOBAL_PREFIX = 'j!'
+VERSION_NUMBER = '0.5.4'
 
 
 class JadieClient(discord.Client):
@@ -44,7 +45,7 @@ class JadieClient(discord.Client):
             commands.load_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
-        specialized_command_dict['help_init'](self.global_prefix)
+        specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
 
         # Set variable for whether or not to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False
