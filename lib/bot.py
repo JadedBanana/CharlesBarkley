@@ -15,6 +15,10 @@ import socket
 import sys
 
 
+# Global bot variables
+GLOBAL_PREFIX = 'j!'
+
+
 class JadieClient(discord.Client):
 
     def __init__(self):
@@ -32,7 +36,7 @@ class JadieClient(discord.Client):
         self.reconnected_since = False
 
         # Store environment variables.
-        self.global_prefix = environment.get("GLOBAL_PREFIX")
+        self.global_prefix = GLOBAL_PREFIX
         self.deployment_client = environment.get("DEPLOYMENT_CLIENT")
 
         # Load the commands.

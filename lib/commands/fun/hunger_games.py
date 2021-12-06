@@ -1806,5 +1806,6 @@ REACTIVE_COMMAND_LIST = [
 
 
 # Unfortunately, one or two variables have to be established all the way down here.
-HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]
-HG_MIDGAME_BE_PATIENT_TERMS = [environment.get('GLOBAL_PREFIX') + command for command in DEVELOPER_COMMAND_DICT]
+from lib.bot import GLOBAL_PREFIX
+HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
+HG_MIDGAME_BE_PATIENT_TERMS = [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
