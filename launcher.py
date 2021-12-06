@@ -19,10 +19,7 @@ def launch():
         if arg.startswith('working_dir='):
 
             # Found a new working dir, switch to there.
-            try:
-                os.chdir(arg[12:])
-            except FileNotFoundError:
-                pass
+            os.chdir(arg[12:])
 
     # First things first, load up the .env variables.
     from lib.util import environment
