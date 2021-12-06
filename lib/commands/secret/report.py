@@ -3,8 +3,8 @@ Report command.
 Sends a message to the reports channel in the Jadi3Pi development server.
 """
 # Imports
-from lib.util.logger import BotLogger
 from lib.util import messaging, parsing
+from lib.util.logger import BotLogger
 import discord
 import logging
 
