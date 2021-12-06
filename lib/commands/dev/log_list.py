@@ -2,9 +2,11 @@
 Log list command.
 Lists the available log files in the logs dir.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging, logger
+
+# Package Imports
 import os
 
 

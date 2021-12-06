@@ -2,11 +2,14 @@
 Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
-# Imports.
+# Local Imports
 from lib.util.exceptions import CannotAccessUserlistError, NoUserSpecifiedError, UnableToFindUserError
-from lib.util import arguments, assets, environment, messaging, misc, parsing, tempfiles
-from PIL import Image, ImageOps, ImageFont, ImageDraw
+from lib.util import arguments, assets, messaging, misc, parsing, tempfiles
 from lib.util.logger import BotLogger as logging
+from lib.bot import GLOBAL_PREFIX
+
+# Package Imports
+from PIL import Image, ImageOps, ImageFont, ImageDraw
 from datetime import datetime
 import discord
 import random
@@ -1806,6 +1809,5 @@ REACTIVE_COMMAND_LIST = [
 
 
 # Unfortunately, one or two variables have to be established all the way down here.
-from lib.bot import GLOBAL_PREFIX
 HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
 HG_MIDGAME_BE_PATIENT_TERMS = [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]

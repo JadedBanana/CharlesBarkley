@@ -1,8 +1,10 @@
 """
 Environment file. Helps with managing dozens of environment variables.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import UndefinedVariableError
+
+# Package Imports
 import os
 
 # List of variables we should expect to see in every .env file.

@@ -3,9 +3,9 @@ Help command.
 Pulls all the help documentation on a per-command basis and displays it when the user asks for it.
 Must be initialized with the initialize() method before actually running anything.
 """
-# Imports.
-from lib.util import assets, environment, messaging, parsing
+# Local Imports
 from lib.util.logger import BotLogger as logging
+from lib.util import assets, messaging, parsing
 
 
 # Help embed variables.

@@ -2,8 +2,10 @@
 Logging file.
 Sets up the Python logging module as well as hosting the BotLogger class.
 """
-# Imports
+# Local Imports
 from lib.util import environment
+
+# Package Imports
 import discord
 import logging
 import os

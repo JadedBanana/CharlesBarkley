@@ -2,9 +2,11 @@
 Feliz command.
 Gets the current time then returns an appropriate image depending on the day of the week.
 """
-# Imports
-from lib.util.logger import BotLogger as logging
+# Local Imports
 from lib.util import assets, messaging, misc, parsing
+from lib.util.logger import BotLogger as logging
+
+# Package Imports
 import os
 
 

@@ -3,8 +3,11 @@ Random Wikipedia command.
 Uses the public, free Wikipedia API to pull a random Wikipedia article.
 Unlike the random YouTube command, has no quota.
 """
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging
+
+# Package Imports
 import wikipedia
 
 

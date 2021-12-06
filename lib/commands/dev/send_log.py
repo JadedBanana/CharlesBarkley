@@ -2,10 +2,11 @@
 Send log command.
 Sends the log file for a specific date.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
-from lib.util import messaging, parsing
-from lib.util import logger
+from lib.util import logger, messaging, parsing
+
+# Package Imports
 import discord
 import os
 

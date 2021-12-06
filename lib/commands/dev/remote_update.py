@@ -2,9 +2,11 @@
 Remote update command.
 Uses a subprocess to perform 'git pull' on the working directory.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging
+
+# Package Imports
 import subprocess
 
 

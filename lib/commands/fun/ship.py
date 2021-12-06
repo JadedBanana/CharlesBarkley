@@ -2,10 +2,12 @@
 Ship command.
 Ships two users together. Creepy!
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
 from lib.util import arguments, assets, messaging, misc, tempfiles
 from lib.util.logger import BotLogger as logging
+
+# Package Imports
 from PIL import Image
 import discord
 import random

@@ -2,11 +2,13 @@
 SHSL / Ultimate command.
 Assigns users a(n) SHSL / ultimate talent.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
-from PIL import Image, ImageOps, ImageFont, ImageDraw, ImageFilter
 from lib.util import arguments, assets, messaging, misc, parsing
 from lib.util.logger import BotLogger as logging
+
+# Package Imports
+from PIL import Image, ImageOps, ImageDraw, ImageFilter
 import random
 import os
 

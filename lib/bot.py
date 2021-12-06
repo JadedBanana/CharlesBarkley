@@ -3,12 +3,14 @@ The bot class.
 The main meat of the bot. Inherits from discord.Client, is the main point at which Discord API crosses over
 into self processing.
 """
-# Imports
-from aiohttp.client_exceptions import ClientConnectorError
+# Local Imports
 from lib.util import environment, parsing
+from lib import commands
+
+# Package Imports
+from aiohttp.client_exceptions import ClientConnectorError
 from discord.errors import LoginFailure
 from datetime import datetime
-from lib import commands
 import discord
 import logging
 import socket

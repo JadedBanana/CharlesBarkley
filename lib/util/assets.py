@@ -2,8 +2,10 @@
 Assets loads assets. Not much else to it, really. Just loads assets.
 Checks whether all the assets are present on startup.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import InvalidAssetFileDirError
+
+# Package Imports
 from PIL import Image, ImageFont
 import random
 import os

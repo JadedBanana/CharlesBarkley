@@ -2,9 +2,11 @@
 Get PID command.
 Gets the PID this bot is running from and sends it back as a text message.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging
+
+# Package imports
 import os
 
 

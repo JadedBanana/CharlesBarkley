@@ -2,10 +2,11 @@
 Misc util methods module.
 Has a lot of very different methods.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import *
+
+# Package Imports
 from datetime import datetime
-from math import factorial
 import colorsys
 import discord
 import logging

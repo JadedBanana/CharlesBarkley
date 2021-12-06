@@ -2,9 +2,9 @@
 toggle_ignore_developer command.
 Specialized command in that it can be called even when the developer is being ignored.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
-from lib.util import environment, messaging
+from lib.util import messaging
 
 
 async def toggle_ignore_dev(bot, message, argument=None):

@@ -2,10 +2,12 @@
 Runtime command.
 Gets the bot's running time.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util.misc import calculate_time_passage
 from lib.util import messaging
+
+# Package Imports
 from datetime import datetime
 
 

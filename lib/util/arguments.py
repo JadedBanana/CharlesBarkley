@@ -1,7 +1,7 @@
 """
 Arguments module helps with managing differently formatted arguments.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError
 from lib.util import parsing, misc
 

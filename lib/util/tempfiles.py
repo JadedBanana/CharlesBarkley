@@ -2,7 +2,7 @@
 Tempfiles helps with creating, maintaining, and deleting files in the temp/ directory.
 Mainly deals with profile pictures (hence, that's what most of the methods are for).
 """
-# Imports
+# Package Imports
 from PIL import Image
 import requests
 import logging

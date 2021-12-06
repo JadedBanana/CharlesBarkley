@@ -3,9 +3,11 @@ Random Youtube command.
 Uses the YouTube API to pull a random Youtube video by searching with a randomized string of 1 to 5 characters.
 Has a limit of 100 uses per day due to Youtube API token limits.
 """
-# Imports
+# Local Imports
 from lib.util import environment, messaging, misc
 from lib.util.logger import BotLogger as logging
+
+# Package Imports
 from datetime import datetime, timedelta
 import random
 import string

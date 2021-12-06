@@ -3,10 +3,12 @@ Remote reboot command.
 Reboots the bot.
 In actuality, just terminates the bot. The deployment version should have a cronjob that restarts the bot in just a minute.
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
-from datetime import datetime, timedelta
 from lib.util import messaging
+
+# Package Imports
+from datetime import datetime, timedelta
 import sys
 
 

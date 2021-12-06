@@ -2,7 +2,7 @@
 Swooce command.
 Watch me SWOOCE right in! Swooce... swooce!
 """
-# Imports
+# Local Imports
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging
 

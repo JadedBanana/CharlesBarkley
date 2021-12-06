@@ -2,8 +2,6 @@
 Parsing class helps with understanding commands more easily.
 There are multiple methods that help with picking out pieces and piecing things together.
 """
-# Imports
-from lib.util import environment
 
 
 def normalize_string(input_str, remove_double_spaces=True):

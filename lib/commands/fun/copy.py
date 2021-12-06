@@ -2,10 +2,12 @@
 Copy command.
 Obnoxiously copies another user's messages.
 """
-# Imports
+# Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
 from lib.util.logger import BotLogger as logging
 from lib.util import arguments, messaging, misc
+
+# Package Imports
 import discord
 
 
