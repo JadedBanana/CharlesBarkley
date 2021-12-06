@@ -1,6 +1,7 @@
 """
-This __init__.py file has a method for loading the commands.
+This __init__.py file has a method for loading the commands and methods for running commands.
 """
+from lib.util.logger import BotLogger as logging
 
 
 def load_commands():
@@ -116,3 +117,63 @@ def load_commands():
 
     # Return the dicts.
     return public_command_dict, developer_command_dict, reactive_command_list, specialized_command_dict
+
+
+async def run_standard_command(command_name, command_method, bot, message, argument):
+    """
+    Runs the given standard command. Uses error checking to prevent there from being no response to the user.
+
+    Arguments:
+        command_name (str) : The command name.
+        command_method (method) : The command method in question.
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Try/catch for error handling
+    try:
+        await command_method(bot, message, argument)
+
+    # On exception, report the error back to the user.
+    except Exception as e:
+        # Get the traceback_str.
+        import traceback
+        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)]).replace('\n\n', '\n')
+        while traceback_str[-1] == '\n':
+            traceback_str = traceback_str[:-1]
+
+        # Log the error.
+        logging.error(message, f"Caused exception with message content '{message.content}', detected command '{command_name}', " +
+                               (f"detected argument '{argument}'" if argument else 'no detected argument') + f":\n{traceback_str}")
+
+        # Send the message.
+        from lib.util import messaging
+        await messaging.send_error_message(message, bot.global_prefix, traceback_str)
+
+
+async def run_reactive_command(command_method, bot, message):
+    """
+    Runs the given reactive command. Uses error checking to prevent there from being no response to the user.
+
+    Arguments:
+        command_method (method) : The command method in question.
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Try/catch for error handling
+    try:
+        await command_method(bot, message)
+
+    # On exception, report the error back to the user.
+    except Exception as e:
+        # Get the traceback_str.
+        import traceback
+        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)])
+
+        # Log the error.
+        logging.error(message, f"Caused exception with message content '{message.content}', reactive command for {command_method}:\n"
+                               f"{traceback_str}")
+
+        # Send the message.
+        from lib.util import messaging
+        await messaging.send_error_message(message, bot.global_prefix, traceback_str)

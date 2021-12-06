@@ -3,6 +3,7 @@ Module handling message sending between the bot and Discord.
 """
 # Imports
 from lib.util import tempfiles
+import traceback
 import discord
 
 
@@ -38,27 +39,37 @@ async def send_codeblock_message(message, text_str):
         message (discord.message.Message) : The discord message object that triggered the command.
         text_str (str) : The text message's intended text.
     """
-    # Split the text_str into newlines.
-    text_str_by_line = text_str.split('\n')
+    # Iterates through the codeblock message and sends it.
+    for message_str in format_codeblock_message(text_str, 1990):
+        await message.channel.send(message_str)
 
-    # Create a string object to keep the current message.
-    current_message_str = ''
 
-    # Perform a for loop to go through lines.
-    for i in range(len(text_str_by_line) - 1):
+async def send_error_message(message, global_prefix, traceback_str):
+    """
+    Sends an error message.
+    If the traceback exceeds 2000 characters, it will be split into pieces.
 
-        # Append the current line.
-        current_message_str += text_str_by_line[i] + '\n'
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        global_prefix (str) : The global prefix.
+        traceback_str (str) : The exception's traceback.
+    """
+    # Get the codeblock message.
+    traceback_strings = format_codeblock_message(traceback_str, 1600)
 
-        # Check if the next line would push it over the edge.
-        if len(current_message_str) + len(text_str_by_line[i + 1]) + 1 >= 1990:
+    # If there's only one traceback string, then just put the messages at the beginning and end.
+    if len(traceback_strings) < 2:
+        return await message.channel.send(f'An error occurred while processing this command:{traceback_strings[0]}'
+                                   f'Please use `{global_prefix}report` to let the developer know about the issue.')
 
-            # Send the current_message_str, then erase.
-            await message.channel.send(f'```{current_message_str}```')
-            current_message_str = ''
-
-    # Send the remaining text.
-    await message.channel.send(f'```{current_message_str + text_str_by_line[-1]}```')
+    # Otherwise, send one start string and one end string, with the rest in the middle.
+    # Send first message.
+    await message.channel.send(f'An error occurred while processing this command:{traceback_strings[0]}')
+    # Send middle message.
+    for traceback_str in traceback_strings[1:-1]:
+        await message.channel.send(traceback_str)
+    # Send final message.
+    await message.channel.send(f'{traceback_strings[-1]}Please use `{global_prefix}report` to let the developer know about the issue.')
 
 
 async def send_file(message, file_dir):
@@ -115,7 +126,6 @@ async def send_embed_with_local_image_as_thumbnail(message, embed, filepath):
     await message.channel.send(embed=embed, file=file)
 
 
-
 async def send_embed_without_local_image(message, embed):
     """
     Sends a pre-made embed (with a web-hosted image) back to the channel the trigger message came from.
@@ -126,3 +136,45 @@ async def send_embed_without_local_image(message, embed):
     """
     # Send the message.
     await message.channel.send(embed=embed)
+
+
+def format_codeblock_message(text_str, size):
+    """
+    Formats a codeblock message.
+    Splits the message into size-character pieces.
+
+    Arguments:
+        text_str (str) : The text message's intended text.
+        size (int) : The maximum character length of each segment.
+                     Max should be about 1990.
+
+    Returns:
+        str[] : The list of split message strings.
+    """
+    # Split the text_str into newlines.
+    text_str_by_line = text_str.split('\n')
+
+    # Create a list to keep track of the codeblock messages.
+    message_strs = []
+
+    # Create a string object to keep the current message.
+    current_message_str = ''
+
+    # Perform a for loop to go through lines.
+    for i in range(len(text_str_by_line) - 1):
+
+        # Append the current line.
+        current_message_str += text_str_by_line[i] + '\n'
+
+        # Check if the next line would push it over the edge.
+        if len(current_message_str) + len(text_str_by_line[i + 1]) + 1 >= size:
+
+            # Append the current_message_str, then erase.
+            message_strs.append(f'```{current_message_str}```')
+            current_message_str = ''
+
+    # Append the remaining text.
+    message_strs.append(f'```{current_message_str}{text_str_by_line[-1]}```')
+
+    # Return.
+    return message_strs

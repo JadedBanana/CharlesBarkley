@@ -8,6 +8,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 from lib.util import environment, parsing
 from discord.errors import LoginFailure
 from datetime import datetime
+from lib import commands
 import discord
 import logging
 import socket
@@ -35,7 +36,6 @@ class JadieClient(discord.Client):
         self.deployment_client = environment.get("DEPLOYMENT_CLIENT")
 
         # Load the commands.
-        from lib import commands
         self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = \
             commands.load_commands()
         # Load specialized commands.
@@ -139,15 +139,15 @@ class JadieClient(discord.Client):
 
             # Grabs command from the regular dict and tries to run it.
             if command in self.public_command_dict:
-                return await self.public_command_dict[command](self, message, argument)
+                return await commands.run_standard_command(command, self.public_command_dict[command], self, message, argument)
 
             # If the author is a developer, grab the command from the developer dict.
             elif author_is_developer and command in self.developer_command_dict:
-                return await self.developer_command_dict[command](self, message, argument)
+                return await commands.run_standard_command(command, self.developer_command_dict[command], self, message, argument)
 
         # Finally, if this was a regular message, run reactive commands.
         for reactive_command in self.reactive_command_list:
-            await reactive_command(self, message)
+            await commands.run_reactive_command(reactive_command, self, message)
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
