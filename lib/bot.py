@@ -111,11 +111,9 @@ class JadieClient(discord.Client):
         # Check to see if the author was a developer.
         author_is_developer = message.author.id in self.developer_ids
 
-        # First, if the author is a developer and they're being ignored, check if this message
-        # is a toggleignoredev command.
+        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
         if self.ignore_developer and author_is_developer:
-            if message.content == f'{self.global_prefix}toggleignoredev' or \
-                    message.content.startswith(f'{self.global_prefix}toggleignoredev '):
+            if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
                 # If so, run the command!
                 return await self.toggle_ignore_developer(self, message)
             else:
