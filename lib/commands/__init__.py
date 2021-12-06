@@ -168,7 +168,9 @@ async def run_reactive_command(command_method, bot, message):
     except Exception as e:
         # Get the traceback_str.
         import traceback
-        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)])
+        traceback_str = '\n'.join([str(stack) for stack in traceback.format_exception(e)]).replace('\n\n', '\n')
+        while traceback_str[-1] == '\n':
+            traceback_str = traceback_str[:-1]
 
         # Log the error.
         logging.error(message, f"Caused exception with message content '{message.content}', reactive command for {command_method}:\n"
