@@ -1610,14 +1610,14 @@ async def generate_full_game(hg_dict, message):
         if day_night >= 4 and turns_since_event > 1 and random.random() < 1 - (1 - HG_EVENT_DEFAULT_CHANCE)**turns_since_event:
             # Choose random event and generate the actions.
             the_event = random.choice(HG_EVENTS)
-            generate_normal_actions(hg_dict, the_event[0], the_event[1], the_event[2])
+            generate_actions_outer(hg_dict, the_event[0], the_event[1], the_event[2])
             # Reset turns_since_event.
             turns_since_event = 0
 
         # Otherwise, do normal day and night events.
         else:
             # Day.
-            generate_normal_actions(hg_dict, HG_NORMAL_DAY_ACTIONS, 'Day {}'.format(day_night))
+            generate_actions_outer(hg_dict, HG_NORMAL_DAY_ACTIONS, 'Day {}'.format(day_night))
 
             # Test for dead people.
             tie, continue_game = generate_detect_dead(hg_dict)
@@ -1625,7 +1625,7 @@ async def generate_full_game(hg_dict, message):
                 break
 
             # Night.
-            generate_normal_actions(hg_dict, HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(day_night))
+            generate_actions_outer(hg_dict, HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(day_night))
             day_night += 1
 
         # Test for dead people.
@@ -1755,32 +1755,13 @@ def generate_bloodbath(hg_dict):
         hg_dict (dict) : The full game dict.
     """
     # Player_actions stores the user id of everyone who hasn't had an action yet.
-    player_actions = [uid for uid in hg_dict['statuses']]
+    available_players = [uid for uid in hg_dict['statuses']]
     # Actions stores all the actions.
     actions = []
 
     # Iterates through all the actions, picking them at random for the player_actions.
-    while player_actions:
-
-        # Creates necessary prerequisites for do while loop.
-        # Create a current action with a length of player actions so that the while loop will trigger.
-        curr_action = {'players': len(player_actions)}
-        # Take a player out and use it as the base player.
-        chosen_players = [random.choice(player_actions)]
-        player_actions.remove(chosen_players[0])
-
-        # While loop, finds a good action.
-        while curr_action['players'] > len(player_actions):
-            curr_action = random.choice(HG_BLOODBATH_ACTIONS)
-
-        # Adds more players to current action, if necessary.
-        for i in range(curr_action['players']):
-            chosen_players.append(random.choice(player_actions))
-            player_actions.remove(chosen_players[-1])
-
-        # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
-                        'act': curr_action['act'], 'full': curr_action})
+    while available_players:
+        generate_actions_normal(hg_dict, HG_BLOODBATH_ACTIONS, available_players, actions)
 
         # Generate statuses
         generate_statuses(hg_dict['statuses'], actions[-1])
@@ -1790,52 +1771,32 @@ def generate_bloodbath(hg_dict):
                               'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
-def generate_normal_actions(hg_dict, action_dict, title, desc=None):
+def generate_actions_outer(hg_dict, action_dict, title, desc=None):
     """
     Generates all the actions for each player in the a normal action round.
 
     Arguments:
         hg_dict (dict) : The full game dict.
-        action_dict (dict) : The action dict.
+        action_dict (dict) : The action dict (dict of trigger actions and normal actions).
         title (str) : The action title.
         desc (str) : The action description, if any.
     """
     # Player_actions stores the user id of everyone who hasn't had an action yet.
     # Unlike in generate_bloodbath, this version excludes people who are dead.
-    player_actions = []
+    available_players = []
     for uid in hg_dict['statuses']:
         if not hg_dict['statuses'][uid]['dead']:
-            player_actions.append(uid)
+            available_players.append(uid)
     # Actions stores all the actions.
     actions = []
 
-    # Iterates through triggers.
-    for trigger in action_dict['trigger']:
-        pass
+    # Iterates through all the actions, picking them at random for the available_players.
+    while available_players:
 
-    # Iterates through all the actions, picking them at random for the player_actions.
-    while player_actions:
+        # Attempts to get a trigger to be the action for this player.
 
-        # Creates necessary prerequisites for do while loop.
-        # Create a current action with a length of player actions so that the while loop will trigger.
-        curr_action = {'players': len(player_actions)}
-
-        # Take a player out and use it as the base player.
-        chosen_players = [random.choice(player_actions)]
-        player_actions.remove(chosen_players[0])
-
-        # While loop, finds a good action.
-        while curr_action['players'] > len(player_actions):
-            curr_action = random.choice(action_dict['normal'])
-
-        # Adds more players to current action, if necessary.
-        for i in range(curr_action['players']):
-            chosen_players.append(random.choice(player_actions))
-            player_actions.remove(chosen_players[-1])
-
-        # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
-                        'act': curr_action['act'], 'full': curr_action})
+        # If the trigger didn't work, then get a normal action instead.
+        generate_actions_normal(hg_dict, action_dict['normal'], available_players, actions)
 
     # Shuffles the actions and generates statuses.
     random.shuffle(actions)
@@ -1846,6 +1807,38 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
     if not desc:
         desc = title
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'desc': desc, 'done': False})
+
+
+def generate_actions_normal(hg_dict, normal_actions, available_players, actions):
+    """
+    Generates all the actions for each player in the a normal action round.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        normal_actions (list) : The list of normal actions to choose from.
+        available_players (int[]) : The list of player id's that have yet to be given actions.
+        actions (list) : The final list of actions that the picked action will be added to.
+    """
+    # Creates necessary prerequisites for do while loop.
+    # Create a current action with a length of player actions so that the while loop will trigger.
+    curr_action = {'players': len(available_players)}
+
+    # Take a player out and use it as the base player.
+    chosen_players = [random.choice(available_players)]
+    available_players.remove(chosen_players[0])
+
+    # While loop, finds a good action.
+    while curr_action['players'] > len(available_players):
+        curr_action = random.choice(normal_actions)
+
+    # Adds more players to current action, if necessary.
+    for i in range(curr_action['players']):
+        chosen_players.append(random.choice(available_players))
+        available_players.remove(chosen_players[-1])
+
+    # Add the actions to the list.
+    actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
+                    'act': curr_action['act'], 'full': curr_action})
 
 
 def generate_statuses(hg_statuses, action):
