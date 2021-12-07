@@ -73,6 +73,28 @@ def checkout_profile_picture_by_user(user, message, command_key, size=None):
     return image
 
 
+def checkout_profile_picture_by_user_bulk(users, message, command_key):
+    """
+    Checks out a profile picture for temporary use.
+    Will download the profile picture if it doesn't yet exist in the files.
+
+    Args:
+        users (discord.user.User[]) : A list of users.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        command_key (str) : The key that will be used to keep track of which command is using the image.
+                            Should be a wholly unique key for each command.
+    """
+    # Iterate through users.
+    for user in users:
+
+        # First, see if the user's profile picture is already in the dict. If it isn't, then download it.
+        if user.id not in ACTIVE_PROFILE_PICTURES:
+            load_profile_picture(user)
+
+        # Then, modify the user profile picture data.
+        ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
+
+
 def retire_profile_picture_by_user(user, message, command_key):
     """
     Retires the use of a profile picture.
@@ -91,6 +113,44 @@ def retire_profile_picture_by_user(user, message, command_key):
     clear_profile_pictures_not_in_use()
 
 
+def retire_profile_picture_by_user_bulk(users, message, command_key):
+    """
+    Retires the use of a profile picture.
+
+    Args:
+        users (discord.user.User[]) : A list of users.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        command_key (str) : The key that will be used to keep track of which command is no longer using the image.
+                            Should be a wholly unique key for each command.
+    """
+    # Run the user id version.
+    retire_profile_picture_by_user_id_bulk([user.id for user in users], message, command_key)
+
+
+def retire_profile_picture_by_user_id_bulk(user_ids, message, command_key):
+    """
+    Retires the use of a profile picture.
+
+    Args:
+        user_ids (int[]) : A list of user id's represented as ints.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        command_key (str) : The key that will be used to keep track of which command is no longer using the image.
+                            Should be a wholly unique key for each command.
+    """
+    # Iterate through user id.
+    for user_id in user_ids:
+
+        # If the user ID is in the dict, then clear the usage key.
+        if user_id in ACTIVE_PROFILE_PICTURES:
+            try:
+                ACTIVE_PROFILE_PICTURES[user_id][1].remove(command_key + str(message.channel.id))
+            except ValueError:
+                pass
+
+    # Run the script that clears empty profile pictures.
+    clear_profile_pictures_not_in_use()
+
+
 def clear_profile_pictures_not_in_use():
     """
     Clears (deletes) profile pictures that are not in use.
@@ -99,17 +159,17 @@ def clear_profile_pictures_not_in_use():
     for profile_image in os.listdir(os.path.join(TEMP_DIR, PFP_DIR)):
 
         # Look for instances of images not being in the ACTIVE_PROFILE_PICTURES.
-        if profile_image[:-len(PFP_FILETYPE)] not in ACTIVE_PROFILE_PICTURES:
+        if int(profile_image[:-len(PFP_FILETYPE)]) not in ACTIVE_PROFILE_PICTURES:
             logging.info(f'Tempfile management removing profile picture for '
                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
             os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
             continue
 
         # Look for instances of images in the ACTIVE_PROFILE_PICTURES not having any active users.
-        if not ACTIVE_PROFILE_PICTURES[profile_image[:-len(PFP_FILETYPE)]][1]:
+        if not ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])][1]:
             logging.info(f'Tempfile management removing profile picture for '
                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
-            del ACTIVE_PROFILE_PICTURES[profile_image[:-len(PFP_FILETYPE)]]
+            del ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])]
             os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
 
 
@@ -120,6 +180,9 @@ def load_profile_picture(user):
     Args:
         user (discord.user.User) : The desired profile picture's user.
     """
+    # Log that we're downloading it.
+    logging.info(f'Tempfile management downloading profile picture for user id {user.id}')
+
     # Gets the user's avatar URL.
     pfp_url = user.avatar_url
 

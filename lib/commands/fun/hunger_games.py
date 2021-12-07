@@ -558,7 +558,14 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
                 # Iterate through the closest users and stop at the first one that's NOT in the game.
                 for player in closest_players:
                     if player not in hg_dict['players']:
+
+                        # Add the player into the game.
                         hg_dict['players'].append(player)
+
+                        # Checkout their profile picture.
+                        tempfiles.checkout_profile_picture_by_user(player, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
+
+                        # Log and send message.
                         logging.info(message, f'added player {player} to Hunger Games instance')
                         return await send_pregame(message, hg_dict, f'Added {misc.get_photogenic_username(player)} to the game.')
 
@@ -607,6 +614,9 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
         added_user = random.choice(user_list)
         hg_dict['players'].append(added_user)
 
+        # Checkout the added user.
+        tempfiles.checkout_profile_picture_by_user(added_user, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
+
         # Send the message and junk.
         logging.info(message, f'added player {added_user} to Hunger Games instance')
         await send_pregame(message, hg_dict, f'Added {misc.get_photogenic_username(added_user)} to the game.')
@@ -646,7 +656,14 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
                 # Iterate through the closest users and stop at the first one that's actually in the game.
                 for player in closest_players:
                     if player in hg_dict['players']:
+
+                        # Remove the player from the playerlist.
                         hg_dict['players'].remove(player)
+
+                        # Retire their profile picture.
+                        tempfiles.retire_profile_picture_by_user(player, message, 'hg_filehold')
+
+                        # Log and send embed.
                         logging.info(message, f'removed player {player} from Hunger Games instance')
                         return await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(player)} from the game.')
 
@@ -666,6 +683,9 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
         # If there isn't a second argument, remove the last player in the game.
         removed_player = hg_dict['players'][-1]
         hg_dict['players'].remove(removed_player)
+
+        # Retire their profile picture.
+        tempfiles.retire_profile_picture_by_user(removed_player, message, 'hg_filehold')
 
         # Send the message and junk.
         logging.info(message, f'removed player {removed_player} from Hunger Games instance')
@@ -715,17 +735,26 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         # This section detects if there are enough non-bot players to justify turning off bots.
         # First, make a copy of the player dict.
         hg_players_no_bots = hg_dict['players'].copy()
+
         # Remove all bots from the player list.
         while any([player.bot for player in hg_players_no_bots]):
             for player in hg_players_no_bots:
+
+                # Remove the bot and retire their profile picture.
                 if player.bot:
                     hg_players_no_bots.remove(player)
+                    tempfiles.retire_profile_picture_by_user(player, message, 'hg_filehold')
+
         # While there are less players than the minimum, add new players on randomly.
         while len(hg_players_no_bots) < HG_MIN_GAMESIZE:
             other_players = misc.get_applicable_users(message, True, hg_players_no_bots)
-            # If there are other players, add a random one.
+
+            # If there are other players, add a random one and checkout their profile picture.
             if other_players:
-                hg_players_no_bots.append(random.choice(other_players))
+                added_player = random.choice(other_players)
+                hg_players_no_bots.append(added_player)
+                tempfiles.checkout_profile_picture_by_user(added_player, message, 'hg_filehole', (HG_ICON_SIZE, HG_ICON_SIZE))
+
             # Otherwise, send an error message.
             else:
                 logging.info(message, 'attempted to remove bots from Hunger Games instance, not enough users')
@@ -888,6 +917,11 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
         # Delete the game.
         del CURRENT_GAMES[hg_key]
 
+        # Retire the existing players' profile pictures.
+        if 'players' in hg_dict:
+            tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+            tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
         logging.info(message, 'requested cancel for Hunger Games')
@@ -946,6 +980,9 @@ async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message
     # Restore the player objects.
     hg_dict['players'] = hg_dict['player_objects']
 
+    # Retire their profile pictures.
+    tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+
     # Reset all the post-generation crap in the dict.
     hg_dict['generated'] = False
     hg_dict['phases'] = None
@@ -972,6 +1009,15 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
 
     # Delete it.
     del CURRENT_GAMES[hg_key]
+
+    # Retire the existing players' profile pictures.
+    if 'players' in hg_dict:
+        if isinstance(hg_dict['players'], dict):
+            tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+            tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+        else:
+            tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
+            tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
 
 
 async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
@@ -1008,6 +1054,9 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
 
     # Generate the player statuses image.
     image = makeimage_player_statuses(player_data)
+
+    # Retire profile pictures.
+    tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_pregame')
 
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
@@ -1987,6 +2036,11 @@ async def pregame_shuffle(message, player_count, hg_dict):
         player_count (int) : The amount of players to use.
         hg_dict (dict) : The full game dict.
     """
+    # Retire the existing players' profile pictures.
+    if 'players' in hg_dict:
+        tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+        tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+
     # If the player count is more than the max or less than the minimum, set them to their capstone values.
     player_count = min(player_count, HG_MAX_GAMESIZE)
     player_count = max(player_count, HG_MIN_GAMESIZE)
@@ -2014,6 +2068,9 @@ async def pregame_shuffle(message, player_count, hg_dict):
         next_player = random.choice(user_list)
         hg_players.append(next_player)
         user_list.remove(next_player)
+
+    # Checkout file holdings for all the profile pictures.
+    tempfiles.checkout_profile_picture_by_user_bulk(hg_players, message, 'hg_filehold')
 
     # Set in players and bot bool.
     hg_dict['players'] = hg_players
