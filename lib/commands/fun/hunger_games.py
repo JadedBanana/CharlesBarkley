@@ -1045,7 +1045,8 @@ async def send_midgame(message, hg_dict, count, do_previous):
         await messaging.send_image_based_embed(
             message,
             makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']], placement=True),
+                                       for player_tuple in current_phase['all']],
+                                      placement=max([2] + [player_tuple[2] for player_tuple in current_phase['all']])),
             'Placements', HG_EMBED_COLOR, footer_str
         )
 
@@ -1056,7 +1057,8 @@ async def send_midgame(message, hg_dict, count, do_previous):
         await messaging.send_image_based_embed(
             message,
             makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']], kills=True),
+                                       for player_tuple in current_phase['all']],
+                                      kills=max([1] + [player_tuple[2] for player_tuple in current_phase['all']])),
             'Kills', HG_EMBED_COLOR, footer_str
         )
 
@@ -1191,7 +1193,7 @@ def do_increment_act_check(hg_dict, count, do_previous):
     return True
         
 
-def makeimage_player_statuses(players, placement=False, kills=False):
+def makeimage_player_statuses(players, placement=0, kills=0):
     """
     Generates a player status image.
     This can also be used to make player placement images and kill count lists.
@@ -1205,8 +1207,10 @@ def makeimage_player_statuses(players, placement=False, kills=False):
                                               1: Newly Dead
                                               2: Dead
                                          Otherwise, they should be the placement or the kill count of each player.
-        placement (bool) : Whether or not the third value in players is player placements.
-        kills (bool) : Whether or not the third value in players is kills.
+        placement (int) : Whether or not the third value in players is player placements.
+                          Should be the lowest place when used.
+        kills (int) : Whether or not the third value in players is kills.
+                      Should be the most kills when used.
     """
     # Splits all the players into their own rows.
     players_split = []
