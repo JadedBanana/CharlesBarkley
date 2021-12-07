@@ -72,6 +72,11 @@ HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Acti
 HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\nN: Next Action\tP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
 HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_MIDGAME_CANCEL_TERMS = ['c', 'cancel']
+HG_MIDGAME_CANCEL_CONFIRM_TERMS = ['y', 'yes']
+HG_MIDGAME_CANCEL_CANCEL_TERMS = ['n', 'no']
+HG_MIDGAME_NEXT_TERMS = ['n', 'next', 'proceed']
+HG_MIDGAME_PREVIOUS_TERMS = ['p', 'prev', 'previous']
 
 # Winner / Ties
 HG_WINNER_TITLE = 'The Winner'
@@ -396,6 +401,9 @@ async def hunger_games_update(bot, message):
     else:
         await hunger_games_update_pregame(hg_key, hg_dict, response, message)
 
+    # Change the 'updated' thing.
+    hg_dict['updated'] = datetime.today()
+
 
 async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
     """
@@ -426,14 +434,11 @@ async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
 
     # Cancel command.
     elif any(response[0] == value for value in HG_PREGAME_CANCEL_TERMS):
-        await hunger_games_update_pregame_cancel(hg_key, hg_dict, response, message)
+        await hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
 
     # Toggle Bots command.
     elif any(response[0] == value for value in HG_PREGAME_TOGGLE_BOTS_TERMS):
         await hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, message)
-
-    # Change the 'updated' thing.
-    hg_dict['updated'] = datetime.today()
 
 
 async def hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message):
@@ -640,24 +645,6 @@ async def hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message
     await generate_full_game(hg_dict, message)
 
 
-async def hunger_games_update_pregame_cancel(hg_key, hg_dict, response, message):
-    """
-    Cancels the given hunger games dict (no confirmation, just delete).
-
-    Arguments:
-        hg_key (str) : The key for the hunger games dict.
-        hg_dict (dict) : The full game dict.
-        response (str[]) : A list of strings representing the response.
-        message (discord.message.Message) : The discord message object that triggered this command.
-    """
-    # Send the message and log.
-    await messaging.send_text_message(message, 'Hunger Games canceled.')
-    logging.info(message, 'canceled Hunger Games (pregame)')
-
-    # Delete it.
-    del CURRENT_GAMES[hg_key]
-
-
 async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, message):
     """
     Toggles bots in the given hunger games dict.
@@ -712,81 +699,128 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
 
 
 async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
+    """
+    Updates the hunger games dict according to how the response is formatted.
+    Only triggers during midgame.
 
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # First, see if the dict is generated yet.
     if hg_dict['generated']:
-        # First, cancel confirmations.
+
+        # Detect confirmation status.
         if hg_dict['confirm_cancel']:
-            if any([response == 'y', response == 'yes']):
-                del self.curr_hg[str(message.channel.id)]
-                await message.channel.send('Hunger Games canceled.')
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'canceled Hunger Games')
-                return True
 
-            elif any([response == 'n', response == 'no']):
-                hg_dict['confirm_cancel'] = False
-                await message.channel.send('Understood, cancel aborted.')
-                return True
+            # Confirm.
+            if any([response[0] == value for value in HG_MIDGAME_CANCEL_CONFIRM_TERMS]):
+                await hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
 
-        # Next command (custom size).
-        elif any([response.startswith(pre) for pre in ['n ', 'next ']]):
-            # Gets the first argument after the next.
-            response = response.split(' ')[1]
-            try:
-                response = int(response)
-            except ValueError:
-                return
-            # Passes it along to the send_midgame function
-            await send_midgame(message, is_in_guild, hg_dict, count=max(1, response))
-            hg_dict['updated'] = datetime.today()
-            return True
+            # Deny.
+            elif any([response[0] == value for value in HG_MIDGAME_CANCEL_CANCEL_TERMS]):
+                return await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
         # Next command.
-        elif any([response == 'n', 'response' == 'next']):
-            await send_midgame(message, is_in_guild, hg_dict)
-            hg_dict['updated'] = datetime.today()
-            return True
-
-        # Previous command (custom size).
-        elif any([response.startswith(pre) for pre in ['p ', 'prev ', 'previous']]):
-            if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
-                return
-            else:
-                # Gets the first argument after the previous.
-                response = response.split(' ')[1]
-                try:
-                    response = int(response)
-                except ValueError:
-                    return
-                # Passes it along to the send_midgame function
-                await send_midgame(message, is_in_guild, hg_dict, count=max(1, response))
-                hg_dict['updated'] = datetime.today()
-                return True
+        if any([response[0] == value for value in HG_MIDGAME_NEXT_TERMS]):
+            await hunger_games_update_midgame_next(hg_key, hg_dict, response, message)
 
         # Previous command.
-        elif any([response == 'p', response == 'prev', response == 'previous']):
-            if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
-                return
-            else:
-                await send_midgame(message, is_in_guild, hg_dict, do_previous=True)
-                hg_dict['updated'] = datetime.today()
-                return True
+        elif any([response[0] == value for value in HG_MIDGAME_PREVIOUS_TERMS]):
+            await hunger_games_update_midgame_previous(hg_key, hg_dict, response, message)
 
         # Cancel command.
-        elif any([response == 'cancel', response == 'c']):
-            if hg_dict['complete']:
-                del self.curr_hg[str(message.channel.id)]
-                await message.channel.send('Thanks for playing!')
-                log.debug(misc.get_comm_start(message, is_in_guild) + 'finished + closed Hunger Games')
-                return True
-
-            elif not hg_dict['confirm_cancel']:
-                hg_dict['confirm_cancel'] = True
-                await message.channel.send('Cancel Hunger Games? (y/n)')
-                return True
+        elif any([response[0] == value for value in HG_MIDGAME_CANCEL_TERMS]):
+            await hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
 
     # If the game isn't finished generating yet.
     elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
         await hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message)
+
+
+async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
+    """
+    Displays the next page(s) of the hg_dict.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # First, see if there's a second argument.
+    if len(response) > 1:
+        # Attempt to pull a number from that second argument (and parse it so that it's correct).
+        try:
+            action_count = int(response[1])
+        # If that doesn't work, set it to the current length.
+        except ValueError:
+            action_count = len(hg_dict['players'])
+
+    # If there isn't a second argument, use 1.
+    else:
+        action_count = 1
+
+    # Perform the midgame incrementing.
+    await midgame_increment(message, hg_dict, action_count, do_previous=False)
+
+
+async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, message):
+    """
+    Displays the previous page(s) of the hg_dict.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # First, see if there's a second argument.
+    if len(response) > 1:
+        # Attempt to pull a number from that second argument (and parse it so that it's correct).
+        try:
+            action_count = int(response[1])
+        # If that doesn't work, set it to the current length.
+        except ValueError:
+            action_count = len(hg_dict['players'])
+
+    # If there isn't a second argument, use 1.
+    else:
+        action_count = 1
+
+    # Perform the midgame incrementing.
+    await midgame_increment(message, hg_dict, action_count, do_previous=True)
+
+
+async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message):
+    """
+    Performs the cancellation action for midgame updates.
+    Can vary depending on what stage the game is in.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # If the game is complete, perform a normal exit.
+    if hg_dict['complete']:
+        # Send the message and log.
+        logging.info(message, 'finished + closed Hunger Games')
+        await messaging.send_text_message(message, 'Thanks for playing!')
+
+        # Delete the game.
+        del CURRENT_GAMES[hg_key]
+
+    elif not hg_dict['confirm_cancel']:
+        # Send the message and log.
+        logging.info(message, 'requested cancel for Hunger Games')
+        await messaging.send_text_message(message, 'Cancel Hunger Games? (y/n)')
+
+        # Set the boolean value.
+        hg_dict['confirm_cancel'] = True
 
 
 async def hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message):
@@ -802,6 +836,42 @@ async def hunger_games_update_midgame_still_generating(hg_key, hg_dict, response
     # Logs and sends message.
     logging.info(message, 'requested hunger games, still generating (impatient little sack of shit)')
     await message.channel.send('Still generating, be patient.')
+
+
+async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message):
+    """
+    Cancels the given hunger games dict (no confirmation, just delete).
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Send the message and log.
+    logging.info(message, 'canceled Hunger Games')
+    await messaging.send_text_message(message, 'Hunger Games canceled.')
+
+    # Delete it.
+    del CURRENT_GAMES[hg_key]
+
+
+async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
+    """
+    Aborts the cancel on the given hunger games dict.
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Send the message and log.
+    logging.info(message, ' aborted cancel for Hunger Games')
+    await messaging.send_text_message(message, 'Cancel aborted.')
+
+    # Abort the cancel.
+    hg_dict['confirm_cancel'] = False
 
 
 async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
