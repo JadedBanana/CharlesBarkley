@@ -1369,7 +1369,7 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
 
         # Gets each player's pfp and pastes it onto the image.
         for player in actions[ind]['players']:
-            makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y)
+            makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y, player[2])
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
         # Draws each part of the text.
