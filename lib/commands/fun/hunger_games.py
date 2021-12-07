@@ -764,7 +764,7 @@ async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
         action_count = 1
 
     # Perform the midgame incrementing.
-    await midgame_increment(message, hg_dict, action_count, do_previous=False)
+    await send_midgame(message, hg_dict, action_count, do_previous=False)
 
 
 async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, message):
@@ -791,7 +791,7 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
         action_count = 1
 
     # Perform the midgame incrementing.
-    await midgame_increment(message, hg_dict, action_count, do_previous=True)
+    await send_midgame(message, hg_dict, action_count, do_previous=True)
 
 
 async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message):
@@ -896,101 +896,70 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
                                            footer=HG_PREGAME_DESCRIPTION.format('Disallow' if hg_dict['uses_bots'] else 'Allow'))
 
 
-async def send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False, do_increment=True):
+async def send_midgame(message, hg_dict, count, do_previous):
     """
-    Sends all midgame embeds, regardless of type.
+    Sends the midgame message after incrementing the phase.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        hg_dict (dict) : The full game dict.
+        count (int) : How many action images to show, if the next phase is an action phase.
+        do_previous (bool) : Whether or not to go backwards.
     """
+    # Performs the increment; if it wasn't done, then just return.
+    if not do_increment(hg_dict, count, do_previous):
+        return
+
+    # Gets the new current phase.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
-        # This section increments the actions in the phase.
-        if do_previous:
-            # Previous
-            # This part checks if this action is the first in the list.
-            # We don't want our phase to be -1.
-            if current_phase['prev'] == -1:
-                if hg_dict['current_phase'] == 0:
-                    return
-                hg_dict['current_phase']-= 1
-                current_phase['next'] = 0
-                await send_midgame(message, is_in_guild, hg_dict, count, do_previous=True, do_increment=False)
-                return
-            else:
-                # Normal increment.
-                start = max(0, current_phase['prev'] - count + 1)
-                if start + count > current_phase['prev']:
-                    count = current_phase['prev'] - start + 1
-                current_phase['prev'] = start - 1
-                current_phase['next'] = start + count
-        else:
-            # Next
-            action_count = len(current_phase['act'])
-            # There is no check for next, because the final phase is a kill type, not an act type.
-            if current_phase['next'] == action_count:
-                hg_dict['current_phase']+= 1
-                current_phase['prev'] = action_count - 1
-                await send_midgame(message, is_in_guild, hg_dict, count, do_previous=False, do_increment=False)
-                return
-            else:
-                # Normal increment.
-                start = current_phase['next']
-                if start + count > action_count:
-                    count = action_count - start
-                current_phase['prev'] = start - 1
-                current_phase['next'] = start + count
-        # Standard embed creation.
-        action_nums = (start + 1, start + count)
-        embed = discord.Embed(title=current_phase['title'] + (', Action {}'.format(action_nums[0]) if action_nums[1] == action_nums[0] else ', Actions {} - {}'.format(action_nums[0], action_nums[1])) + (' / ' + str(len(current_phase['act'])) if current_phase['done'] else ''), colour=constants.HG_EMBED_COLOR)
-        player_actions = makeimage_action(current_phase['act'], start, count, current_phase['desc'] if start == 0 else None)
+
+        # Get the values for the action indexes.
+        action_min_index = hg_dict['action_min_index']
+        action_max_index = hg_dict['action_max_index']
+
+        # Create the embed title.
+        title = current_phase['title'] + (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
+                                          f', Actions {action_min_index + 1} - {action_max_index + 1}') + \
+                (f' / {len(current_phase["act"])}' if current_phase['done'] else '')
+
+        # Create and send the embed.
+        await messaging.send_image_based_embed(
+            message,
+            makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, count, current_phase['desc']),
+            title, HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
+        )
+
+    # Creates embed for win AND tie pages.
+    elif current_phase['type'] in ['win', 'tie']:
+        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
+        player_actions = makeimage_winner(current_phase['players'], current_phase['desc'])
         file = hunger_games_set_embed_image(player_actions, embed)
 
-    # Embeds through everything else act pretty differently.
+    # Creates embed for status pages.
+    elif current_phase['type'] == 'status':
+        embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
+        file = hunger_games_set_embed_image(player_statuses, embed)
+
+    # Creates embed for placement pages.
+    elif current_phase['type'] == 'place':
+        embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
+        file = hunger_games_set_embed_image(player_statuses, embed)
+
+    # Creates embed for killcount pages.
+    elif current_phase['type'] == 'kills':
+        embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
+        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
+        file = hunger_games_set_embed_image(player_statuses, embed)
+
+    # Creates embed for other pages.
     else:
-        # If we increment, then we increment.
-        if do_increment:
-            if do_previous:
-                hg_dict['current_phase']-= 1
-                current_phase = hg_dict['phases'][hg_dict['current_phase']]
-            else:
-                # We check here to make sure we're not at the end.
-                if current_phase['type'] == 'kills':
-                    return
-                hg_dict['current_phase']+= 1
-                current_phase = hg_dict['phases'][hg_dict['current_phase']]
-            # Check if we're now in an act.
-            if current_phase['type'] == 'act':
-                await send_midgame(message, is_in_guild, hg_dict, count, do_previous=do_previous, do_increment=False)
-                return
-
-        # Creates embed for win AND tie pages.
-        if current_phase['type'] in ['win', 'tie']:
-            embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-            player_actions = makeimage_winner(current_phase['players'], current_phase['desc'])
-            file = hunger_games_set_embed_image(player_actions, embed)
-
-        # Creates embed for status pages.
-        elif current_phase['type'] == 'status':
-            embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
-            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
-            file = hunger_games_set_embed_image(player_statuses, embed)
-
-        # Creates embed for placement pages.
-        elif current_phase['type'] == 'place':
-            embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
-            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
-            file = hunger_games_set_embed_image(player_statuses, embed)
-
-        # Creates embed for killcount pages.
-        elif current_phase['type'] == 'kills':
-            embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
-            player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
-            file = hunger_games_set_embed_image(player_statuses, embed)
-
-        # Creates embed for other pages.
-        else:
-            log.error(misc.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
-            return
+        log.error(misc.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
+        return
 
     # Sets footer, sends image, logs.
     if hg_dict['complete']:
@@ -1017,6 +986,117 @@ async def send_midgame(message, is_in_guild, hg_dict, count=1, do_previous=False
     # Send message
     await message.channel.send(file=file, embed=embed)
 
+
+def do_increment(hg_dict, count, do_previous):
+    """
+    Increments the phase.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        count (int) : How many action images to show, if the next phase is an action phase.
+        do_previous (bool) : Whether or not to go backwards.
+
+    Returns:
+        bool : Whether or not the hg_dict was incremented.
+    """
+    # Gets the current phase.
+    current_phase = hg_dict['phases'][hg_dict['current_phase']]
+
+    # If the current phase is an act, then its increment changes based on the indexes.
+    if current_phase['type'] == 'act':
+        return do_increment_act(hg_dict, count, do_previous)
+
+    # Otherwise, increment for other normal types of pages.
+    return do_increment_non_act(hg_dict, count, do_previous, current_phase['type'])
+
+
+def do_increment_act(hg_dict, count, do_previous):
+    """
+    Increments the phase (for an ACT phase).
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        count (int) : How many action images to show, if the next phase is an action phase.
+        do_previous (bool) : Whether or not to go backwards.
+
+    Returns:
+        bool : Whether or not the hg_dict was incremented.
+    """
+    # Backwards section.
+    if do_previous:
+
+        # If we were going backwards and the previous action was the beginning of the phase, then perform a special check...
+        if hg_dict['action_min_index'] == 0:
+
+            # If this is the first phase, then return False.
+            if hg_dict['current_phase'] == 0:
+                return False
+
+            # Otherwise, subtract 1 from the current_phase and return True.
+            hg_dict['current_phase'] -= 1
+            return True
+
+        # Otherwise, we weren't at the beginning of the phase, so we can reverse increment the action indexes and return True.
+        hg_dict['action_max_index'] = hg_dict['action_min_index'] - 1
+        hg_dict['action_min_index'] -= count
+        return True
+
+    # If we're going forwards and the previous action was the end of the phase, then add 1 to the current_phase and return True.
+    if hg_dict['action_max_index'] == len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1:
+        hg_dict['current_phase'] += 1
+        return True
+
+    # Otherwise, increment the action indexes and return True.
+    hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
+    hg_dict['action_max_index'] += count
+    return True
+
+
+def do_increment_non_act(hg_dict, count, do_previous, phase_type):
+    """
+    Increments the phase (for NON-ACT phases).
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        count (int) : How many action images to show, if the next phase is an action phase.
+        do_previous (bool) : Whether or not to go backwards.
+        phase_type (str) : The current phase's type.
+
+    Returns:
+        bool : Whether or not the hg_dict was incremented.
+    """
+    # If we went backwards, then just subtract 1 from the current phase.
+    if do_previous:
+        hg_dict['current_phase'] -= 1
+
+    # Otherwise, first, check to make sure we're not at the end.
+    else:
+        # If we are, then just return False.
+        if phase_type == 'kills':
+            return False
+
+        # If not, then add 1 from the current phase.
+        hg_dict['current_phase'] += 1
+
+    # Detect if the NEW current phase is an act.
+    current_phase = hg_dict['phases'][hg_dict['current_phase']]
+    if current_phase['type'] == 'act':
+
+        # If so, then set the action indexes depending on whether or not we're going backwards.
+
+        # Backwards gets put at the end.
+        if do_previous:
+            hg_dict['action_max_index'] = len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1
+            hg_dict['action_min_index'] = hg_dict['action_max_index'] - count + 1
+
+        # Forwards gets put at the front.
+        else:
+            hg_dict['action_min_index'] = 0
+            hg_dict['action_max_index'] = count - 1
+
+    # Return True.
+    return True
+        
 
 def makeimage_player_statuses(players, placement=False, kills=False):
     """
@@ -1522,6 +1602,8 @@ async def generate_full_game(hg_dict, message):
     # Updates hunger games dict.
     del hg_dict['statuses']
     hg_dict['current_phase'] = 0
+    hg_dict['action_min_index'] = 0
+    hg_dict['action_max_index'] = 0
     hg_dict['confirm_cancel'] = False
     hg_dict['generated'] = True
     hg_dict['complete'] = False
@@ -1575,7 +1657,7 @@ def generate_bloodbath(hg_dict):
         generate_statuses(hg_dict['statuses'], actions[-1])
 
     # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath', 'next': 1, 'prev': -1,
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath',
                               'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
 
 
@@ -1634,7 +1716,7 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
     # Adds to the phases.
     if not desc:
         desc = title
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'next': 0, 'prev': -1, 'desc': desc, 'done': False})
+    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'desc': desc, 'done': False})
 
 
 def generate_statuses(hg_statuses, action):
