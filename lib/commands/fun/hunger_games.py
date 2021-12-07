@@ -913,6 +913,40 @@ async def send_midgame(message, hg_dict, count, do_previous):
     # Gets the new current phase.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
+    # Gets the footer we need.
+    # If the game is complete, then we use a different set from the non-complete ones.
+    if hg_dict['complete']:
+
+        # At the beginning, then we can't use previous.
+        if hg_dict['current_phase'] == 0 and hg_dict['action_min_index'] == 0:
+            footer_str = HG_POSTGAME_BEGINNING_DESCRIPTION
+
+        # At the end, then we can't go forward.
+        elif current_phase['type'] == 'kills':
+            footer_str = HG_FINALE_DESCRIPTION
+
+        # Anywhere else, have both.
+        else:
+            footer_str = HG_POSTGAME_MIDGAME_DESCRIPTION
+
+    # Game is not complete, use alternate footers.
+    else:
+
+        # At the beginning, then we can't use previous.
+        if hg_dict['current_phase'] == 0 and hg_dict['action_min_index'] == 0:
+            footer_str = HG_BEGINNING_DESCRIPTION
+
+        # At the end, then we can't go forward.
+        elif current_phase['type'] == 'kills':
+            footer_str = HG_THE_END_DESCRIPTION
+            hg_dict['complete'] = True
+
+        # Anywhere else, have both.
+        else:
+            footer_str = HG_MIDGAME_DESCRIPTION
+
+    print(current_phase)
+
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
 
@@ -929,7 +963,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
         await messaging.send_image_based_embed(
             message,
             makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, count, current_phase['desc']),
-            title, HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
+            title, HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for win AND tie pages.
@@ -940,9 +974,17 @@ async def send_midgame(message, hg_dict, count, do_previous):
 
     # Creates embed for status pages.
     elif current_phase['type'] == 'status':
-        embed = discord.Embed(title='{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's'), colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Create the embed title.
+        title = '{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's')
+
+        # Create and send the embed.
+        await messaging.send_image_based_embed(
+            message,
+            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
+                                       for player_tuple in current_phase['all']]),
+            title, HG_EMBED_COLOR, footer_str
+        )
 
     # Creates embed for placement pages.
     elif current_phase['type'] == 'place':
@@ -960,31 +1002,6 @@ async def send_midgame(message, hg_dict, count, do_previous):
     else:
         log.error(misc.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
         return
-
-    # Sets footer, sends image, logs.
-    if hg_dict['complete']:
-        # We're at the front of the game
-        if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
-            embed.set_footer(text=constants.HG_POSTGAME_BEGINNING_DESCRIPTION)
-        # We're at the end of the game
-        elif current_phase['type'] == 'kills':
-            embed.set_footer(text=constants.HG_FINALE_DESCRIPTION)
-        # We're anywhere else
-        else:
-            embed.set_footer(text=constants.HG_POSTGAME_MIDGAME_DESCRIPTION)
-    else:
-        # We're at the front of the game
-        if hg_dict['current_phase'] == 0 and hg_dict['phases'][hg_dict['current_phase']]['prev'] == -1:
-            embed.set_footer(text=constants.HG_BEGINNING_DESCRIPTION)
-        # Game complete!
-        elif current_phase['type'] in constants.HG_COMPLETE_PHASE_TYPES:
-            hg_dict['complete'] = True
-            embed.set_footer(text=constants.HG_THE_END_DESCRIPTION)
-        # We're anywhere else in the game
-        else:
-            embed.set_footer(text=constants.HG_MIDGAME_DESCRIPTION)
-    # Send message
-    await message.channel.send(file=file, embed=embed)
 
 
 def do_increment(hg_dict, count, do_previous):
@@ -1034,7 +1051,7 @@ def do_increment_act(hg_dict, count, do_previous):
 
             # Otherwise, subtract 1 from the current_phase and return True.
             hg_dict['current_phase'] -= 1
-            return True
+            return do_increment_act_check(hg_dict, count, do_previous)
 
         # Otherwise, we weren't at the beginning of the phase, so we can reverse increment the action indexes and return True.
         hg_dict['action_max_index'] = hg_dict['action_min_index'] - 1
@@ -1044,7 +1061,7 @@ def do_increment_act(hg_dict, count, do_previous):
     # If we're going forwards and the previous action was the end of the phase, then add 1 to the current_phase and return True.
     if hg_dict['action_max_index'] == len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1:
         hg_dict['current_phase'] += 1
-        return True
+        return do_increment_act_check(hg_dict, count, do_previous)
 
     # Otherwise, increment the action indexes and return True.
     hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
@@ -1078,12 +1095,27 @@ def do_increment_non_act(hg_dict, count, do_previous, phase_type):
         # If not, then add 1 from the current phase.
         hg_dict['current_phase'] += 1
 
+    # Do the act check.
+    return do_increment_act_check(hg_dict, count, do_previous)
+
+
+def do_increment_act_check(hg_dict, count, do_previous):
+    """
+    Increments the phase (for NON-ACT phases).
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        count (int) : How many action images to show, if the next phase is an action phase.
+        do_previous (bool) : Whether or not to go backwards.
+
+    Returns:
+        True
+    """
     # Detect if the NEW current phase is an act.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
     if current_phase['type'] == 'act':
 
         # If so, then set the action indexes depending on whether or not we're going backwards.
-
         # Backwards gets put at the end.
         if do_previous:
             hg_dict['action_max_index'] = len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1
@@ -1517,7 +1549,7 @@ async def generate_full_game(hg_dict, message):
 
         # Iterate through all the players.
         for player in hg_dict['statuses']:
-            player_statuses.append((player, hg_dict['statuses'][player]['name'],
+            player_statuses.append((hg_dict['statuses'][player]['name'], player,
                                     (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
 
             # Adds to dead_last_loop if they're dead THIS loop.
@@ -1539,7 +1571,7 @@ async def generate_full_game(hg_dict, message):
 
     # Iterate through all the players.
     for player in hg_dict['statuses']:
-        player_statuses.append((player, hg_dict['statuses'][player]['name'],
+        player_statuses.append((hg_dict['statuses'][player]['name'], player,
                                 (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
 
     # Add the player status dict to the phases.
@@ -1854,7 +1886,7 @@ def generate_placement_screen(hg_dict):
 
         # Adds player to the dict.
         for player in current_placement_players:
-            placements.append((player, hg_dict['statuses'][player]['name'], len(hg_dict['statuses']) - min_placement))
+            placements.append((hg_dict['statuses'][player]['name'], player, len(hg_dict['statuses']) - min_placement))
             pre_placement_players.remove(player)
 
     # Reverses placements list to sort from first to last and adds the placement to the phases.
