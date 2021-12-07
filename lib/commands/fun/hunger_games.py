@@ -814,6 +814,10 @@ async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
     else:
         action_count = 1
 
+    # Cancel abort, if it's active.
+    if hg_dict['confirm_cancel']:
+        await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
+
     # Perform the midgame incrementing.
     await send_midgame(message, hg_dict, action_count, do_previous=False)
 
@@ -840,6 +844,10 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
     # If there isn't a second argument, use 1.
     else:
         action_count = 1
+
+    # Cancel abort, if it's active.
+    if hg_dict['confirm_cancel']:
+        await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
     await send_midgame(message, hg_dict, action_count, do_previous=True)
