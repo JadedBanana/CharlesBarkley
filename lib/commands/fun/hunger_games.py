@@ -937,15 +937,13 @@ async def send_midgame(message, hg_dict, count, do_previous):
             footer_str = HG_BEGINNING_DESCRIPTION
 
         # At the end, then we can't go forward.
-        elif current_phase['type'] == 'kills':
+        elif current_phase['type'] in ['win', 'tie']:
             footer_str = HG_THE_END_DESCRIPTION
             hg_dict['complete'] = True
 
         # Anywhere else, have both.
         else:
             footer_str = HG_MIDGAME_DESCRIPTION
-
-    print(current_phase)
 
     # Creates embed for act pages.
     if current_phase['type'] == 'act':
@@ -962,7 +960,8 @@ async def send_midgame(message, hg_dict, count, do_previous):
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, count, current_phase['desc']),
+            makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, action_max_index,
+                             current_phase['desc'] if action_min_index == 0 else None),
             title, HG_EMBED_COLOR, footer_str
         )
 
@@ -972,35 +971,43 @@ async def send_midgame(message, hg_dict, count, do_previous):
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], 0, 1, current_phase['desc']),
+            makeimage_action(hg_dict['players'], current_phase['act'], 0, 0, current_phase['desc']),
             current_phase['title'], HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for status pages.
     elif current_phase['type'] == 'status':
 
-        # Create the embed title.
-        title = '{} cannon shot{} can be heard in the distance.'.format(current_phase['new'], '' if current_phase['new'] == 1 else 's')
-
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
             makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
                                        for player_tuple in current_phase['all']]),
-            title, HG_EMBED_COLOR, footer_str
+            f'{current_phase["new"]} cannon shot{"" if current_phase["new"] == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
+            footer_str
         )
 
     # Creates embed for placement pages.
     elif current_phase['type'] == 'place':
-        embed = discord.Embed(title='Placements', colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], placement=current_phase['max'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Create and send the embed.
+        await messaging.send_image_based_embed(
+            message,
+            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
+                                       for player_tuple in current_phase['all']], placement=True),
+            'Placements', HG_EMBED_COLOR, footer_str
+        )
 
     # Creates embed for killcount pages.
     elif current_phase['type'] == 'kills':
-        embed = discord.Embed(title='Kills', colour=constants.HG_EMBED_COLOR)
-        player_statuses = hunger_games_makeimage_player_statuses(current_phase['all'], kills=current_phase['max'])
-        file = hunger_games_set_embed_image(player_statuses, embed)
+
+        # Create and send the embed.
+        await messaging.send_image_based_embed(
+            message,
+            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
+                                       for player_tuple in current_phase['all']], kills=True),
+            'Kills', HG_EMBED_COLOR, footer_str
+        )
 
     # Creates embed for other pages.
     else:
@@ -1238,14 +1245,14 @@ def makeimage_player_statuses(players, placement=False, kills=False):
     return player_statuses
 
 
-def makeimage_action(player_images, actions, start, count=1, action_desc=None):
+def makeimage_action(player_images, actions, start, end, action_desc=None):
     """
-    Displays count number of actions at once.
+    Displays a variable number of actions at once.
 
     player_images (dict) : A dict of player profile pictures, with the profile pictures keyed by player ids.
     actions (dict[]) : A list of dicts detailing all the actions in this phase.
     start (int) : What index to start at.
-    count (int) : How many actions to put into this image.
+    end (int) : What index to end at.
     action_desc (str) : The action description, if any.
     """
     # Makes the font and gets the action description width, if any.
@@ -1254,7 +1261,7 @@ def makeimage_action(player_images, actions, start, count=1, action_desc=None):
 
     # Gets the image height.
     # Also makes the full action text while we're at it.
-    image_height = HG_ACTION_ROWHEIGHT * count + HG_ICON_BUFFER + (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
+    image_height = HG_ACTION_ROWHEIGHT * (end - start + 1) + HG_ICON_BUFFER + (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
     text_sizes = []
 
     # Get the image width.
@@ -1262,7 +1269,7 @@ def makeimage_action(player_images, actions, start, count=1, action_desc=None):
     image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
 
     # Iterate through each action in the range.
-    for ind in range(start, start + count):
+    for ind in range(start, end + 1):
 
         # Tests for text boundaries
         full_action_text = actions[ind]['act']
@@ -1304,7 +1311,7 @@ def makeimage_action(player_images, actions, start, count=1, action_desc=None):
     num = 0
 
     # Iterate through all the actions.
-    for ind in range(start, start + count):
+    for ind in range(start, end + 1):
 
         # Set the current x.
         current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * HG_ICON_SIZE) - \
@@ -1504,8 +1511,8 @@ async def generate_full_game(hg_dict, message):
         if len(tiees) > 1:
             hg_dict['phases'].append({'type': 'tie', 'act': [{'players': [(tie_player, hg_dict['statuses'][tie_player]['name'], True) for tie_player in tiees],
                                                               'act': HG_TIE_EVENT + '{0}' +
-                                                                     ', '.join(['{' + i + '}' for i in range(1, len(tiees) - 1)]) +
-                                                              ', and {' + len(tiees) - 1 + '}!'}],
+                                                                     ', '.join(['{' + str(i) + '}' for i in range(1, len(tiees) - 1)]) +
+                                                              ', and {' + str(len(tiees) - 1) + '}!'}],
                                       'title': HG_TIE_TITLE, 'desc': HG_TIE_TITLE})
 
         # Otherwise, it's a victory, but dead.
@@ -1555,7 +1562,7 @@ async def generate_full_game(hg_dict, message):
     logging.info(message, 'generated complete hunger games instance')
     await messaging.send_image_based_embed(
         message,
-        makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 1, hg_dict['phases'][0]['desc']),
+        makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 0, hg_dict['phases'][0]['desc']),
         'The Bloodbath, Action 1', HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
     )
 
@@ -1834,7 +1841,7 @@ def generate_kill_count_screen(hg_dict):
 
         # Adds player to the dict.
         for player in current_placement_players:
-            kill_placements.append((player, hg_dict['statuses'][player]['name'], max_placement))
+            kill_placements.append((hg_dict['statuses'][player]['name'], player, max_placement))
             pre_placement_players.remove(player)
 
     # Reverses placements list to sort from first to last and makes it a phase
