@@ -83,7 +83,7 @@ HG_WINNER_TITLE = 'The Winner'
 HG_TIE_TITLE = 'The Winners'
 HG_WINNER_EVENT = 'The winner is {0}!'
 HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
-HG_TIE_EVENT = ('Since they died at the same time, it\'s a tie between ', ', ', 'and ', '!')
+HG_TIE_EVENT = "Since they died at the same time, it's a tie between "
 HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 
 # Item List
@@ -968,9 +968,13 @@ async def send_midgame(message, hg_dict, count, do_previous):
 
     # Creates embed for win AND tie pages.
     elif current_phase['type'] in ['win', 'tie']:
-        embed = discord.Embed(title=current_phase['title'], colour=constants.HG_EMBED_COLOR)
-        player_actions = makeimage_winner(current_phase['players'], current_phase['desc'])
-        file = hunger_games_set_embed_image(player_actions, embed)
+
+        # Create and send the embed.
+        await messaging.send_image_based_embed(
+            message,
+            makeimage_action(hg_dict['players'], current_phase['act'], 0, 1, current_phase['desc']),
+            current_phase['title'], HG_EMBED_COLOR, footer_str
+        )
 
     # Creates embed for status pages.
     elif current_phase['type'] == 'status':
@@ -1055,7 +1059,7 @@ def do_increment_act(hg_dict, count, do_previous):
 
         # Otherwise, we weren't at the beginning of the phase, so we can reverse increment the action indexes and return True.
         hg_dict['action_max_index'] = hg_dict['action_min_index'] - 1
-        hg_dict['action_min_index'] -= count
+        hg_dict['action_min_index'] = max(hg_dict['action_min_index'] - count, 0)
         return True
 
     # If we're going forwards and the previous action was the end of the phase, then add 1 to the current_phase and return True.
@@ -1065,7 +1069,7 @@ def do_increment_act(hg_dict, count, do_previous):
 
     # Otherwise, increment the action indexes and return True.
     hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
-    hg_dict['action_max_index'] += count
+    hg_dict['action_max_index'] = min(hg_dict['action_max_index'] + count, len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
     return True
 
 
@@ -1119,12 +1123,12 @@ def do_increment_act_check(hg_dict, count, do_previous):
         # Backwards gets put at the end.
         if do_previous:
             hg_dict['action_max_index'] = len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1
-            hg_dict['action_min_index'] = hg_dict['action_max_index'] - count + 1
+            hg_dict['action_min_index'] = max(hg_dict['action_max_index'] - count + 1, 0)
 
         # Forwards gets put at the front.
         else:
             hg_dict['action_min_index'] = 0
-            hg_dict['action_max_index'] = count - 1
+            hg_dict['action_max_index'] = min(count - 1, len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
 
     # Return True.
     return True
@@ -1323,104 +1327,6 @@ def makeimage_action(player_images, actions, start, count=1, action_desc=None):
     return action_image
 
 
-def makeimage_winner(players, desc=None):
-    """
-    Displays the winner(s).
-    Like the makeimage_action method, but without all the previous and count and whatnot.
-    """
-    # Makes the font
-    action_font = ImageFont.truetype()
-
-    # Gets action desc width, if any.
-    action_desc_width = action_font.getsize(desc)[0]
-
-    # Gets the image width.
-    # Also makes the full action text while we're at it.
-    image_width = action_desc_width + constants.HG_ICON_BUFFER * 2 + constants.HG_HEADER_BORDER_BUFFER * 2 if desc else -1
-    image_height = constants.HG_ACTION_ROWHEIGHT + constants.HG_ICON_BUFFER + (constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3 if desc else -1)
-
-    # Tests for text boundaries
-    # Text varies depending on how many winners there are.
-    if len(players) > 1:
-        full_action_text = constants.HG_TIE_EVENT[0]
-        if len(players) > 2:
-            for player in players[:-1]:
-                full_action_text+= player[1] + constants.HG_TIE_EVENT[1]
-        else:
-            full_action_text+= players[0][1] + ' '
-        full_action_text+= constants.HG_TIE_EVENT[2] + players[-1][1] + constants.HG_TIE_EVENT[3]
-    else:
-        full_action_text = constants.HG_WINNER_DEAD_EVENT if players[0][2] else constants.HG_WINNER_EVENT
-        full_action_text = full_action_text.replace('{0}', players[0][1])
-    text_width = action_font.getsize(full_action_text)[0]
-    image_width = max(image_width, text_width + constants.HG_ICON_BUFFER * 2)
-    # Tests for image boundaries
-    image_width = max(image_width, constants.HG_ICON_SIZE * len(players) + constants.HG_ICON_BUFFER * (len(players) + 1))
-
-    # Preps to draw.
-    action_image = Image.new('RGB', (image_width, image_height), constants.HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(action_image)
-    current_y = constants.HG_ICON_BUFFER
-
-    # Draw the description, if any.
-    if desc:
-        current_x = int((image_width - action_desc_width) / 2)
-        player_drawer.rectangle(
-            [(current_x - constants.HG_HEADER_BORDER_BUFFER, current_y - constants.HG_HEADER_BORDER_BUFFER),
-             (current_x + action_desc_width + constants.HG_HEADER_BORDER_BUFFER, current_y + constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER)],
-            constants.HG_HEADER_BACKGROUND_COLOR,
-            constants.HG_HEADER_BORDER_COLOR
-        )
-        player_drawer.text((current_x, constants.HG_ICON_BUFFER), desc, font=action_font, fill=constants.HG_HEADER_TEXT_COLOR)
-        current_y+= constants.HG_FONT_SIZE + constants.HG_HEADER_BORDER_BUFFER * 3
-
-    # Draw the icons.
-    current_x = int(image_width / 2) - int(len(players) / 2 * constants.HG_ICON_SIZE) - int((len(players) - 1) / 2 * constants.HG_ICON_BUFFER)
-    # Gets each player's pfp and pastes it onto the image.
-    for player in players:
-        makeimage_pfp(player[0], action_image, player_drawer, current_x, current_y, player[2])
-        current_x+= constants.HG_ICON_SIZE + constants.HG_ICON_BUFFER
-
-    # Draws each part of the text.
-    # Text varies depending on how many winners there are.
-    # More than 1:
-    if len(players) > 1:
-        current_x = int((image_width - text_width) / 2)
-        current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
-        remaining_text = [constants.HG_TIE_EVENT[0]]
-        if len(players) > 2:
-            for player in players[:-1]:
-                remaining_text.append(player[1])
-                remaining_text.append(constants.HG_TIE_EVENT[1])
-            remaining_text[-1]+= constants.HG_TIE_EVENT[2]
-        else:
-            remaining_text.append(players[0][1] + ' ')
-            remaining_text.append(constants.HG_TIE_EVENT[2])
-        remaining_text.append(players[-1][1])
-        remaining_text.append(constants.HG_TIE_EVENT[3])
-        while remaining_text:
-            # Draw the text up to the next bracket.
-            player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=(255, 255, 255))
-            current_x += action_font.getsize(remaining_text[0])[0]
-            remaining_text.remove(remaining_text[0])
-            if not remaining_text:
-                break
-
-            # Draw the next player name.
-            player_drawer.text((current_x, current_y), remaining_text[0], font=action_font, fill=constants.HG_ACTION_PLAYER_COLOR)
-            current_x += action_font.getsize(remaining_text[0])[0]
-            remaining_text.remove(remaining_text[0])
-
-    # Only 1:
-    else:
-        # Draws each part of the text.
-        current_x = int((image_width - text_width) / 2)
-        current_y += constants.HG_ICON_SIZE + constants.HG_TEXT_BUFFER
-        makeimage_action_text(constants.HG_WINNER_DEAD_EVENT if players[0][2] else constants.HG_WINNER_EVENT, players, player_drawer, current_x, current_y, action_font)
-
-    return action_image
-
-
 def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
     """
     Draws a player's pfp at the given x and y.
@@ -1596,12 +1502,16 @@ async def generate_full_game(hg_dict, message):
 
         # Add tie phase to phases ONLY if there's more than one.
         if len(tiees) > 1:
-            hg_dict['phases'].append({'type': 'tie', 'players': [(tienum, hg_dict['statuses'][tienum]['name'], True) for tienum in tiees],
+            hg_dict['phases'].append({'type': 'tie', 'act': [{'players': [(tie_player, hg_dict['statuses'][tie_player]['name'], True) for tie_player in tiees],
+                                                              'act': HG_TIE_EVENT + '{0}' +
+                                                                     ', '.join(['{' + i + '}' for i in range(1, len(tiees) - 1)]) +
+                                                              ', and {' + len(tiees) - 1 + '}!'}],
                                       'title': HG_TIE_TITLE, 'desc': HG_TIE_TITLE})
 
         # Otherwise, it's a victory, but dead.
         else:
-            hg_dict['phases'].append({'type': 'win', 'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)],
+            hg_dict['phases'].append({'type': 'win', 'act': [{'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)],
+                                                              'act': HG_WINNER_DEAD_EVENT}],
                                       'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
 
     # Not a tie, run this next part.
@@ -1615,7 +1525,8 @@ async def generate_full_game(hg_dict, message):
                 break
 
         # Add win phase to phases
-        hg_dict['phases'].append({'type': 'win', 'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
+        hg_dict['phases'].append({'type': 'win', 'act': [{'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
+                                                          'act': HG_WINNER_EVENT}],
                                   'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
 
     # Makes the placement screen.
@@ -1682,8 +1593,8 @@ def generate_bloodbath(hg_dict):
             player_actions.remove(chosen_players[-1])
 
         # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'],
-                        'full': curr_action})
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
+                        'act': curr_action['act'], 'full': curr_action})
 
         # Generate statuses
         generate_statuses(hg_dict['statuses'], actions[-1])
@@ -1737,8 +1648,8 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
             player_actions.remove(chosen_players[-1])
 
         # Add the actions to the list.
-        actions.append({'players': [(player, hg_dict['statuses'][player]['name']) for player in chosen_players], 'act': curr_action['act'],
-                        'full': curr_action})
+        actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
+                        'act': curr_action['act'], 'full': curr_action})
 
     # Shuffles the actions and generates statuses.
     random.shuffle(actions)
