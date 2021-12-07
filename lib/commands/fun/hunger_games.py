@@ -3,7 +3,7 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
-from lib.util.exceptions import CannotAccessUserlistError, NoUserSpecifiedError, UnableToFindUserError
+from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, UnableToFindUserError
 from lib.util import arguments, assets, messaging, misc, parsing, tempfiles
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
@@ -1009,10 +1009,9 @@ async def send_midgame(message, hg_dict, count, do_previous):
             'Kills', HG_EMBED_COLOR, footer_str
         )
 
-    # Creates embed for other pages.
+    # If there's an unexpected phase type, raise an exception.
     else:
-        log.error(misc.get_comm_start(message, is_in_guild) + ' invalid hunger games phase type {}'.format(current_phase['type']))
-        return
+        raise InvalidHungerGamesPhaseError(current_phase['type'])
 
 
 def do_increment(hg_dict, count, do_previous):
@@ -1846,14 +1845,6 @@ def generate_kill_count_screen(hg_dict):
 
     # Reverses placements list to sort from first to last and makes it a phase
     hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in kill_placements])})
-
-
-def hunger_games_set_embed_image(image, embed):
-    current_image_filepath = os.path.join(constants.TEMP_DIR, constants.HG_IMAGE_PATH)
-    image.save(current_image_filepath)
-    file = discord.File(current_image_filepath, filename='hg_image_filepath.png')
-    embed.set_image(url='attachment://hg_image_filepath.png')
-    return file
 
 
 async def pregame_shuffle(message, player_count, hg_dict):

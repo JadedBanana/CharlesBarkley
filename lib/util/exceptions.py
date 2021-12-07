@@ -52,3 +52,9 @@ class UnableToFindUserError(Exception):
 class InvalidAssetFileDirError(ValueError):
     def __init__(self, reason):
         self.strerr = reason
+
+
+# InvalidHungerGamesPhaseError is raised when there's an invalid hunger games phase type.
+class InvalidHungerGamesPhaseError(ValueError):
+    def __init__(self, reason):
+        self.strerr = reason
