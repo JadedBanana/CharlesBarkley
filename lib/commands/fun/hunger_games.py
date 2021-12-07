@@ -449,7 +449,7 @@ async def hunger_games_update(bot, message):
 
     # If the game is already generated.
     if hg_dict['past_pregame']:
-        await hunger_games_update_midgame(bot, hg_key, hg_dict, response, message)
+        await hunger_games_update_midgame(hg_key, hg_dict, response, message)
 
     # The game is not yet out of pregame, run the pregame method.
     else:
@@ -752,7 +752,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         await send_pregame(message, hg_dict, 'Allowed bots into the game.')
 
 
-async def hunger_games_update_midgame(bot, hg_key, hg_dict, response, message):
+async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
     """
     Updates the hunger games dict according to how the response is formatted.
     Only triggers during midgame.
@@ -799,7 +799,7 @@ async def hunger_games_update_midgame(bot, hg_key, hg_dict, response, message):
 
             # Replay game command.
             elif any([response[0] == value for value in HG_POSTGAME_REPLAY_TERMS]):
-                await hunger_games_update_postgame_replay(bot, hg_key, hg_dict, response, message)
+                await hunger_games_update_postgame_replay(hg_key, hg_dict, response, message)
 
     # If the game isn't finished generating yet.
     elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
@@ -930,6 +930,30 @@ async def hunger_games_update_postgame_new_game(hg_key, hg_dict, response, messa
     hg_dict['phases'] = None
     hg_dict['complete'] = False
     hg_dict['past_pregame'] = False
+
+
+async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message):
+    """
+    Generate a new game with new players (delete the old one).
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # Restore the player objects.
+    hg_dict['players'] = hg_dict['player_objects']
+
+    # Reset all the post-generation crap in the dict.
+    hg_dict['generated'] = False
+    hg_dict['phases'] = None
+    hg_dict['complete'] = False
+    hg_dict['past_pregame'] = False
+
+    # Send the new pregame embed.
+    await send_pregame(message, hg_dict)
 
 
 async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message):
@@ -1504,9 +1528,6 @@ async def generate_full_game(hg_dict, message):
         hg_dict (dict) : The full game dict.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # Get rid of redundant tag.
-    del hg_dict['uses_bots']
-
     # Create player statuses dict in the hg_dict.
     statuses = {}
     for player in hg_dict['players']:
@@ -1647,6 +1668,9 @@ async def generate_full_game(hg_dict, message):
 
     # Makes the kill count screen.
     generate_kill_count_screen(hg_dict)
+
+    # Copy over the existing playerlist to a backup.
+    hg_dict['player_objects'] = hg_dict['players']
 
     # Re-do the playerlist in the hg_dict.
     new_players = {}
