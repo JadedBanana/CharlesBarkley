@@ -81,6 +81,9 @@ HG_MIDGAME_CANCEL_CANCEL_TERMS = ['n', 'no']
 HG_MIDGAME_NEXT_TERMS = ['n', 'next', 'proceed']
 HG_MIDGAME_PREVIOUS_TERMS = ['p', 'prev', 'previous']
 
+# Postgame
+HG_POSTGAME_REPLAY_TERMS = ['r', 'replay']
+
 # Winner / Ties
 HG_WINNER_TITLE = 'The Winner'
 HG_TIE_TITLE = 'The Winners'
@@ -446,7 +449,7 @@ async def hunger_games_update(bot, message):
 
     # If the game is already generated.
     if hg_dict['past_pregame']:
-        await hunger_games_update_midgame(hg_key, hg_dict, response, message)
+        await hunger_games_update_midgame(bot, hg_key, hg_dict, response, message)
 
     # The game is not yet out of pregame, run the pregame method.
     else:
@@ -749,12 +752,13 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         await send_pregame(message, hg_dict, 'Allowed bots into the game.')
 
 
-async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
+async def hunger_games_update_midgame(bot, hg_key, hg_dict, response, message):
     """
     Updates the hunger games dict according to how the response is formatted.
     Only triggers during midgame.
 
     Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
         hg_key (str) : The key for the hunger games dict.
         hg_dict (dict) : The full game dict.
         response (str[]) : A list of strings representing the response.
@@ -785,6 +789,17 @@ async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
         # Cancel command.
         elif any([response[0] == value for value in HG_MIDGAME_CANCEL_TERMS]):
             await hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
+
+        # These set only activate if we're in postgame.
+        elif hg_dict['complete']:
+
+            # New game command.
+            if any([response[0] == value for value in HG_POSTGAME_NEW_GAME_TERMS]):
+                await hunger_games_update_postgame_new_game(hg_key, hg_dict, response, message)
+
+            # Replay game command.
+            elif any([response[0] == value for value in HG_POSTGAME_REPLAY_TERMS]):
+                await hunger_games_update_postgame_replay(bot, hg_key, hg_dict, response, message)
 
     # If the game isn't finished generating yet.
     elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
@@ -895,6 +910,26 @@ async def hunger_games_update_midgame_still_generating(hg_key, hg_dict, response
     # Logs and sends message.
     logging.info(message, 'requested hunger games, still generating (impatient little sack of shit)')
     await message.channel.send('Still generating, be patient.')
+
+
+async def hunger_games_update_postgame_new_game(hg_key, hg_dict, response, message):
+    """
+    Generate a new game with new players (delete the old one).
+
+    Arguments:
+        hg_key (str) : The key for the hunger games dict.
+        hg_dict (dict) : The full game dict.
+        response (str[]) : A list of strings representing the response.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
+    await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
+
+    # Reset all the post-generation crap in the dict.
+    hg_dict['generated'] = False
+    hg_dict['phases'] = None
+    hg_dict['complete'] = False
+    hg_dict['past_pregame'] = False
 
 
 async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message):
@@ -1976,3 +2011,4 @@ REACTIVE_COMMAND_LIST = [
 # Unfortunately, one or two variables have to be established all the way down here.
 HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
 HG_MIDGAME_BE_PATIENT_TERMS = [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
+HG_POSTGAME_NEW_GAME_TERMS = HG_PREGAME_SHUFFLE_TERMS
