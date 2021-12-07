@@ -191,7 +191,7 @@ HG_NORMAL_DAY_ACTIONS = {
                                                  'kill': [1], 'credit': [0]}]},
         {'needs': 8, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a net from their rope, which they use to catch food.',
                                                  'give': [8888]}]},
-        {'needs': 12, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
+        {'needs': 12, 'chance': 0.7, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
             {'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]},
             {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.',
              'give': [-12, 0]}]},
@@ -250,7 +250,7 @@ HG_NORMAL_NIGHT_ACTIONS = {
                                                    'give': [-302, 0]}],
          'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0],
                    'credit': [1]}]},
-        {'wounded': True, 'needs': 203, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
+        {'wounded': True, 'needs': 203, 'chance': 1, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
         {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
                                                                     'give': [-201]}]},
         {'wounded': True, 'needs': 202, 'chance': 0.5, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
@@ -266,7 +266,7 @@ HG_NORMAL_NIGHT_ACTIONS = {
                                                  'credit': [0]}]},
         {'needs': 14, 'chance': 0.3, 'success': [
             {'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1], 'credit': [0]}]},
-        {'needs': 104, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]}
+        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} passes out from exhaustion.'},
@@ -1810,7 +1810,6 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
     actions = []
 
     # Iterates through triggers.
-    # TODO: Add trigger actions
     for trigger in action_dict['trigger']:
         pass
 
@@ -1820,6 +1819,7 @@ def generate_normal_actions(hg_dict, action_dict, title, desc=None):
         # Creates necessary prerequisites for do while loop.
         # Create a current action with a length of player actions so that the while loop will trigger.
         curr_action = {'players': len(player_actions)}
+
         # Take a player out and use it as the base player.
         chosen_players = [random.choice(player_actions)]
         player_actions.remove(chosen_players[0])
