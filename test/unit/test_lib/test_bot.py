@@ -67,6 +67,7 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         # Setting return value to None to reduce errors and creating the client.
         m_i.return_value = None
         client = JadieClient()
+        client.developer_ids = [12, 4843, 20]
         client.global_prefix = 'j!'
         client.public_command_dict = {'public_command': 'hello'}
         client.developer_command_dict = {'developer_command': 'world'}
@@ -152,12 +153,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         self.assertFalse(client.reconnected_since)
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
@@ -173,12 +173,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
@@ -194,12 +193,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
@@ -215,12 +213,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
@@ -236,12 +233,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, True
@@ -257,12 +253,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, True
@@ -278,12 +273,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, True
@@ -299,12 +293,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_non_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.non_functional.author_is_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, True
@@ -320,12 +313,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_not_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
@@ -341,12 +333,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_not_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
@@ -362,12 +353,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_not_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
@@ -383,12 +373,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_not_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
@@ -404,12 +393,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, True
@@ -425,12 +413,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, True
@@ -446,12 +433,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, True
@@ -467,12 +453,11 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_rrc.assert_not_called()
 
 
-    @mock.patch('lib.bot.JadieClient.__init__')
     @mock.patch('lib.bot.JadieClient.is_functional_message')
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+    async def test_on_message_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
         """lib.bot.JadieClient.on_message.functional.author_is_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, True
