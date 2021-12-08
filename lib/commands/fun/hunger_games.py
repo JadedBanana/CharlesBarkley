@@ -309,8 +309,8 @@ HG_RESTOCK_EVENT = {
 }
 HG_FIRE_EVENT = {
     'trigger': [
-        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the fire.', 'kill': [1],
-                                   'credit': [0]}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the fire.',
+                                                'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -330,8 +330,8 @@ HG_FIRE_EVENT = {
 }
 HG_FLOOD_EVENT = {
     'trigger': [
-        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the water.', 'kill': [1],
-                                   'credit': [0]}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the water.',
+                                                'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -346,7 +346,7 @@ HG_FLOOD_EVENT = {
 }
 HG_TORNADO_EVENT = {
     'trigger': [
-        {'needs': 10, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the storm.'}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the storm.'}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
