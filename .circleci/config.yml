@@ -6,12 +6,13 @@
   jobs:
 
     build-and-test:
+      executor: python/default
       steps:
         - checkout
         - python/load-cache
         - run:
             name: Install Dependencies
-            command: python3 -m pip install --use-deprecated=legacy-resolver -r requirements.txt
+            command: python3 -m pip install -r requirements.txt
         - python/save-cache
         - run:
             name: Running tests
@@ -19,6 +20,7 @@
               python3 -m unittest discover -v
 
   lint-and-coverage:
+    executor: python/default
     steps:
       - checkout
       - python/load-cache
