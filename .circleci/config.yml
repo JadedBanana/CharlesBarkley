@@ -12,7 +12,9 @@
       steps:
         - checkout
         - python/load-cache
-        - python/install-deps
+        - run:
+            name: Install Dependencies
+            command: python3 -m pip install --use-deprecated=legacy-resolver -r requirements.txt
         - python/save-cache
         - run:
             name: Running tests
