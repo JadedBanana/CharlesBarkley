@@ -8,3 +8,4 @@ Pillow>=8.0.0
 python-dateutil>=2.5.0
 python-dotenv
 pytz
+unittest-xml-reporting>=3.0.0
