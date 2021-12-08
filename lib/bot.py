@@ -111,29 +111,11 @@ class JadieClient(discord.Client):
         Arguments:
             message (discord.message.Message) : The discord message object that triggered this method.
         """
-        # Checks to make sure the message, channel, and author exist, and that the message isn't from the bot itself.
-        if not message or not message.content or not message.channel or not message.author or message.author == self.user:
-            return
+        # See if the command is functional and if the author is a developer.
+        functional, author_is_developer = await self.is_functional_message(message)
 
-        # Check to see if the author was a developer.
-        author_is_developer = message.author.id in self.developer_ids
-
-        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
-        if self.ignore_developer and author_is_developer:
-            if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
-                # If so, run the command!
-                return await self.toggle_ignore_developer(self, message)
-            else:
-                # If not, ignore.
-                return
-
-        # Second, if the author ISN'T a developer and this is a development version, then ignore them.
-        if not (author_is_developer or self.deployment_client):
-            return
-
-        # Third, if the message's guild is bugged out, then return.
-        if isinstance(message.channel, discord.TextChannel) and not message.guild:
-            logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
+        # If it isn't functional, return.
+        if not functional:
             return
 
         # Fourth, parse the command out of the message and get the argument.
@@ -153,6 +135,44 @@ class JadieClient(discord.Client):
         # Finally, if this was a regular message, run reactive commands.
         for reactive_command in self.reactive_command_list:
             await commands.run_reactive_command(reactive_command, self, message)
+
+
+    async def is_functional_message(self, message):
+        """
+        Sees whether or not the given message is a functional one (one that the on_message function can react to).
+
+        Arguments:
+            message (discord.message.Message) : The discord message object that triggered this method.
+
+        Returns:
+            bool, bool : The first value corresponds to whether or not the message is functional.
+                         The second value corresponds to whether or not the author was a developer.
+        """
+        # Checks to make sure the message, channel, and author exist, and that the message isn't from the bot itself.
+        if not message or not message.content or not message.channel or not message.author or message.author == self.user:
+            return False, False
+
+        # Check to see if the author was a developer.
+        author_is_developer = message.author.id in self.developer_ids
+
+        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
+        if self.ignore_developer and author_is_developer:
+            if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
+                # If so, run the command!
+                await self.toggle_ignore_developer(self, message)
+            return False, author_is_developer
+
+        # Second, if the author ISN'T a developer and this is a development version, then ignore them.
+        if not (author_is_developer or self.deployment_client):
+            return False, author_is_developer
+
+        # Third, if the message's guild is bugged out, then return.
+        if isinstance(message.channel, discord.TextChannel) and not message.guild:
+            logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
+            return False, author_is_developer
+
+        # Return true.
+        return True, author_is_developer
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
