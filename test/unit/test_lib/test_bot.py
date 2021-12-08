@@ -57,6 +57,25 @@ class TestBotSynchronous(TestCase):
 class TestBotAsynchronous(IsolatedAsyncioTestCase):
 
 
+    @classmethod
+    @mock.patch('lib.bot.JadieClient.__init__')
+    def setUpClass(cls, m_i):
+        """
+        Set up class method.
+        Creates a client that is used in MANY places.
+        """
+        # Setting return value to None to reduce errors and creating the client.
+        m_i.return_value = None
+        client = JadieClient()
+        client.global_prefix = 'j!'
+        client.public_command_dict = {'public_command': 'hello'}
+        client.developer_command_dict = {'developer_command': 'world'}
+        client.reactive_command_list = [mock.MagicMock(), mock.MagicMock()]
+
+        # Make this client, the class' client.
+        cls.client = client
+
+
     async def test_on_ready_no_guilds(self):
         """lib.bot.JadieClient.on_ready.no_guilds"""
         # Create thing
@@ -133,15 +152,337 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         self.assertFalse(client.reconnected_since)
 
 
-    @mock.patch('logging.info')
-    async def test_on_message_(self, m_li):
-        """lib.bot.JadieClient.on_disconnect.not_reconnected_since"""
-        # Create thing
-        client = mock.MagicMock(user='me', reconnected_since=False)
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.no_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, False
+        m_gcfm.return_value = None, None
 
         # Run the method.
-        await JadieClient.on_disconnect(client)
+        await self.client.on_message('message')
 
         # Run assertions.
-        m_li.assert_not_called()
-        self.assertFalse(client.reconnected_since)
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.public_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, False
+        m_gcfm.return_value = 'public_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.developer_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, False
+        m_gcfm.return_value = 'developer_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.unknown_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, False
+        m_gcfm.return_value = 'unknown_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_developer.no_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, True
+        m_gcfm.return_value = None, None
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_developer.public_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, True
+        m_gcfm.return_value = 'public_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_developer.developer_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, True
+        m_gcfm.return_value = 'developer_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_non_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.non_functional.author_is_developer.unknown_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = False, True
+        m_gcfm.return_value = 'unknown_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_not_called()
+        m_rsc.assert_not_called()
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.no_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, False
+        m_gcfm.return_value = None, None
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_not_called()
+        m_rrc.assert_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.public_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, False
+        m_gcfm.return_value = 'public_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_called_once_with('public_command', 'hello', self.client, 'message', 'argument')
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.developer_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, False
+        m_gcfm.return_value = 'developer_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_not_called()
+        m_rrc.assert_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.unknown_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, False
+        m_gcfm.return_value = 'unknown_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_not_called()
+        m_rrc.assert_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_developer.no_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, True
+        m_gcfm.return_value = None, None
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_not_called()
+        m_rrc.assert_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_developer.public_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, True
+        m_gcfm.return_value = 'public_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_called_once_with('public_command', 'hello', self.client, 'message', 'argument')
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_developer.developer_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, True
+        m_gcfm.return_value = 'developer_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_called_once_with('developer_command', 'world', self.client, 'message', 'argument')
+        m_rrc.assert_not_called()
+
+
+    @mock.patch('lib.bot.JadieClient.__init__')
+    @mock.patch('lib.bot.JadieClient.is_functional_message')
+    @mock.patch('lib.util.parsing.get_command_from_message')
+    @mock.patch('lib.commands.run_standard_command')
+    @mock.patch('lib.commands.run_reactive_command')
+    async def test_on_message_functional_author_is_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm, m_i):
+        """lib.bot.JadieClient.on_message.functional.author_is_developer.unknown_command"""
+        # Set return value for is_functional_message and get_command_from_message
+        m_ifm.return_value = True, True
+        m_gcfm.return_value = 'unknown_command', 'argument'
+
+        # Run the method.
+        await self.client.on_message('message')
+
+        # Run assertions.
+        m_ifm.assert_called_once_with('message')
+        m_gcfm.assert_called_once_with('j!', 'message')
+        m_rsc.assert_not_called()
+        m_rrc.assert_called()

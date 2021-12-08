@@ -36,7 +36,7 @@ class TestEnvironment(TestCase):
 
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """
         Set up class method.
         Creates mock version of the environment's (normally static) dotenv vars and dotenv types.
