@@ -17,6 +17,8 @@
         - run:
             name: Running tests
             command: python3 -m unittest discover -v
+        - store_test_results:
+            path: results.xml
 
   lint-and-coverage:
     executor: python/default
