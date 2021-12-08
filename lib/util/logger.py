@@ -20,7 +20,7 @@ LOGGING_LEVELS = [
     logging.CRITICAL
 ]
 # Logs dir.
-LOGS_DIR = environment.get('LOGS_DIR')
+LOGS_DIR = None
 # Log file name.
 LOG_FILE = None
 
@@ -34,14 +34,15 @@ def basic_setup():
     if environment.get('LOG_TO_FILE'):
 
         # Create the logging directory, if it doesn't exist.
-        logging_dir = LOGS_DIR
-        if not os.path.isdir(logging_dir):
-            os.mkdir(logging_dir)
+        global LOGS_DIR
+        LOGS_DIR = environment.get('LOGS_DIR')
+        if not os.path.isdir(LOGS_DIR):
+            os.mkdir(LOGS_DIR)
 
         # Create the log file.
         from datetime import datetime
         global LOG_FILE
-        LOG_FILE = os.path.join(logging_dir, datetime.today().strftime('%Y-%m-%d') + '.log')
+        LOG_FILE = os.path.join(LOGS_DIR, datetime.today().strftime('%Y-%m-%d') + '.log')
 
         # Set the config.
         logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
