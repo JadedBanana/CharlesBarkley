@@ -261,7 +261,7 @@ HG_NORMAL_NIGHT_ACTIONS = {
             {'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling them.', 'kill': [0],
              'credit': [1]},
             {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0], 'credit': [1]}],
-         'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': -301}]},
+         'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': [-303]}]},
         {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.', 'kill': [1],
                                                  'credit': [0]}]},
         {'needs': 14, 'chance': 0.3, 'success': [
