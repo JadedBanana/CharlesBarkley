@@ -1556,8 +1556,8 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
     # If player dead, recolor to black and white.
     if dead:
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
-                                       white=misc.multiply_color_tuple((255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
-                                       mid=misc.multiply_color_tuple((128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
+                                       white=misc.multiply_int_tuple((255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
+                                       mid=misc.multiply_int_tuple((128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
     image.paste(player_pfp, (pfp_x, pfp_y))
 
     # Draws border around player icon.

@@ -301,21 +301,44 @@ def upper_per_word(input_str):
     return input_str
 
 
-def multiply_color_tuple(color, factor):
-    """
-    Multiplies the values in the tuple by the factor.
-    """
-    color2 = []
-    for i in range(len(color)):
-        color2.append(int(color[i] * factor + 0.5))
-    return tuple(color2)
-
-
 def find_color_tuple_midpoint_hsv(color1, color2, factor=0.5):
     """
     Finds the midpoint between the two RGB colors using HSV midpoints.
+
+    Arguments:
+        color1 (int, int, int) : The first color, in RGB.
+        color2 (int, int, int) : The second color, in RGB.
+        factor (float) : The factor of how much to blend them.
+                         Lower factor = closer to color 1.
+                         Higher factor = closer to color 2.
     """
+    # Gets HSV versions of both colors.
     color1 = colorsys.rgb_to_hsv(color1[0] / 255, color1[1] / 255, color1[2] / 255)
     color2 = colorsys.rgb_to_hsv(color2[0] / 255, color2[1] / 255, color2[2] / 255)
-    color3 = colorsys.hsv_to_rgb(color1[0] * (1 - factor) + color2[0] * factor, color1[1] * (1 - factor) + color2[1] * factor, color1[2] * (1 - factor) + color2[2] * factor)
+
+    # Gets the average of both colors.
+    color3 = colorsys.hsv_to_rgb(color1[0] * (1 - factor) + color2[0] * factor,
+                                 color1[1] * (1 - factor) + color2[1] * factor,
+                                 color1[2] * (1 - factor) + color2[2] * factor)
+
+    # Return the color in the same format as before.
     return int(color3[0] * 255), int(color3[1] * 255), int(color3[2] * 255)
+
+
+def multiply_int_tuple(int_tuple, factor=0.5):
+    """
+    Multiplies the values in the tuple by the factor.
+
+    Arguments:
+        int_tuple (tuple) : A tuple of any length, with just ints as its values.
+        factor (float) : The factor by which to multiply them.
+    """
+    # Create a list for copying the tuple over.
+    int_tuple2 = []
+
+    # Add the original values to the new tuple.
+    for i in range(len(int_tuple)):
+        int_tuple2.append(int(int_tuple[i] * factor + 0.5))
+
+    # Return the new tuple.
+    return tuple(int_tuple2)
