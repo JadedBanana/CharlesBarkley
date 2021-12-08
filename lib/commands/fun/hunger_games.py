@@ -253,9 +253,9 @@ HG_NORMAL_NIGHT_ACTIONS = {
         {'wounded': True, 'needs': 203, 'chance': 1, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
         {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
                                                                     'give': [-201]}]},
-        {'wounded': True, 'needs': 202, 'chance': 0.5, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
+        {'wounded': True, 'needs': 202, 'chance': 0.75, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
                                                                     'give': [-202]}]},
-        {'wounded': True, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}],
+        {'wounded': True, 'chance': 0.6, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}],
          'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
         {'needs': 303, 'chance': 0.2, 'success': [
             {'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling them.', 'kill': [0],
