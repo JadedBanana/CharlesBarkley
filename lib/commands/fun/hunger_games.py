@@ -128,6 +128,8 @@ HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 # # 302: camouflage
 # # 303: cave
 # # 304: high ground
+# # 305: spike trap in the forest
+# # 306: naked
 HG_WEAPON_ITEMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 HG_FOOD_ITEMS = [101, 102, 103, 104]
 HG_HEALTH_ITEMS = [201, 202, 203]
@@ -169,10 +171,13 @@ HG_NORMAL_DAY_ACTIONS = {
                                                     'credit': [0]}], 'fail': [{'players': 0, 'give': [-304]}]},
         {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.', 'kill': [1],
                                                  'credit': [0]}]},
+        {'needs': 101, 'chance': 0.1, 'success': [{'players': 0, 'act': '{0} pours some water on their head.', 'give': [-101]}]},
         {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with their sword.', 'kill': [1], 'credit': [0]},
                                                 {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm '
                                                                       'them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
         {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]},
+                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'credit': [0],
+                                                 'give': [-3, 0]},
                                                 {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'credit': [0],
                                                  'give': [-3, 0]}]},
         {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. An hour later, '
@@ -181,6 +186,8 @@ HG_NORMAL_DAY_ACTIONS = {
                                                 {'players': 0, 'act': '{0} attempts to create a landmine from their explosives, '
                                                                       'but blows themselves up in the process.', 'kill': [0]}]},
         {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.',
+                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
+                                                {'players': 1, 'act': '{0} lands a throwing knife directly into {1}\'s forehead.',
                                                  'kill': [1], 'give': [-5, 0], 'credit': [0]},
                                                 {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and '
                                                                       'throws it back at {0}, killing them.', 'kill': [0], 'credit': [1],
@@ -191,6 +198,13 @@ HG_NORMAL_DAY_ACTIONS = {
                                                  'kill': [1], 'credit': [0]}]},
         {'needs': 8, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} creates a net from their rope, which they use to catch food.',
                                                  'give': [8888]}]},
+        {'needs': 11, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
+                                                                       'It burns {1} alive.', 'give': [-11, 0]},
+                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
+                                                                       'It burns {1} alive.', 'give': [-11, 0]},
+                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
+                                                                       'They forgot to light it, though, so it just smashes against their '
+                                                                       'back.', 'give': [-11, 0], 'hurt': [1]}]},
         {'needs': 12, 'chance': 0.7, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
             {'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]},
             {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.',
@@ -202,7 +216,23 @@ HG_NORMAL_DAY_ACTIONS = {
         {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.',
                                                    'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
         {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food as a motive to get {1} to kill {2}.',
-                                                   'kill': [2], 'credit': [1], 'give': [-103, 0, 0]}]}
+                                                   'kill': [2], 'credit': [1], 'give': [-103, 0, 0]}]},
+        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1,
+                                                   'act': '{1} falls into {0}\'s spike trap while wandering through the forest.',
+                                                   'give': [-305]}]},
+        {'needs': 306, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} really wishes they had their clothes right now.'},
+                                                  {'players': 0, 'act': '{0} is still naked.'},
+                                                  {'players': 0, 'act': '{0} struts around confidently with their bare ass out.'},
+                                                  {'players': 0, 'act': '{0} receives fresh clothes from a sponsor. '
+                                                                        'They are eternally grateful.', 'give': [-306]},
+                                                  {'players': 1, 'act': '{1} comes across {0} walking around naked. '
+                                                                        'They get super creeped out.'},
+                                                  {'players': 1, 'act': '{1} comes across {0} walking around naked. '
+                                                                        'They find it hilarious.'},
+                                                  {'players': 2, 'act': '{1} comes across {0} walking around naked. '
+                                                                        'They laugh so hard that it alerts {2} to their position, who '
+                                                                        'then comes and kills them both.', 'kill': [0, 1],
+                                                   'credit': [2, 2]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} receives clean water from an unknown sponsor.', 'give': [101]},
@@ -236,6 +266,7 @@ HG_NORMAL_DAY_ACTIONS = {
         {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.', 'kill': [0, 1]},
         {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1], 'credit': [0]},
+        {'players': 1, 'act': '{0} takes a minute to wash themselves off in a river. {1} steals their clothes.', 'give': [306, 201]},
         {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2], 'credit': [0, 0]},
         {'players': 2, 'act': '{0} overhears {1} and {2} talking in the distance.'},
         {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2], 'credit': [1]},
@@ -244,6 +275,8 @@ HG_NORMAL_DAY_ACTIONS = {
 }
 HG_NORMAL_NIGHT_ACTIONS = {
     'trigger': [
+        {'needs': 9, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} uses their shovel to create a spike trap in the forest.',
+                                                 'give': [305]}]},
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
                                                   {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, '
                                                                         'ambushing {1} and killing them.', 'kill': [1], 'credit': [0],
@@ -266,7 +299,10 @@ HG_NORMAL_NIGHT_ACTIONS = {
                                                  'credit': [0]}]},
         {'needs': 14, 'chance': 0.3, 'success': [
             {'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1], 'credit': [0]}]},
-        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]}
+        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]},
+        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1,
+                                                 'act': '{1} falls into {0}\'s spike trap while wandering through the forest.',
+                                                 'give': [-305]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} passes out from exhaustion.'},
