@@ -16,8 +16,7 @@
         - python/save-cache
         - run:
             name: Running tests
-            command: |
-              python3 -m unittest discover -v
+            command: python3 -m unittest discover -v
 
   lint-and-coverage:
     executor: python/default
