@@ -189,7 +189,7 @@ HG_NORMAL_DAY_ACTIONS = {
                                                  'credit': [0]}]},
         {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a tree, killing them.',
                                                  'kill': [1], 'credit': [0]}]},
-        {'needs': 8, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a net from their rope, which they use to catch food.',
+        {'needs': 8, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} creates a net from their rope, which they use to catch food.',
                                                  'give': [8888]}]},
         {'needs': 12, 'chance': 0.7, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
             {'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]},
