@@ -6,48 +6,31 @@
   jobs:
 
     build-and-test:
-      executor: python/default
-      environment:
-        PYTHONPATH=.
       steps:
         - checkout
         - python/load-cache
         - run:
             name: Install Dependencies
-            command: python3 -m pip install -r requirements.txt
+            command: python3 -m pip install --use-deprecated=legacy-resolver -r requirements.txt
         - python/save-cache
         - run:
             name: Running tests
-            working_directory: .
             command: |
               python3 -m unittest discover -v
 
   lint-and-coverage:
-    executor: python/default
-    environment:
-      PYTHONPATH=.
     steps:
       - checkout
       - python/load-cache
       - python/install-deps
       - python/save-cache
-#      - run:
-#          name: Linter
-#          command: |
-#            flake8 src/
-#            flake8 test/
       - run:
           name: Coverage
           command: |
             coverage run
             coverage report
 
-
   workflows:
     main:
       jobs:
         - build-and-test
-
-
-# https://www.youtube.com/watch?v=0Ng2622UBe8&t=258s
-# https://www.jetbrains.com/help/pycharm/viewing-code-coverage-results.html
