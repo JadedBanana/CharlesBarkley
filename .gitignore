@@ -2,8 +2,11 @@
 **/*.env
 
 # Machine-specific data
+/test/unit/test_results.xml
 /logs
 /temp
+/htmlcov
 /.idea
 **/__pycache__
 **/*.croncheck
+**/*.coverage
