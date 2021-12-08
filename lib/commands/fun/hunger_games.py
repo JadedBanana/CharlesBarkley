@@ -162,14 +162,14 @@ HG_NORMAL_DAY_ACTIONS = {
     'trigger': [
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
                                                   {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, '
-                                                                       'ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}],
+                                                                        'ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}],
          'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
         {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high ground, '
                                                                          'so they manage to defeat {1}.', 'give': [-304, 0], 'kill': [1],
                                                     'credit': [0]}], 'fail': [{'players': 0, 'give': [-304]}]},
         {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.', 'kill': [1],
                                                  'credit': [0]}]},
-        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with a sword.', 'kill': [1], 'credit': [0]},
+        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with their sword.', 'kill': [1], 'credit': [0]},
                                                 {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm '
                                                                       'them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
         {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]},
@@ -1787,15 +1787,17 @@ def generate_actions_outer(hg_dict, action_dict, title, desc=None):
     for uid in hg_dict['statuses']:
         if not hg_dict['statuses'][uid]['dead']:
             available_players.append(uid)
+    random.shuffle(available_players)
+
     # Actions stores all the actions.
     actions = []
 
-    # Iterates through all the actions, picking them at random for the available_players.
+    # Iterates through all the trigger actions, picking them for all the players that are valid.
+    for trigger in action_dict['trigger']:
+        generate_actions_trigger(hg_dict, trigger, available_players, actions)
+
+    # Iterates through all the actions, picking them at random for the remaining player_actions.
     while available_players:
-
-        # Attempts to get a trigger to be the action for this player.
-
-        # If the trigger didn't work, then get a normal action instead.
         generate_actions_normal(hg_dict, action_dict['normal'], available_players, actions)
 
     # Shuffles the actions and generates statuses.
@@ -1807,6 +1809,88 @@ def generate_actions_outer(hg_dict, action_dict, title, desc=None):
     if not desc:
         desc = title
     hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'desc': desc, 'done': False})
+
+
+def generate_actions_trigger(hg_dict, trigger, available_players, actions):
+    """
+    Generates all the actions for each player in the a normal action round.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        trigger (dict) : The trigger, complete with actions and conditions.
+                         Must have a 'chance' attribute.
+        available_players (int[]) : The list of player id's that have yet to be given actions.
+        actions (list) : The final list of actions that the picked action will be added to.
+    """
+    # First, check and make sure that there are enough players available for this trigger to happen, for both success and fail.
+    if ('success' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['success']])) or \
+            ('fail' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['fail']])):
+        return
+
+    # Next, establish variables for the for loop.
+    chosen_actions = []
+
+    # Enter the for loop to find valid players.
+    for player in available_players:
+
+        # Check the player's inventory, if there are inventory requirements.
+        if 'needs' in trigger:
+            if trigger['needs'] not in hg_dict['statuses'][player]['inv']:
+                continue
+
+        # Check if player needs to be wounded.
+        if 'wounded' in trigger:
+            if not hg_dict['statuses'][player]['hurt']:
+                continue
+
+        # Get whether or not the trigger succeeded.
+        success = random.random() <= trigger['chance']
+
+        # Establish the current action, should force at least one loop of the while loop.
+        curr_action = {'players': len(available_players) + 1}
+
+        # If succeeded and there are success actions, then pick one until there's one with a suitable amount of players.
+        if success and 'success' in trigger:
+            while curr_action['players'] > len(available_players):
+                curr_action = random.choice(trigger['success'])
+
+        # If failed and there are failure actions, then pick one until there's one with a suitable amount of players.
+        if not success and 'fail' in trigger:
+            while curr_action['players'] > len(available_players):
+                curr_action = random.choice(trigger['fail'])
+
+        # If a new curr_action was found, then add it to the list.
+        if 'act' in curr_action:
+            chosen_actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False)], 'act': curr_action['act'],
+                                   'full': curr_action})
+
+    # Remove all the players with triggers from the available_players.
+    for player in [action['players'][0][0] for action in chosen_actions]:
+        available_players.remove(player)
+
+    # For every chosen action, perform one last check.
+    for action in chosen_actions:
+
+        # Check and make sure that there's enough players to perform the action.
+        # If there isn't, put this player back into the available_players list and continue.
+        if len(available_players) < action['full']['players']:
+            available_players.append(action['players'][0])
+            continue
+
+        # Create list of added players.
+        added_players = []
+
+        # Otherwise, gather more necessary players.
+        for i in range(action['full']['players']):
+            added_players.append(random.choice(available_players))
+            available_players.remove(added_players[-1])
+
+        # Add the added players to the action.
+        for player in added_players:
+            action['players'].append((player, hg_dict['statuses'][player]['name'], False))
+
+        # Append the action to actions.
+        actions.append(action)
 
 
 def generate_actions_normal(hg_dict, normal_actions, available_players, actions):
@@ -1874,16 +1958,19 @@ def generate_statuses(hg_statuses, action):
             hg_statuses[action['players'][ind][0]]['hurt'] = False
 
     # Items.
-    if 'give' in action:
-        for ind in range(len(action['give'])):
+    if 'give' in action['full']:
+        for ind in range(len(action['full']['give'])):
 
             # Item 0 (nothing).
-            if action['give'][ind] == 0:
+            if action['full']['give'][ind] == 0:
                 continue
 
             # Negative item (remove their thing).
-            elif action['give'][ind] < 0:
-                hg_statuses[action['players'][ind][0]]['inv'].remove(-action['give'][ind])
+            elif action['full']['give'][ind] < 0:
+                try:
+                    hg_statuses[action['players'][ind][0]]['inv'].remove(-action['full']['give'][ind])
+                except ValueError:
+                    pass
 
             # Other items.
             else:
@@ -1919,7 +2006,7 @@ def generate_statuses(hg_statuses, action):
 
                 # Any other item, just give it to them normally.
                 else:
-                    hg_statuses[action['players'][ind][0]]['inv'].append(action['give'][ind])
+                    hg_statuses[action['players'][ind][0]]['inv'].append(action['full']['give'][ind])
 
     # Delete the 'full' tag on the action.
     del action['full']
