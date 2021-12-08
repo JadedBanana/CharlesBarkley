@@ -1,5 +1,6 @@
 from unittest import mock, TestCase, IsolatedAsyncioTestCase
 from lib.bot import JadieClient
+from lib import bot
 from datetime import datetime
 
 
@@ -13,7 +14,7 @@ class TestBotSynchronous(TestCase):
     def test_init(self, m_i, m_a, m_lc, m_eg):
         """lib.bot.JadieClient.__init__"""
         # Side effect method for environment.get
-        environ_vars = ['global prefix', True, ['12', '31', '50']]
+        environ_vars = [True, ['12', '31', '50']]
         environ_called_with = []
         def environment_get_side_effect(*args, **kwargs):
             environ_called_with.append(args)
@@ -37,17 +38,16 @@ class TestBotSynchronous(TestCase):
         self.assertIsNone(client.bot_uptime)
         self.assertFalse(client.connected_before)
         self.assertFalse(client.reconnected_since)
-        self.assertTrue(len(environ_called_with) == 3)
-        self.assertEqual(environ_called_with[0], ('GLOBAL_PREFIX',))
-        self.assertEqual(client.global_prefix, 'global prefix')
-        self.assertEqual(environ_called_with[1], ('DEPLOYMENT_CLIENT',))
+        self.assertEqual(client.global_prefix, bot.GLOBAL_PREFIX)
+        self.assertTrue(len(environ_called_with) == 2)
+        self.assertEqual(environ_called_with[0], ('DEPLOYMENT_CLIENT',))
         self.assertEqual(client.deployment_client, True)
         m_lc.assert_called()
         self.assertEqual(client.public_command_dict, {'fuckyeah': 'bro'})
         self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
         self.assertEqual(client.reactive_command_list, ['awesome'])
         self.assertEqual(client.toggle_ignore_developer, 'snart')
-        help_init.assert_called_with(client.global_prefix)
+        help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
         self.assertFalse(client.ignore_developer)
         self.assertEqual(client.developer_ids, [12, 31, 50])
         m_a.assert_called()
