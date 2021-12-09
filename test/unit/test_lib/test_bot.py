@@ -57,7 +57,8 @@ class TestBotSynchronous(TestCase):
         m_i.assert_called_with(client, intents='intentional')
 
 
-    def test_message_object_has_required_attributes_no_message(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_message(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_message"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -76,7 +77,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_message_wrong_type(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_message_wrong_type(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.message_wrong_type"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -95,7 +97,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_no_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -114,7 +117,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -133,7 +137,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -152,7 +157,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -171,7 +177,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -190,7 +197,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_no_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_no_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -209,7 +217,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -228,7 +237,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -247,7 +257,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -266,7 +277,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -285,7 +297,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -304,7 +317,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -321,9 +335,10 @@ class TestBotSynchronous(TestCase):
 
         # Run assertions.
         self.assertFalse(response)
-        
 
-    def test_message_object_has_required_attributes_self_author_no_content_no_channel_no_guild(self):
+
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -342,7 +357,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_no_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -361,7 +377,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -380,7 +397,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -399,7 +417,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_no_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -418,7 +437,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_no_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_no_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -437,7 +457,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -456,7 +477,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -475,7 +497,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -494,7 +517,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -513,7 +537,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -532,7 +557,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -551,7 +577,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_no_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -570,7 +597,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -589,7 +617,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -608,7 +637,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -627,7 +657,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -646,7 +677,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_no_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_no_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -665,7 +697,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.no_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -684,7 +717,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.no_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -703,7 +737,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.guild_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -722,7 +757,8 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.guild_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -741,7 +777,8 @@ class TestBotSynchronous(TestCase):
         self.assertTrue(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_no_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_no_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.other_channel.no_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
@@ -760,7 +797,8 @@ class TestBotSynchronous(TestCase):
         self.assertTrue(response)
 
 
-    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_yes_guild(self):
+    @mock.patch('logging.error')
+    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_yes_guild(self, m_le):
         """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.other_channel.yes_guild"""
         # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
         discord.Message = mock.MagicMock
