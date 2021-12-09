@@ -12,8 +12,7 @@ import random
 CRONTAB_CHECK_FILE = '.croncheck'
 CRONTAB_WAIT_INTERVAL = 45
 CRONTAB_STR_LENGTH = 64
-CRONTAB_CHAR_POSSIBILITIES = \
-    '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
+CRONTAB_CHAR_POSSIBILITIES = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
 
 
 # get_cronstring is used for the launcher.
@@ -25,6 +24,7 @@ def get_cronstring():
     # If the crontab check file isn't there, we return None
     if not path.isfile(CRONTAB_CHECK_FILE):
         return None
+
     # Otherwise, we open the file and return its contents.
     with open(CRONTAB_CHECK_FILE, 'r') as r:
         return r.read()
