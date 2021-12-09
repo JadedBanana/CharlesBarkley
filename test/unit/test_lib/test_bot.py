@@ -920,8 +920,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.no_command"""
+    async def test_on_message_non_functional_author_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.non_functional.author_not_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
         m_gcfm.return_value = None, None
@@ -940,8 +940,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.public_command"""
+    async def test_on_message_non_functional_author_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.non_functional.author_not_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
         m_gcfm.return_value = 'public_command', 'argument'
@@ -960,8 +960,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.developer_command"""
+    async def test_on_message_non_functional_author_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.non_functional.author_not_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
         m_gcfm.return_value = 'developer_command', 'argument'
@@ -980,8 +980,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_non_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.non_functional.author_is_not_developer.unknown_command"""
+    async def test_on_message_non_functional_author_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.non_functional.author_not_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = False, False
         m_gcfm.return_value = 'unknown_command', 'argument'
@@ -1080,8 +1080,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.no_command"""
+    async def test_on_message_functional_author_not_developer_no_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.functional.author_not_developer.no_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
         m_gcfm.return_value = None, None
@@ -1100,8 +1100,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.public_command"""
+    async def test_on_message_functional_author_not_developer_public_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.functional.author_not_developer.public_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
         m_gcfm.return_value = 'public_command', 'argument'
@@ -1120,8 +1120,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.developer_command"""
+    async def test_on_message_functional_author_not_developer_developer_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.functional.author_not_developer.developer_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
         m_gcfm.return_value = 'developer_command', 'argument'
@@ -1140,8 +1140,8 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
     @mock.patch('lib.util.parsing.get_command_from_message')
     @mock.patch('lib.commands.run_standard_command')
     @mock.patch('lib.commands.run_reactive_command')
-    async def test_on_message_functional_author_is_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
-        """lib.bot.JadieClient.on_message.functional.author_is_not_developer.unknown_command"""
+    async def test_on_message_functional_author_not_developer_unknown_command(self, m_rrc, m_rsc, m_gcfm, m_ifm):
+        """lib.bot.JadieClient.on_message.functional.author_not_developer.unknown_command"""
         # Set return value for is_functional_message and get_command_from_message
         m_ifm.return_value = True, False
         m_gcfm.return_value = 'unknown_command', 'argument'
@@ -1234,3 +1234,292 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
         m_gcfm.assert_called_once_with('j!', 'message')
         m_rsc.assert_not_called()
         m_rrc.assert_called()
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_no_attributes(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message_no_attributes"""
+        # Modify client object
+        self.client.deployment_client = True
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = False
+        m_idc.return_value = False
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=4843))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertFalse(functional_message)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_ignore_developer_author_is_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.ignore_developer.author_is_developer"""
+        # Modify client object
+        self.client.deployment_client = True
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = True
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=4843))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertFalse(functional_message)
+        self.assertTrue(author_is_developer)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_ignore_developer_author_not_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.ignore_developer.author_not_developer"""
+        # Modify client object
+        self.client.deployment_client = True
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = True
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=2021))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertFalse(functional_message)
+        self.assertFalse(author_is_developer)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_deployment_client_author_is_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.deployment_client.author_is_developer"""
+        # Modify client object
+        self.client.deployment_client = True
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = False
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=4843))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertTrue(functional_message)
+        self.assertTrue(author_is_developer)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_deployment_client_author_not_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.deployment_client.author_not_developer"""
+        # Modify client object
+        self.client.deployment_client = True
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = False
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=2021))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertTrue(functional_message)
+        self.assertFalse(author_is_developer)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_development_client_author_is_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.development_client.author_is_developer"""
+        # Modify client object
+        self.client.deployment_client = False
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = False
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=4843))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertTrue(functional_message)
+        self.assertTrue(author_is_developer)
+
+
+    @mock.patch('lib.bot.JadieClient.message_object_has_required_attributes')
+    @mock.patch('lib.bot.JadieClient.ignore_developer_check')
+    async def test_is_functional_message_development_client_author_not_developer(self, m_idc, m_mohra):
+        """lib.bot.JadieClient.is_functional_message.development_client.author_not_developer"""
+        # Modify client object
+        self.client.deployment_client = False
+
+        # Set return value for message_object_has_required_attributes and ignore_developer_check
+        m_mohra.return_value = True
+        m_idc.return_value = False
+
+        # Create the message object.
+        message = mock.MagicMock(author=mock.MagicMock(id=2021))
+
+        # Run the method.
+        functional_message, author_is_developer = await self.client.is_functional_message(message)
+
+        # Run assertions.
+        self.assertFalse(functional_message)
+        self.assertFalse(author_is_developer)
+
+
+    async def test_ignore_developer_check_dont_ignore_developer_author_is_developer_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.dont_ignore_developer.author_is_developer.toggle"""
+        # Modify client object
+        self.client.ignore_developer = False
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='j!toggleignoredev or whatever')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, True)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_dont_ignore_developer_author_is_developer_not_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.dont_ignore_developer.author_is_developer.not_toggle"""
+        # Modify client object
+        self.client.ignore_developer = False
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='some other message')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, True)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_dont_ignore_developer_author_not_developer_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.dont_ignore_developer.author_not_developer.toggle"""
+        # Modify client object
+        self.client.ignore_developer = False
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='j!toggleignoredev or whatever')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, False)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_dont_ignore_developer_author_not_developer_not_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.dont_ignore_developer.author_not_developer.not_toggle"""
+        # Modify client object
+        self.client.ignore_developer = False
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='some other message')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, False)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_ignore_developer_author_is_developer_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.ignore_developer.author_is_developer.toggle"""
+        # Modify client object
+        self.client.ignore_developer = True
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='j!toggleignoredev or whatever')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, True)
+
+        # Run assertions.
+        self.assertTrue(ignore)
+        self.client.toggle_ignore_developer.assert_called_once_with(self.client, message)
+
+
+    async def test_ignore_developer_check_ignore_developer_author_is_developer_not_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.ignore_developer.author_is_developer.not_toggle"""
+        # Modify client object
+        self.client.ignore_developer = True
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='some other message')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, True)
+
+        # Run assertions.
+        self.assertTrue(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_ignore_developer_author_not_developer_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.ignore_developer.author_not_developer.toggle"""
+        # Modify client object
+        self.client.ignore_developer = True
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='j!toggleignoredev or whatever')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, False)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
+
+
+    async def test_ignore_developer_check_ignore_developer_author_not_developer_not_toggle(self):
+        """lib.bot.JadieClient.ignore_developer_check.ignore_developer.author_not_developer.not_toggle"""
+        # Modify client object
+        self.client.ignore_developer = True
+        self.client.toggle_ignore_developer = mock.AsyncMock()
+
+        # Create the message object.
+        message = mock.MagicMock(content='some other message')
+
+        # Run the method.
+        ignore = await self.client.ignore_developer_check(message, False)
+
+        # Run assertions.
+        self.assertFalse(ignore)
+        self.client.toggle_ignore_developer.assert_not_called()
