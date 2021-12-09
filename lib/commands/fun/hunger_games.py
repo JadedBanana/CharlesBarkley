@@ -2216,7 +2216,7 @@ HELP_DOCUMENTATION_LIST = [
         'examples': [('hungergames', 'Generates a Hunger Games with 24 players.'),
                      ('hungergames 64', 'Generates a Hunger Games with 64 players.')],
         'aliases': ['hg', 'hunger', 'hgames'],
-        'usages': ['hg < # of players >'],
+        'usages': ['hungergames', 'hungergames < # of players >'],
         'restrictions': ["Can't be used in DMs"],
         'reactive commands': [('a', 'Add a random player to the game. (Pregame)'),
                               ('a < player >', 'Add a specific player to the game. (Pregame)'),
