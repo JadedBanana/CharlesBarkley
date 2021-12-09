@@ -1,4 +1,7 @@
 from unittest import mock, TestCase, IsolatedAsyncioTestCase
+
+import discord
+
 from lib.bot import JadieClient
 from lib import bot
 from datetime import datetime
@@ -52,6 +55,728 @@ class TestBotSynchronous(TestCase):
         self.assertEqual(client.developer_ids, [12, 31, 50])
         m_a.assert_called()
         m_i.assert_called_with(client, intents='intentional')
+
+
+    def test_message_object_has_required_attributes_no_message(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_message"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = None
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_message_wrong_type(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.message_wrong_type"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = 20
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_no_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.no_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content=None, channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_no_author_yes_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.no_author.yes_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author=None, content='alex cute', channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+        
+
+    def test_message_object_has_required_attributes_self_author_no_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_no_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_no_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_no_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_no_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.no_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content=None, channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_self_author_yes_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.self_author.yes_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='me', content='alex cute', channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_no_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.no_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content=None, channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.no_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel=None, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_no_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.no_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel=None, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.guild_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel=25, guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertFalse(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_guild_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.guild_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel=25, guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertTrue(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_no_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.other_channel.no_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel='other channel', guild=None)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertTrue(response)
+
+
+    def test_message_object_has_required_attributes_user_author_yes_content_other_channel_yes_guild(self):
+        """lib.bot.JadieClient.message_object_has_required_attributes.user_author.yes_content.other_channel.yes_guild"""
+        # Change the value of discord.Message and discord.TextChannel so isinstance() responds correctly
+        discord.Message = mock.MagicMock
+        discord.TextChannel = int
+
+        # Create the client object.
+        client = mock.MagicMock(user='me')
+
+        # Create the message object.
+        message = mock.MagicMock(author='user', content='alex cute', channel='other channel', guild=25)
+
+        # Run the method.
+        response = JadieClient.message_object_has_required_attributes(client, message)
+
+        # Run assertions.
+        self.assertTrue(response)
 
 
 class TestBotAsynchronous(IsolatedAsyncioTestCase):
