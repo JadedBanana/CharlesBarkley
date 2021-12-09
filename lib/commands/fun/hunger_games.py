@@ -4,7 +4,7 @@ Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, UnableToFindUserError
-from lib.util import arguments, assets, messaging, misc, parsing, tempfiles
+from lib.util import arguments, assets, environment, messaging, misc, parsing, tempfiles
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
 
@@ -406,6 +406,7 @@ HG_EVENTS = [
 
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
+EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
 
 
 async def hunger_games_start(bot, message, argument):
@@ -493,6 +494,46 @@ async def hunger_games_update(bot, message):
 
     # Change the 'updated' thing.
     hg_dict['updated'] = datetime.today()
+
+
+async def hunger_games_detect_expiration(bot, message):
+    """
+    Detects expired hunger games instances and deletes them.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # If there are no active games, return.
+    if not CURRENT_GAMES:
+        return
+
+    # Otherwise, get the current time.
+    now = datetime.today()
+
+    # Iterate through all the games and see if the seconds exceed the set limit.
+    for hg_key, hg_dict in CURRENT_GAMES.items():
+        if (now - hg_dict['updated']).seconds >= EXPIRE_SECONDS:
+
+            # Delete it.
+            del CURRENT_GAMES[hg_key]
+
+            # Retire the existing players' profile pictures.
+            if 'players' in hg_dict:
+                if isinstance(hg_dict['players'], dict):
+                    tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+                    tempfiles.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+                else:
+                    tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
+                    tempfiles.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+
+            # Send a message quoting inactivity.
+            logging.info(message, f'Triggered hunger games expiration for channel {hg_key}')
+            channel = bot.get_channel(int(hg_key))
+            await channel.send('Hunger Games canceled due to inactivity.')
+
+            # Break (the others can get canceled later.)
+            return
 
 
 async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
@@ -2206,7 +2247,8 @@ PUBLIC_COMMAND_DICT = {
     'hgames': hunger_games_start
 }
 REACTIVE_COMMAND_LIST = [
-    hunger_games_update
+    hunger_games_update,
+    hunger_games_detect_expiration
 ]
 HELP_DOCUMENTATION_LIST = [
     {

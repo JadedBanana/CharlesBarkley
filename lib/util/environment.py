@@ -13,7 +13,8 @@ EXPECTED_DOTENV_VARS = [
     'LOGGING_LEVEL', 'LOG_TO_FILE', 'LOGS_DIR',
     'BOT_TOKEN',
     'YOUTUBE_API_KEY', 'YOUTUBE_SEARCH_COUNT',
-    'WEATHER_API_KEY'
+    'WEATHER_API_KEY',
+    'HUNGER_GAMES_EXPIRE_SECONDS'
 ]
 # List of expected .env types. Used in both load_dotenv and get.
 EXPECTED_DOTENV_TYPES = {
@@ -22,7 +23,8 @@ EXPECTED_DOTENV_TYPES = {
     'DEVELOPER_DISCORD_IDS': list,
     'LOGGING_LEVEL': int,
     'LOG_TO_FILE': bool,
-    'YOUTUBE_SEARCH_COUNT': int
+    'YOUTUBE_SEARCH_COUNT': int,
+    'HUNGER_GAMES_EXPIRE_SECONDS': int
 }
 
 
