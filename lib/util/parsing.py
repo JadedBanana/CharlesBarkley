@@ -59,5 +59,5 @@ def get_command_from_message(global_prefix, message):
     # Finds space or end of line -- whichever comes first, and returns
     end_index = message.find(' ')
     if not end_index + 1:
-        return message, None
+        return message.lower(), None
     return message[:end_index].lower(), message[end_index + 1:]

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, mock
 from lib.util import parsing
 
 
@@ -73,3 +73,73 @@ class TestParsing(TestCase):
 
             # Run assertions.
             self.assertEqual(response, f'{chr(i)}')
+
+
+    def test_get_command_from_message_no_command(self):
+        """lib.util.parsing.get_command_from_message.no_command.no_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='just a normal ass message!'))
+
+        # Run assertions.
+        self.assertIsNone(command)
+        self.assertIsNone(argument)
+
+
+    def test_get_command_from_message_uppercase_command_no_argument(self):
+        """lib.util.parsing.get_command_from_message.uppercase_command.no_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='J!COMMANDNAME'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertIsNone(argument)
+
+
+    def test_get_command_from_message_lowercase_command_no_argument(self):
+        """lib.util.parsing.get_command_from_message.lowercase_command.no_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='j!commandname'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertIsNone(argument)
+
+
+    def test_get_command_from_message_uppercase_command_single_argument(self):
+        """lib.util.parsing.get_command_from_message.uppercase_command.single_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='J!COMMANDNAME argument'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertEqual(argument, 'argument')
+
+
+    def test_get_command_from_message_lowercase_command_single_argument(self):
+        """lib.util.parsing.get_command_from_message.lowercase_command.single_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='j!commandname argument'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertEqual(argument, 'argument')
+
+
+    def test_get_command_from_message_uppercase_command_multi_argument(self):
+        """lib.util.parsing.get_command_from_message.uppercase_command.single_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='J!COMMANDNAME argument argument argument rah'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertEqual(argument, 'argument argument argument rah')
+
+
+    def test_get_command_from_message_lowercase_command_multi_argument(self):
+        """lib.util.parsing.get_command_from_message.lowercase_command.single_argument"""
+        # Run the method.
+        command, argument = parsing.get_command_from_message('j!', mock.MagicMock(content='j!commandname argument argument argument rah'))
+
+        # Run assertions.
+        self.assertEqual(command, 'commandname')
+        self.assertEqual(argument, 'argument argument argument rah')
