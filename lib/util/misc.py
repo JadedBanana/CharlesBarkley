@@ -269,7 +269,7 @@ async def get_secondmost_recent_message(message):
     """
     # Simple get statement.
     try:
-        return (await message.channel.history(limit=2).flatten())[1].content
+        return (await message.channel.history(limit=2).flatten())[1]
 
     # If there's an index error, raise the FirstMessageInChannelError.
     except IndexError:
