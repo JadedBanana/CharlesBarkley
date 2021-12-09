@@ -137,6 +137,6 @@ HELP_DOCUMENTATION_LIST = [
                      ('ship @dummy#0000', 'Creates a ship with the user @dummy#0000 as one of the partners.'),
                      ('ship dummy', "Creates a ship with the user with the name closest to 'dummy' as one of the partners.")],
         'usages': ['ship', 'ship < user >'],
-        'restrictions': ["Can't be used in DMs"]
+        'restrictions': ["Can't be used in DMs.", "Can't be used in servers with only 1 user."]
     }
 ]

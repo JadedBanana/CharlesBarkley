@@ -2217,7 +2217,7 @@ HELP_DOCUMENTATION_LIST = [
                      ('hungergames 64', 'Generates a Hunger Games with 64 players.')],
         'aliases': ['hg', 'hunger', 'hgames'],
         'usages': ['hungergames', 'hungergames < # of players >'],
-        'restrictions': ["Can't be used in DMs"],
+        'restrictions': ["Can't be used in DMs.", "Minimum of 2 players.", "Maximum of 64 players."],
         'reactive commands': [('a', 'Add a random player to the game. (Pregame)'),
                               ('a < player >', 'Add a specific player to the game. (Pregame)'),
                               ('d', 'Remove the last player from the game. (Pregame)'),

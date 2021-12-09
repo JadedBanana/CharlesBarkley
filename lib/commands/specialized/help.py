@@ -168,6 +168,33 @@ def get_command_dicts():
                             else:
                                 command_specific_help_page['usages'] = [usage]
 
+                    # Get the command restrictions.
+                    if 'restrictions' in help_doc_dict and isinstance(help_doc_dict['restrictions'], list):
+                        # Assert that each restriction is a string.
+                        for restriction in help_doc_dict['restrictions']:
+                            # Assert that each restriction is a string.
+                            if not isinstance(restriction, str):
+                                continue
+                            # Add to the restrictions.
+                            if 'restrictions' in command_specific_help_page:
+                                command_specific_help_page['restrictions'].append(restriction)
+                            else:
+                                command_specific_help_page['restrictions'] = [restriction]
+
+                    # Get the command reactive commands.
+                    if 'reactive commands' in help_doc_dict and isinstance(help_doc_dict['reactive commands'], list):
+                        # Iterate through.
+                        for reactive_command in help_doc_dict['reactive commands']:
+                            # Assert that each reactive command is a tuple and that everything in it is a string.
+                            if not isinstance(reactive_command, tuple) and len(reactive_command) == 2 and \
+                                    all([isinstance(val, str) for val in reactive_command]):
+                                continue
+                            # Add to the examples.
+                            if 'reactive commands' in command_specific_help_page:
+                                command_specific_help_page['reactive commands'].append(reactive_command)
+                            else:
+                                command_specific_help_page['reactive commands'] = [reactive_command]
+
                     # Add it to the dict of command-specific help pages.
                     command_specific_help_page_dict[command_name] = command_specific_help_page
 
@@ -258,13 +285,13 @@ def generate_command_specific_help_page_embeds(global_prefix, command_name, comm
 
     # Create the second field (examples).
     if 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Examples*', value=f'\n'.join([f'`{global_prefix}{example[0]}`\n{example[1]}'
-                                                             for example in command_specific_help_page_dict['examples']]), inline=True)
+        embed.add_field(name='*Examples*', value=f'\n'.join(f'`{global_prefix}{example[0]}`\n{example[1]}'
+                                                            for example in command_specific_help_page_dict['examples']), inline=True)
 
     # If example field was made, then make the usages field.
     if 'usages' in command_specific_help_page_dict and 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{global_prefix}{usage}`'
-                                                             for usage in command_specific_help_page_dict['usages']]), inline=True)
+        embed.add_field(name='*Usages*', value=f'\n'.join(f'`{global_prefix}{usage}`'
+                                                          for usage in command_specific_help_page_dict['usages']), inline=True)
 
     # Create the aliases field.
     if 'aliases' in command_specific_help_page_dict:
@@ -272,9 +299,21 @@ def generate_command_specific_help_page_embeds(global_prefix, command_name, comm
                         inline=False)
 
     # If example field was not made earlier, then make the usages field here.
-    if 'usages' in command_specific_help_page_dict and not 'examples' in command_specific_help_page_dict:
-        embed.add_field(name='*Usages*', value=f'\n'.join([f'`{global_prefix}{usage[0]}`'
-                                                           for usage in command_specific_help_page_dict['usages']]), inline=True)
+    if 'usages' in command_specific_help_page_dict and 'examples' not in command_specific_help_page_dict:
+        embed.add_field(name='*Usages*', value=f'\n'.join(f'`{global_prefix}{usage[0]}`'
+                                                          for usage in command_specific_help_page_dict['usages']), inline=True)
+
+    # Make the restrictions field.
+    if 'restrictions' in command_specific_help_page_dict and 'restrictions' in command_specific_help_page_dict:
+        embed.add_field(name='*Restrictions*', value=f'\n'.join(f'- {restriction}'
+                                                                for restriction in command_specific_help_page_dict['restrictions']),
+                        inline=False)
+
+    # Create the final field (reactive commands).
+    if 'reactive commands' in command_specific_help_page_dict:
+        embed.add_field(name='*Reactive Commands*', value=f'\n'.join(f'`{reactive_command[0]}`: {reactive_command[1]}'
+                                                                     for reactive_command in
+                                                                     command_specific_help_page_dict['reactive commands']), inline=False)
 
     # Return.
     return embed
