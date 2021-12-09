@@ -102,6 +102,8 @@ HELP_DOCUMENTATION_LIST = [
         'category': 'dev_only',
         'description': 'Reboots (terminates) the bot. Requires a secondary confirmation afterwards. Can only be used by developers.',
         'examples': [('reboot', 'Reboots the bot.')],
-        'usages': ['reboot']
+        'usages': ['reboot'],
+        'reactive commands': [('y', 'Confirm reboot.'),
+                              ('n', 'Abort reboot.')]
     }
 ]
