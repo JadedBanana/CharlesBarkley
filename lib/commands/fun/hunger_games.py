@@ -2212,12 +2212,28 @@ HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'hungergames',
         'category': 'fun',
-        'description': 'Simulates the Hunger Games simulator, using users in this Discord chat.',
+        'description': 'Simulates the Hunger Games simulator, using users in this Discord chat. One per channel.',
         'examples': [('hungergames', 'Generates a Hunger Games with 24 players.'),
                      ('hungergames 64', 'Generates a Hunger Games with 64 players.')],
         'aliases': ['hg', 'hunger', 'hgames'],
         'usages': ['hg < # of players >'],
-        'restrictions': ["Can't be used in DMs"]
+        'restrictions': ["Can't be used in DMs"],
+        'reactive commands': [('a', 'Add a random player to the game. (Pregame)'),
+                              ('a < player >', 'Add a specific player to the game. (Pregame)'),
+                              ('d', 'Remove the last player from the game. (Pregame)'),
+                              ('d < player >', 'Remove a specific player from the game. (Pregame)'),
+                              ('s', 'Shuffle around the players in the game. (Pregame, Postgame)'),
+                              ('s < # of players >', 'Shuffle around the specified number of players into the game. (Pregame, Postgame)'),
+                              ('b', 'Toggle the participation of bots in the game. (Pregame)'),
+                              ('p', 'Begin the game. (Pregame)'),
+                              ('n', 'Display the next action. (Midgame, Postgame)'),
+                              ('n < # of actions >', 'Display the next variable number of actions. (Midgame, Postgame)'),
+                              ('p', 'Display the previous action. (Midgame, Postgame)'),
+                              ('p < # of actions >', 'Display the previous variable number of actions. (Midgame, Postgame)'),
+                              ('r', 'Replay the game with the same players. (Postgame)'),
+                              ('c', 'Cancel the game. (Pregame, Midgame, Postgame)'),
+                              ('y', 'Confirm cancel. (Pregame, Postgame)'),
+                              ('n', 'Abort cancel. (Pregame, Postgame)')]
     }
 ]
 
