@@ -884,7 +884,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
         else:
             i += 1
     # Now, normalize the string.
-    student_name = parsing.normalize_string(student_name, remove_double_spaces=True)
+    student_name = parsing.normalize_string(student_name)
 
     # Creates standard user name (white).
     user_writer = ImageDraw.Draw(user_name)

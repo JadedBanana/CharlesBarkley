@@ -4,13 +4,12 @@ There are multiple methods that help with picking out pieces and piecing things 
 """
 
 
-def normalize_string(input_str, remove_double_spaces=True):
+def normalize_string(input_str):
     """
     Removes spaces at the start and end of strings, as well as double spaces, newlines, and tabs in strings.
 
     Arguments:
         input_str (str) : The string to be normalized.
-        remove_double_spaces (bool) : Whether or not double spaces should be removed.
 
     Returns:
         str : The normalized string.
@@ -31,9 +30,8 @@ def normalize_string(input_str, remove_double_spaces=True):
         input_str = input_str[:len(input_str) - 1]
 
     # Double spaces
-    if remove_double_spaces:
-        while '  ' in input_str:
-            input_str = input_str.replace('  ', ' ')
+    while '  ' in input_str:
+        input_str = input_str.replace('  ', ' ')
 
     # Return
     return input_str
