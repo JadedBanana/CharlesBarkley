@@ -419,7 +419,7 @@ async def hunger_games_start(bot, message, argument):
     """
     # Make sure this command isn't being used in a DM.
     if isinstance(message.channel, discord.DMChannel):
-        logging.info(message, 'requested ship, but in DMs, so invalid')
+        logging.info(message, 'requested hunger games, but in DMs, so invalid')
         return await messaging.send_text_message(message, 'This command cannot be used in DMs.')
 
     # Gets the hunger games key (channel id).
@@ -2197,15 +2197,32 @@ async def pregame_shuffle(message, player_count, hg_dict):
 
 
 # Command values
-DEVELOPER_COMMAND_DICT = {
-    'hg': hunger_games_start
+PUBLIC_COMMAND_DICT = {
+    'hg': hunger_games_start,
+    'hunger': hunger_games_start,
+    'hungergames': hunger_games_start,
+    'hungry': hunger_games_start,
+    'hungrygames': hunger_games_start,
+    'hgames': hunger_games_start
 }
 REACTIVE_COMMAND_LIST = [
     hunger_games_update
 ]
+HELP_DOCUMENTATION_LIST = [
+    {
+        'command_name': 'hungergames',
+        'category': 'fun',
+        'description': 'Simulates the Hunger Games simulator, using users in this Discord chat.',
+        'examples': [('hungergames', 'Generates a Hunger Games with 24 players.'),
+                     ('hungergames 64', 'Generates a Hunger Games with 64 players.')],
+        'aliases': ['hg', 'hunger', 'hgames'],
+        'usages': ['hg < # of players >'],
+        'restrictions': ["Can't be used in DMs"]
+    }
+]
 
 
 # Unfortunately, one or two variables have to be established all the way down here.
-HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
-HG_MIDGAME_BE_PATIENT_TERMS = [GLOBAL_PREFIX + command for command in DEVELOPER_COMMAND_DICT]
+HG_PREGAME_SHUFFLE_TERMS = ['s', 'shuffle'] + [GLOBAL_PREFIX + command for command in PUBLIC_COMMAND_DICT]
+HG_MIDGAME_BE_PATIENT_TERMS = [GLOBAL_PREFIX + command for command in PUBLIC_COMMAND_DICT]
 HG_POSTGAME_NEW_GAME_TERMS = HG_PREGAME_SHUFFLE_TERMS
