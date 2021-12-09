@@ -149,30 +149,72 @@ class JadieClient(discord.Client):
                          The second value corresponds to whether or not the author was a developer.
         """
         # Checks to make sure the message, channel, and author exist, and that the message isn't from the bot itself.
-        if not message or not message.content or not message.channel or not message.author or message.author == self.user:
+        if not self.message_object_has_required_attributes(message):
             return False, False
 
         # Check to see if the author was a developer.
         author_is_developer = message.author.id in self.developer_ids
 
-        # First, if the author is a developer and they're being ignored, check if this message is a toggleignoredev command.
-        if self.ignore_developer and author_is_developer:
-            if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
-                # If so, run the command!
-                await self.toggle_ignore_developer(self, message)
+        # Check if the developer is to be ignored, if they are a developer.
+        if await self.ignore_developer_check(message, author_is_developer):
             return False, author_is_developer
 
-        # Second, if the author ISN'T a developer and this is a development version, then ignore them.
+        # Next, if the author ISN'T a developer and this is a development version, then ignore them.
         if not (author_is_developer or self.deployment_client):
-            return False, author_is_developer
-
-        # Third, if the message's guild is bugged out, then return.
-        if isinstance(message.channel, discord.TextChannel) and not message.guild:
-            logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
             return False, author_is_developer
 
         # Return true.
         return True, author_is_developer
+
+
+    def message_object_has_required_attributes(self, message):
+        """
+        Checks to make sure that the message object provided has all the required attributes.
+
+        Arguments:
+            message (discord.message.Message) : The discord message object that triggered this method.
+
+        Returns:
+            bool : Whether or not it has all the required attributes.
+        """
+        # Check for message object, content, channel, and author, and making sure we're not the author.
+        if not message or not isinstance(message, discord.Message) or not message.author \
+                or message.author == self.user or not message.content or not message.channel:
+            return False
+
+        # If the message should be in a guild but its guild is bugged out, then return.
+        if isinstance(message.channel, discord.TextChannel) and not message.guild:
+            logging.error(f'Discord TextChannel {message.channel} does not have a guild attached to it')
+            return False
+
+        # Test passed, return True.
+        return True
+
+
+    async def ignore_developer_check(self, message, author_is_developer):
+        """
+        Checks if we are to ignore the developer.
+        If the message's content is a toggleignoredev command, then run the command.
+
+        Arguments:
+            message (discord.message.Message) : The discord message object that triggered this method.
+            author_is_developer (bool) : Whether or not the author is a developer.
+
+        Returns:
+            bool : Whether or not to ignore this message for the rest of time.
+        """
+        # Check for ignoring the developer and the command.
+        if self.ignore_developer and author_is_developer:
+            if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
+
+                # If so, run the command!
+                await self.toggle_ignore_developer(self, message)
+
+            # Return True, since developer is ignored.
+            return True
+
+        # Developer not ignored, continue on.
+        return False
 
 
 # Client is the thing that is basically the connection between us and Discord -- time to run.
