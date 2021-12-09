@@ -182,7 +182,7 @@ async def uwu_owo_master(message, argument, use_owo=False):
     # Otherwise, we attempt to do it on the second-most recent message.
     try:
         # Attempt to grab the second-most recent message and run the thing.
-        content = await misc.get_secondmost_recent_message(message).content
+        content = (await misc.get_secondmost_recent_message(message)).content
         if content:
             await messaging.send_text_message(message, do_uwu_owo_replace(content, use_owo))
 
