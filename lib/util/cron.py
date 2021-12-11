@@ -31,17 +31,28 @@ def get_cronstring():
 
 
 # This class runs an infinite loop constantly writing new shit to the cron file.
-class CronLoop(threading.Thread):
+class CronThread(threading.Thread):
+    """
+    Thread designed to constantly write a random string of characters to the croncheck file.
+    This prevents cron jobs from launching two of the bot at once, since the launcher checks the croncheck file twice while booting up.
+    """
 
     def run(self):
         """
         Cron loop updates the cron file with new random strings so we don't create more than one instance at once thanks to cron.
         """
+        # Import time
         import time
+
+        # Infinite loop.
         while True:
+
+            # Create and write the new cron string.
             cron_str = ''.join(random.choice(CRONTAB_CHAR_POSSIBILITIES) for i in range(CRONTAB_STR_LENGTH))
             with open(CRONTAB_CHECK_FILE, 'w') as w:
                 w.write(cron_str)
+
+            # Wait until next time to write.
             time.sleep(CRONTAB_WAIT_INTERVAL)
 
 
@@ -51,4 +62,4 @@ def start_cron_loop():
     Starts the cron loop.
     """
     # Just starts a cron loop.
-    CronLoop(daemon=True).start()
+    CronThread(daemon=True).start()
