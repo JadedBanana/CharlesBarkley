@@ -73,6 +73,29 @@ def checkout_profile_picture_by_user(user, message, command_key, size=None):
     return image
 
 
+async def checkout_profile_picture_by_user_with_typing(user, message, command_key, size=None):
+    """
+    Checks out a profile picture for temporary use.
+    Will download the profile picture if it doesn't yet exist in the files.
+    Will type in the discord channel if it has to download anything.
+
+    Args:
+        user (discord.user.User) : The desired user.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        command_key (str) : The key that will be used to keep track of which command is using the image.
+                            Should be a wholly unique key for each command.
+        size ((int, int)) : The size, represented by a 2-entry tuple of ints.
+                            Width first, then height.
+    """
+    # If the user isn't downloaded yet, then run the checkout_profile_picture_by_user method with typing.
+    if user not in ACTIVE_PROFILE_PICTURES:
+        async with message.channel.typing():
+            return checkout_profile_picture_by_user(user, message, command_key, size)
+
+    # Otherwise, don't type.
+    return checkout_profile_picture_by_user(user, message, command_key, size)
+
+
 def checkout_profile_picture_by_user_bulk(users, message, command_key):
     """
     Checks out a profile picture for temporary use.
@@ -93,6 +116,27 @@ def checkout_profile_picture_by_user_bulk(users, message, command_key):
 
         # Then, modify the user profile picture data.
         ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
+
+
+async def checkout_profile_picture_by_user_bulk_with_typing(users, message, command_key):
+    """
+    Checks out a profile picture for temporary use.
+    Will download the profile picture if it doesn't yet exist in the files.
+    Will type in the discord channel if it has to download anything.
+
+    Args:
+        users (discord.user.User[]) : A list of users.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        command_key (str) : The key that will be used to keep track of which command is using the image.
+                            Should be a wholly unique key for each command.
+    """
+    # If there are any users not downloaded yet, then run the checkout_profile_picture_by_user_bulk method with typing.
+    if any(user not in ACTIVE_PROFILE_PICTURES for user in users):
+        async with message.channel.typing():
+            return checkout_profile_picture_by_user_bulk(users, message, command_key)
+
+    # Otherwise, don't type.
+    return checkout_profile_picture_by_user_bulk(users, message, command_key)
 
 
 def retire_profile_picture_by_user(user, message, command_key):

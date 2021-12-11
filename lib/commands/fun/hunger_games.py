@@ -640,7 +640,8 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
                         hg_dict['players'].append(player)
 
                         # Checkout their profile picture.
-                        tempfiles.checkout_profile_picture_by_user(player, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
+                        await tempfiles.checkout_profile_picture_by_user_with_typing(player, message, 'hg_filehold',
+                                                                                     (HG_ICON_SIZE, HG_ICON_SIZE))
 
                         # Log and send message.
                         logging.info(message, f'added player {player} to Hunger Games instance')
@@ -692,7 +693,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
         hg_dict['players'].append(added_user)
 
         # Checkout the added user.
-        tempfiles.checkout_profile_picture_by_user(added_user, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
+        await tempfiles.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
 
         # Send the message and junk.
         logging.info(message, f'added player {added_user} to Hunger Games instance')
@@ -830,7 +831,8 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
             if other_players:
                 added_player = random.choice(other_players)
                 hg_players_no_bots.append(added_player)
-                tempfiles.checkout_profile_picture_by_user(added_player, message, 'hg_filehole', (HG_ICON_SIZE, HG_ICON_SIZE))
+                await tempfiles.checkout_profile_picture_by_user_with_typing(added_player, message, 'hg_filehold',
+                                                                             (HG_ICON_SIZE, HG_ICON_SIZE))
 
             # Otherwise, send an error message.
             else:
@@ -2227,7 +2229,7 @@ async def pregame_shuffle(message, player_count, hg_dict):
         user_list.remove(next_player)
 
     # Checkout file holdings for all the profile pictures.
-    tempfiles.checkout_profile_picture_by_user_bulk(hg_players, message, 'hg_filehold')
+    await tempfiles.checkout_profile_picture_by_user_bulk_with_typing(hg_players, message, 'hg_filehold')
 
     # Set in players and bot bool.
     hg_dict['players'] = hg_players
