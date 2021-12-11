@@ -743,7 +743,8 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
 
                         # Log and send embed.
                         logging.info(message, f'removed player {player} from Hunger Games instance')
-                        return await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(player)} from the game.')
+                        async with message.channel.typing():
+                            return await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(player)} from the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
                 logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
@@ -767,7 +768,8 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
 
         # Send the message and junk.
         logging.info(message, f'removed player {removed_player} from Hunger Games instance')
-        await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(removed_player)} from the game.')
+        async with message.channel.typing():
+            await send_pregame(message, hg_dict, f'Removed {misc.get_photogenic_username(removed_player)} from the game.')
 
     # If we can't access the userlist, send an error.
     except CannotAccessUserlistError:
@@ -848,7 +850,8 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
 
         # Send message and log.
         logging.info(message, 'removed bots from Hunger Games instance')
-        await send_pregame(message, hg_dict, 'Removed bots from the game.')
+        async with message.channel.typing():
+            await send_pregame(message, hg_dict, 'Removed bots from the game.')
 
     # Otherwise, use this one.
     else:
@@ -857,7 +860,8 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
 
         # Log and send message.
         logging.info(message, 'added bots to Hunger Games instance')
-        await send_pregame(message, hg_dict, 'Allowed bots into the game.')
+        async with message.channel.typing():
+            await send_pregame(message, hg_dict, 'Allowed bots into the game.')
 
 
 async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
@@ -942,7 +946,8 @@ async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
-    await send_midgame(message, hg_dict, action_count, do_previous=False)
+    async with message.channel.typing():
+        await send_midgame(message, hg_dict, action_count, do_previous=False)
 
 
 async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, message):
@@ -973,7 +978,8 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
-    await send_midgame(message, hg_dict, action_count, do_previous=True)
+    async with message.channel.typing():
+        await send_midgame(message, hg_dict, action_count, do_previous=True)
 
 
 async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message):
