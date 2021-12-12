@@ -66,7 +66,8 @@ def launch():
     logging.info('Passed startup checks, performing basic setup')
 
     # Start the cron loop so that any instances of this class after this one don't start while we're running.
-    cron.start_cron_loop()
+    cron_thread = cron.CronThread()
+    cron_thread.start()
 
     # Now, finally launch the bot.
     from lib import bot

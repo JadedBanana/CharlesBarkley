@@ -64,12 +64,3 @@ class CronThread(threading.Thread):
 
             # Wait until next time to write.
             time.sleep(CRONTAB_WAIT_INTERVAL)
-
-
-# Starts the cron loop. Used to write new shit to the cron file, forever.
-def start_cron_loop():
-    """
-    Starts the cron loop.
-    """
-    # Just starts a cron loop.
-    CronThread(daemon=True).start()
