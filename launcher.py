@@ -35,19 +35,19 @@ def launch():
 
         # Import cron and get the current cron string.
         from time import sleep
-        cron_str_1 = cron.get_cronstring()
+        cron_str_1 = cron.get_cron_string()
 
         # If there isn't a cron string, we try again a second later.
         if not cron_str_1:
             sleep(1)
-            cron_str_1 = cron.get_cronstring()
+            cron_str_1 = cron.get_cron_string()
 
         # If there STILL isn't a cron string, then we immediately move on to the next part.
         # Otherwise, we test for a second cron string about a minute later.
         if cron_str_1:
             # Wait a little less than a minute, then get the current cron string again.
             sleep(55)
-            cron_str_2 = cron.get_cronstring()
+            cron_str_2 = cron.get_cron_string()
 
             # If the two cron strings are not the same, then we exit.
             if cron_str_1 != cron_str_2:
