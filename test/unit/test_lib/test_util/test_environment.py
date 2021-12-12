@@ -1,7 +1,10 @@
-from lib.util.exceptions import UndefinedVariableError, InvalidDotenvFileError
+# Package Imports
 from unittest import mock, TestCase
-from lib.util import environment
 import os
+
+# Local Imports
+from lib.util.exceptions import UndefinedVariableError, InvalidDotenvFileError
+from lib.util import environment
 
 
 class TestEnvironment(TestCase):
