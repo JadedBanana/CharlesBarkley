@@ -73,6 +73,15 @@ def launch():
     tempfiles_thread = tempfiles.TempfilesThread()
     tempfiles_thread.start()
 
+    # Get the current thread.
+    import threading
+    main_thread = threading.current_thread()
+
+    # Run the watchdog class.
+    from lib.util import watchdog
+    watchdog = watchdog.Watchdog(main_thread, cron_thread, tempfiles_thread)
+    watchdog.start()
+
     # Now, finally launch the bot.
     from lib import bot
     bot.launch()
