@@ -42,7 +42,6 @@ def write_cron_string():
         w.write(cron_str)
 
 
-# This class runs an infinite loop constantly writing new shit to the cron file.
 class CronThread(threading.Thread):
     """
     Thread designed to constantly write a random string of characters to the croncheck file.
