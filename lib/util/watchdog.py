@@ -5,6 +5,7 @@ If any of them exit unexpectedly, then watchdog will exit, too.
 # Package Imports
 import threading
 import logging
+import sys
 
 # Constants setting
 THREAD_CHECK_INTERVAL_SECONDS = 5
@@ -14,21 +15,27 @@ def exit_from_main_thread_crash():
     """
     Exits from a main thread crash.
     """
+    # Log and exit.
     logging.critical('Main thread crashed.')
+    sys.exit(-1)
 
 
 def exit_from_cron_thread_crash():
     """
     Exits from a main thread crash.
     """
+    # Log and exit.
     logging.critical('Cron thread crashed.')
+    sys.exit(-1)
 
 
 def exit_from_tempfiles_thread_crash():
     """
     Exits from a main thread crash.
     """
+    # Log and exit.
     logging.critical('Tempfiles thread crashed.')
+    sys.exit(-1)
 
 
 class Watchdog(threading.Thread):
