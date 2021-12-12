@@ -69,6 +69,10 @@ def launch():
     cron_thread = cron.CronThread()
     cron_thread.start()
 
+    # Start the tempfiles loop so that old temp files get deleted.
+    tempfiles_thread = tempfiles.TempfilesThread()
+    tempfiles_thread.start()
+
     # Now, finally launch the bot.
     from lib import bot
     bot.launch()
