@@ -94,7 +94,7 @@ def load_commands():
                         # Put it in!
                         reactive_command_list.append(command)
 
-            # Finally, check for a specialized command dict.
+            # Next, check for a specialized command dict.
             if hasattr(module, 'SPECIALIZED_COMMAND_DICT') and isinstance(module.SPECIALIZED_COMMAND_DICT, dict):
 
                 # Iterate through each entry in the command dict and put them into the specialized command dict.
@@ -112,6 +112,10 @@ def load_commands():
                             raise DuplicateCommandError(command_name)
                         else:
                             specialized_command_dict[command_name] = command_method
+
+            # Finally, check for an initialize method.
+            if hasattr(module, 'initialize') and isinstance(module.initialize, type(load_commands)):
+                module.initialize()
 
         # Log the total commands implemented this package.
         logging.info(f"Loaded {commands_implemented} commands from command package '{package_name}'")

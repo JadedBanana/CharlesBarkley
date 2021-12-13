@@ -16,7 +16,7 @@ import json
 
 
 # A lot of constants important for the Youtube API.
-YOUTUBE_API_KEY = environment.get('YOUTUBE_API_KEY')
+YOUTUBE_API_KEY = None  # Initialized in initialize method
 YOUTUBE_QUOTA_RESET_HOUR = 3
 YOUTUBE_VIDEO_URL_FORMAT = 'https://www.youtube.com/watch?v={}'
 YOUTUBE_SEARCH_URL_FORMAT = \
@@ -119,6 +119,15 @@ async def random_youtube_master(bot, message, argument):
     # urllib.error.HTTPError happens when the quota has been reached.
     except urllib.error.HTTPError:
         await quota_reached_send_message(message)
+
+
+def initialize():
+    """
+    Initializes the command.
+    """
+    # Sets some global variables using environment.get
+    global YOUTUBE_API_KEY
+    YOUTUBE_API_KEY = environment.get('YOUTUBE_API_KEY')
 
 
 # Command values

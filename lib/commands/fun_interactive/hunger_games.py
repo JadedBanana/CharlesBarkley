@@ -454,7 +454,7 @@ HG_EVENTS = [
 
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
-EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
+EXPIRE_SECONDS = None  # Initialized in initialize method
 
 
 async def hunger_games_start(bot, message, argument):
@@ -2324,6 +2324,15 @@ async def pregame_shuffle(message, player_count, hg_dict):
 
     # Return True to signal success.
     return True
+
+
+def initialize():
+    """
+    Initializes the command.
+    """
+    # Sets some global variables using environment.get
+    global EXPIRE_SECONDS
+    EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
 
 
 # Command values

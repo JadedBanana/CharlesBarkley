@@ -27,7 +27,7 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize(version_number, global_prefix):
+def initialize_help(version_number, global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
@@ -370,7 +370,7 @@ PUBLIC_COMMAND_DICT = {
     'help': help_command
 }
 SPECIALIZED_COMMAND_DICT = {
-    'help_init': initialize
+    'help_init': initialize_help
 }
 HELP_DOCUMENTATION_LIST = [
     {
