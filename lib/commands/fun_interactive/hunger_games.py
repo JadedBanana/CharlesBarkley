@@ -37,8 +37,8 @@ HG_ICON_SIZE = 128
 HG_BACKGROUND_COLOR = (93, 80, 80)
 
 # Playerstatus embed.
-HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8,
-                          8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7,
+                          7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
 HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
 HG_STATUS_ALIVE_COLOR = (0, 255, 0)
@@ -67,14 +67,17 @@ HG_PREGAME_CANCEL_TERMS = ['c', 'cancel']
 # Midgame
 HG_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nC: Cancel Game'
 HG_MIDGAME_DESCRIPTION = 'Respond one of the following:\nN: Next Action\tP: Previous Action\nC: Cancel Game'
-HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_POSTGAME_BEGINNING_DESCRIPTION = 'Respond one of the following:\nN: Next Action\n' \
+                                    'R: Replay (same cast)\tS: New Game\tC: Close'
 HG_POSTGAME_MIDGAME_DESCRIPTION = 'Respond one of the following:\n' \
                                   'N: Next Action\tP: Previous Action\n' \
                                   'R: Replay (same cast)\tS: New Game\tC: Close'
 HG_THE_END_DESCRIPTION = 'The end! Respond one of the following:\n' \
                          'N: Next Action\tP: Previous Action\n' \
                          'R: Replay (same cast)\tS: New Game\tC: Close'
-HG_FINALE_DESCRIPTION = 'Respond one of the following:\nP: Previous Action\nR: Replay (same cast)\tS: New Game\tC: Close'
+HG_FINALE_DESCRIPTION = 'Respond one of the following:\n' \
+                        'P: Previous Action\n' \
+                        'R: Replay (same cast)\tS: New Game\tC: Close'
 HG_MIDGAME_CANCEL_TERMS = ['c', 'cancel']
 HG_MIDGAME_CANCEL_CONFIRM_TERMS = ['y', 'yes']
 HG_MIDGAME_CANCEL_CANCEL_TERMS = ['n', 'no']
@@ -156,73 +159,103 @@ HG_BLOODBATH_ACTIONS = [
     {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1], 'credit': [0]},
     {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1], 'credit': [0]},
     {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1], 'credit': [0]},
-    {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.', 'give': [3000, 3000, 3000]},
+    {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.',
+     'give': [3000, 3000, 3000]},
     {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2], 'credit': [0, 1]},
-    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2], 'credit': [1]}
+    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2],
+     'credit': [1]}
 ]
 HG_NORMAL_DAY_ACTIONS = {
     'trigger': [
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
-                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, '
-                                                                        'ambushing {1} and killing them.', 'kill': [1], 'give': [-302, 0]}],
-         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0]}]},
-        {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high ground, '
-                                                                         'so they manage to defeat {1}.', 'give': [-304, 0], 'kill': [1],
+                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out '
+                                                                        'of the bushes, ambushing {1} and killing '
+                                                                        'them.', 'kill': [1], 'give': [-302, 0]}],
+         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.',
+                   'kill': [0]}]},
+        {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high '
+                                                                         'ground, so they manage to defeat {1}.',
+                                                    'give': [-304, 0], 'kill': [1],
                                                     'credit': [0]}], 'fail': [{'players': 0, 'give': [-304]}]},
-        {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.', 'kill': [1],
-                                                 'credit': [0]}]},
-        {'needs': 101, 'chance': 0.1, 'success': [{'players': 0, 'act': '{0} pours some water on their head.', 'give': [-101]}]},
-        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with their sword.', 'kill': [1], 'credit': [0]},
-                                                {'players': 1, 'act': '{0} attempts to swing their sword at {1}, but {1} is able to disarm '
-                                                                      'them and use it against them.', 'kill': [0], 'give': [-2, 2]}]},
-        {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a spear.', 'kill': [0]},
-                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'credit': [0],
-                                                 'give': [-3, 0]},
-                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1], 'credit': [0],
-                                                 'give': [-3, 0]}]},
-        {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. An hour later, '
-                                                                      '{1} steps on it and explodes.', 'kill': [1], 'credit': [0],
-                                                 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from their explosives.'},
-                                                {'players': 0, 'act': '{0} attempts to create a landmine from their explosives, '
-                                                                      'but blows themselves up in the process.', 'kill': [0]}]},
-        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle of {1}\'s chest.',
-                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
-                                                {'players': 1, 'act': '{0} lands a throwing knife directly into {1}\'s forehead.',
-                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
-                                                {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. {1} rips it out and '
-                                                                      'throws it back at {0}, killing them.', 'kill': [0], 'credit': [1],
-                                                 'give': [-5, 0], 'hurt': [1]}]},
-        {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.', 'kill': [1],
-                                                 'credit': [0]}]},
-        {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a tree, killing them.',
+        {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.',
                                                  'kill': [1], 'credit': [0]}]},
-        {'needs': 8, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} creates a net from their rope, which they use to catch food.',
+        {'needs': 101, 'chance': 0.1, 'success': [{'players': 0, 'act': '{0} pours some water on their head.',
+                                                   'give': [-101]}]},
+        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with their sword.',
+                                                 'kill': [1], 'credit': [0]},
+                                                {'players': 1, 'act': '{0} attempts to swing their sword at {1}, '
+                                                                      'but {1} is able to disarm them and use it '
+                                                                      'against them.', 'kill': [0], 'give': [-2, 2]}]},
+        {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a '
+                                                                      'spear.', 'kill': [0]},
+                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1],
+                                                 'credit': [0],
+                                                 'give': [-3, 0]},
+                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1],
+                                                 'credit': [0],
+                                                 'give': [-3, 0]}]},
+        {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. '
+                                                                      'An hour later, {1} steps on it and explodes.',
+                                                 'kill': [1], 'credit': [0],
+                                                 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from '
+                                                                                         'their explosives.'},
+                                                {'players': 0, 'act': '{0} attempts to create a landmine from their '
+                                                                      'explosives, '
+                                                                      'but blows themselves up in the process.',
+                                                 'kill': [0]}]},
+        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle '
+                                                                      'of {1}\'s chest.',
+                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
+                                                {'players': 1, 'act': "{0} lands a throwing knife directly into {1}'s "
+                                                                      "forehead.",
+                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
+                                                {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. '
+                                                                      '{1} rips it out and throws it back at {0}, '
+                                                                      'killing them.', 'kill': [0], 'credit': [1],
+                                                 'give': [-5, 0], 'hurt': [1]}]},
+        {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.',
+                                                 'kill': [1],
+                                                 'credit': [0]}]},
+        {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a '
+                                                                      'tree, killing them.',
+                                                 'kill': [1], 'credit': [0]}]},
+        {'needs': 8, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} creates a net from their rope, which they '
+                                                                      'use to catch food.',
                                                  'give': [8888]}]},
-        {'needs': 11, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
+        {'needs': 11, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} spots {1} from a distance and throws their '
+                                                                       'molotov cocktail. It burns {1} alive.',
+                                                  'give': [-11, 0]},
+                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their '
+                                                                       'molotov cocktail. '
                                                                        'It burns {1} alive.', 'give': [-11, 0]},
-                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
-                                                                       'It burns {1} alive.', 'give': [-11, 0]},
-                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their molotov cocktail. '
-                                                                       'They forgot to light it, though, so it just smashes against their '
-                                                                       'back.', 'give': [-11, 0], 'hurt': [1]}]},
+                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their '
+                                                                       'molotov cocktail. They forgot to light it, '
+                                                                       'though, so it just smashes against their back.',
+                                                  'give': [-11, 0], 'hurt': [1]}]},
         {'needs': 12, 'chance': 0.7, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
             {'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]},
-            {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the bow and run.',
-             'give': [-12, 0]}]},
-        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and die.', 'give': [-13, 0],
+            {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the '
+                                  'bow and run.', 'give': [-12, 0]}]},
+        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and '
+                                                                       'die.', 'give': [-13, 0],
                                                   'credit': [0]}]},
-        {'needs': 301, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.',
-                                                   'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
-        {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, and {4}.',
-                                                   'give': [9999, 0, 0, 0, 0]}, {'players': 0, 'act': '{0} defends their stronghold.'}]},
-        {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food as a motive to get {1} to kill {2}.',
-                                                   'kill': [2], 'credit': [1], 'give': [-103, 0, 0]}]},
+        {'needs': 301, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, '
+                                                                        'and {4}.', 'give': [9999, 0, 0, 0, 0]},
+                                                  {'players': 0, 'act': '{0} defends their stronghold.'}]},
+        {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, '
+                                                                        'and {4}.', 'give': [9999, 0, 0, 0, 0]},
+                                                  {'players': 0, 'act': '{0} defends their stronghold.'}]},
+        {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food as a motive to '
+                                                                        'coerce {1} into killing {2}.',
+                                                   'kill': [2], 'credit': [1], 'give': [-103, 103, 0]}]},
         {'needs': 305, 'chance': 0.2, 'success': [{'players': 1,
-                                                   'act': '{1} falls into {0}\'s spike trap while wandering through the forest.',
-                                                   'give': [-305]}]},
-        {'needs': 306, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} really wishes they had their clothes right now.'},
+                                                   'act': '{1} falls into {0}\'s spike trap while wandering through '
+                                                          'the forest.', 'give': [-305]}]},
+        {'needs': 306, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} really wishes they had their clothes '
+                                                                        'right now.'},
                                                   {'players': 0, 'act': '{0} is still naked.'},
-                                                  {'players': 0, 'act': '{0} struts around confidently with their bare ass out.'},
+                                                  {'players': 0, 'act': '{0} struts around confidently with their bare '
+                                                                        'ass out.'},
                                                   {'players': 0, 'act': '{0} receives fresh clothes from a sponsor. '
                                                                         'They are eternally grateful.', 'give': [-306]},
                                                   {'players': 1, 'act': '{1} comes across {0} walking around naked. '
@@ -230,9 +263,9 @@ HG_NORMAL_DAY_ACTIONS = {
                                                   {'players': 1, 'act': '{1} comes across {0} walking around naked. '
                                                                         'They find it hilarious.'},
                                                   {'players': 2, 'act': '{1} comes across {0} walking around naked. '
-                                                                        'They laugh so hard that it alerts {2} to their position, who '
-                                                                        'then comes and kills them both.', 'kill': [0, 1],
-                                                   'credit': [2, 2]}]}
+                                                                        'They laugh so hard that it alerts {2} to '
+                                                                        'their position, who then comes and kills them '
+                                                                        'both.', 'kill': [0, 1], 'credit': [2, 2]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} receives clean water from an unknown sponsor.', 'give': [101]},
@@ -264,10 +297,14 @@ HG_NORMAL_DAY_ACTIONS = {
         {'players': 1, 'act': '{0} defeats {1} in a fight, but spares their life.', 'hurt': [1]},
         {'players': 1, 'act': '{0} begs for {1} to kill them. They refuse, keeping {0} alive.'},
         {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.', 'kill': [0, 1]},
-        {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1], 'credit': [0]},
-        {'players': 1, 'act': '{0} takes a minute to wash themselves off in a river. {1} steals their clothes.', 'give': [306, 201]},
-        {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2], 'credit': [0, 0]},
+        {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.',
+         'kill': [0, 1]},
+        {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1],
+         'credit': [0]},
+        {'players': 1, 'act': '{0} takes a minute to wash themselves off in a river. {1} steals their clothes.',
+         'give': [306, 201]},
+        {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2],
+         'credit': [0, 0]},
         {'players': 2, 'act': '{0} overhears {1} and {2} talking in the distance.'},
         {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2], 'credit': [1]},
         {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [3], 'credit': [1]}
@@ -275,34 +312,40 @@ HG_NORMAL_DAY_ACTIONS = {
 }
 HG_NORMAL_NIGHT_ACTIONS = {
     'trigger': [
-        {'needs': 9, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} uses their shovel to create a spike trap in the forest.',
-                                                 'give': [305]}]},
+        {'needs': 9, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} uses their shovel to create a spike trap in '
+                                                                      'the forest.', 'give': [305]}]},
         {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
-                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out of the bushes, '
-                                                                        'ambushing {1} and killing them.', 'kill': [1], 'credit': [0],
+                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out '
+                                                                        'of the bushes, ambushing {1} and killing '
+                                                                        'them.', 'kill': [1], 'credit': [0],
                                                    'give': [-302, 0]}],
-         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.', 'kill': [0],
-                   'credit': [1]}]},
-        {'wounded': True, 'needs': 203, 'chance': 1, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-203]}]},
-        {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
-                                                                    'give': [-201]}]},
-        {'wounded': True, 'needs': 202, 'chance': 0.75, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
-                                                                    'give': [-202]}]},
-        {'wounded': True, 'chance': 0.6, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0], 'give': [-202]}],
+         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.',
+                   'kill': [0], 'credit': [1]}]},
+        {'wounded': True, 'needs': 203, 'chance': 1, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
+                                                                  'heal': [0], 'give': [-203]}]},
+        {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
+                                                                    'heal': [0], 'give': [-201]}]},
+        {'wounded': True, 'needs': 202, 'chance': 0.75, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
+                                                                     'heal': [0], 'give': [-202]}]},
+        {'wounded': True, 'chance': 0.6, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
+                                                      'give': [-202]}],
          'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
         {'needs': 303, 'chance': 0.2, 'success': [
-            {'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling them.', 'kill': [0],
-             'credit': [1]},
-            {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0], 'credit': [1]}],
+            {'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling '
+                                  'them.', 'kill': [0], 'credit': [1]},
+            {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0],
+             'credit': [1]}],
          'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': [-303]}]},
-        {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.', 'kill': [1],
-                                                 'credit': [0]}]},
+        {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.',
+                                                 'kill': [1], 'credit': [0]}]},
         {'needs': 14, 'chance': 0.3, 'success': [
-            {'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1], 'credit': [0]}]},
-        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.', 'give': [-104]}]},
-        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1,
-                                                 'act': '{1} falls into {0}\'s spike trap while wandering through the forest.',
-                                                 'give': [-305]}]}
+            {'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1],
+             'credit': [0]}]},
+        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.',
+                                                 'give': [-104]}]},
+        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1, 'act': '{1} falls into {0}\'s spike trap while '
+                                                                        'wandering through the forest.',
+                                                   'give': [-305]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} passes out from exhaustion.'},
@@ -325,8 +368,8 @@ HG_NORMAL_NIGHT_ACTIONS = {
         {'players': 1, 'act': '{0} and {1} make up stories to entertain themselves.'},
         {'players': 2, 'act': '{0} and {1} team up to ambush {2}.', 'kill': [2], 'credit': [0, 1]},
         {'players': 3, 'act': '{0} fends {1}, {2}, and {3} away from their fire.'},
-        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.', 'kill': [0, 1, 2],
-         'credit': [3, 4, 5, 3, 4, 5, 3, 4, 5]},
+        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.',
+         'kill': [0, 1, 2], 'credit': [3, 4, 5, 3, 4, 5, 3, 4, 5]},
         {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5],
          'credit': [0, 1, 2, 0, 1, 2, 0, 1, 2]}
     ]
@@ -345,8 +388,8 @@ HG_RESTOCK_EVENT = {
 }
 HG_FIRE_EVENT = {
     'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the fire.',
-                                                'kill': [1], 'credit': [0]}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
+                                                                     'into the fire.', 'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -358,23 +401,24 @@ HG_FIRE_EVENT = {
         {'players': 0, 'act': '{0} is singed by the flames, but survives.', 'hurt': [0]},
         {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
         {'players': 1, 'act': '{0} pushes {1} into a river, sacrificing themselves.', 'kill': [0]},
-        {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.', 'kill': [0, 1],
-         'credit': [0]},
+        {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.',
+         'kill': [0, 1], 'credit': [0]},
         {'players': 1, 'act': '{0} kills {1} in order to utilize a body of water safely.', 'kill': [1], 'credit': [0]},
         {'players': 1, 'act': '{0} and {1} fail to find a safe spot and suffocate.', 'kill': [0, 1]}
     ]
 }
 HG_FLOOD_EVENT = {
     'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the water.',
-                                                'kill': [1], 'credit': [0]}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
+                                                                     'into the water.', 'kill': [1], 'credit': [0]}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': '{0} falls into the water, but miraculously survives.'},
         {'players': 0, 'act': '{0} is swept away by the flood.', 'kill': [0]},
-        {'players': 0, 'act': '{0} climbs up a tree, but the waters snap the tree in half, taking the whole thing out.', 'kill': [0]},
+        {'players': 0, 'act': '{0} climbs up a tree, but the waters snap the tree in half, taking the whole thing out.',
+         'kill': [0]},
         {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
         {'players': 1, 'act': '{0} pushes {1} into the water.', 'kill': [1], 'credit': [0]},
         {'players': 2, 'act': '{0} throws {1} and {2} to safety, sacrificing themselves.', 'kill': [0]},
@@ -382,7 +426,8 @@ HG_FLOOD_EVENT = {
 }
 HG_TORNADO_EVENT = {
     'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them into the storm.'}]}
+        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
+                                                                     'into the storm.'}]}
     ],
     'normal': [
         {'players': 0, 'act': '{0} survives.'},
@@ -390,17 +435,20 @@ HG_TORNADO_EVENT = {
         {'players': 0, 'act': '{0} survives.'},
         {'players': 0, 'act': '{0} is carried away by the storm.', 'kill': [0]},
         {'players': 1, 'act': '{0} lets {1} into their shelter.'},
-        {'players': 1, 'act': '{0} kicks {1} away, letting them be sucked up by the tornado.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} run away from the storm together, but as {1} is carried away, they grab {0}, '
-                              'leading them both to their deaths.', 'kill': [0, 1], 'credit': [1]},
+        {'players': 1, 'act': '{0} kicks {1} away, letting them be sucked up by the tornado.', 'kill': [1],
+         'credit': [0]},
+        {'players': 1, 'act': '{0} and {1} run away from the storm together, but as {1} is carried away, they grab '
+                              '{0}, leading them both to their deaths.', 'kill': [0, 1], 'credit': [1]},
         {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
     ]
 }
 HG_EVENT_DEFAULT_CHANCE = 0.2
 HG_EVENTS = [
     (HG_FLOOD_EVENT, 'The Flood', 'A vicious flood suddenly appears out of nowhere and sweeps through the Arena.'),
-    (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide forest fire.'),
-    (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the Arena.'),
+    (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide '
+                                'forest fire.'),
+    (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the '
+                                      'Arena.'),
     (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')
 ]
 
@@ -630,7 +678,8 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
             # Recreate the original response (full length), and feed it into the get_closest_users thing.
             argument_str = ' '.join(response[1:])
             try:
-                closest_players = arguments.get_closest_users(message, argument_str, exclude_bots=not hg_dict['uses_bots'])
+                closest_players = arguments.get_closest_users(message, argument_str,
+                                                              exclude_bots=not hg_dict['uses_bots'])
 
                 # Iterate through the closest users and stop at the first one that's NOT in the game.
                 for player in closest_players:
@@ -645,7 +694,8 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
                         # Log and send message.
                         logging.info(message, f'added player {player} to Hunger Games instance')
-                        return await send_pregame(message, hg_dict, f'Added {discord_info.get_photogenic_username(player)} to the game.')
+                        return await send_pregame(message, hg_dict,
+                                                  f'Added {discord_info.get_photogenic_username(player)} to the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
                 logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
@@ -667,15 +717,20 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
             # Get the user list.
             user_list = discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=hg_dict['players'])
 
-            # If the user list is empty, then send an appropriate message back depending on whether or not there are bots available.
+            # If the user list is empty, send an appropriate message back depending on whether there are bots available.
             if not user_list:
-                user_list_with_bots = discord_info.get_applicable_users(message, exclude_bots=False, exclude_users=hg_dict['players'])
+                user_list_with_bots = discord_info.get_applicable_users(message, exclude_bots=False,
+                                                                        exclude_users=hg_dict['players'])
                 if user_list_with_bots:
-                    logging.info(message, 'attempted to add random user to hunger games instance, no non-bot users available')
-                    return await messaging.send_text_message(message, "Every user who isn't a bot is already in the game.")
+                    logging.info(message, 'attempted to add random user to hunger games instance, '
+                                          'no non-bot users available')
+                    return await messaging.send_text_message(message,
+                                                             "Every user who isn't a bot is already in the game.")
                 else:
-                    logging.info(message, 'attempted to add random user to hunger games instance, no more users available')
-                    return await messaging.send_text_message(message, "Every user in the server is already in the game.")
+                    logging.info(message, 'attempted to add random user to hunger games instance, '
+                                          'no more users available')
+                    return await messaging.send_text_message(message,
+                                                             "Every user in the server is already in the game.")
 
         # Next, try it with bots.
         else:
@@ -693,7 +748,8 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
         hg_dict['players'].append(added_user)
 
         # Checkout the added user.
-        await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold', (HG_ICON_SIZE, HG_ICON_SIZE))
+        await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold',
+                                                                      (HG_ICON_SIZE, HG_ICON_SIZE))
 
         # Send the message and junk.
         logging.info(message, f'added player {added_user} to Hunger Games instance')
@@ -729,7 +785,8 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
             # Recreate the original response (full length), and feed it into the get_closest_users thing.
             argument_str = ' '.join(response[1:])
             try:
-                closest_players = arguments.get_closest_users(message, argument_str, exclude_bots=not hg_dict['uses_bots'])
+                closest_players = arguments.get_closest_users(message, argument_str,
+                                                              exclude_bots=not hg_dict['uses_bots'])
 
                 # Iterate through the closest users and stop at the first one that's actually in the game.
                 for player in closest_players:
@@ -744,7 +801,9 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
                         # Log and send embed.
                         logging.info(message, f'removed player {player} from Hunger Games instance')
                         async with message.channel.typing():
-                            return await send_pregame(message, hg_dict, f'Removed {discord_info.get_photogenic_username(player)} from the game.')
+                            return await send_pregame(message, hg_dict,
+                                                      f'Removed {discord_info.get_photogenic_username(player)} '
+                                                      f'from the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
                 logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
@@ -769,7 +828,8 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
         # Send the message and junk.
         logging.info(message, f'removed player {removed_player} from Hunger Games instance')
         async with message.channel.typing():
-            await send_pregame(message, hg_dict, f'Removed {discord_info.get_photogenic_username(removed_player)} from the game.')
+            await send_pregame(message, hg_dict,
+                               f'Removed {discord_info.get_photogenic_username(removed_player)} from the game.')
 
     # If we can't access the userlist, send an error.
     except CannotAccessUserlistError:
@@ -1134,7 +1194,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     """
     # Get all the player data.
     player_data = [(discord_info.get_photogenic_username(player),
-                    temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame', (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
+                    temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
+                                                                (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
                    for player in hg_dict['players']]
 
     # Generate the player statuses image.
@@ -1145,7 +1206,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
 
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
-                                           footer=HG_PREGAME_DESCRIPTION.format('Disallow' if hg_dict['uses_bots'] else 'Allow'))
+                                           footer=HG_PREGAME_DESCRIPTION.format(
+                                               'Disallow' if hg_dict['uses_bots'] else 'Allow'))
 
 
 async def send_midgame(message, hg_dict, count, do_previous):
@@ -1306,7 +1368,8 @@ def do_increment_act(hg_dict, count, do_previous):
     # Backwards section.
     if do_previous:
 
-        # If we were going backwards and the previous action was the beginning of the phase, then perform a special check...
+        # If we were going backwards and the previous action was the beginning of the phase,
+        # then perform a special check...
         if hg_dict['action_min_index'] == 0:
 
             # If this is the first phase, then return False.
@@ -1317,19 +1380,22 @@ def do_increment_act(hg_dict, count, do_previous):
             hg_dict['current_phase'] -= 1
             return do_increment_act_check(hg_dict, count, do_previous)
 
-        # Otherwise, we weren't at the beginning of the phase, so we can reverse increment the action indexes and return True.
+        # Otherwise, we weren't at the beginning of the phase,
+        # so we can reverse increment the action indexes and return True.
         hg_dict['action_max_index'] = hg_dict['action_min_index'] - 1
         hg_dict['action_min_index'] = max(hg_dict['action_min_index'] - count, 0)
         return True
 
-    # If we're going forwards and the previous action was the end of the phase, then add 1 to the current_phase and return True.
+    # If we're going forwards and the previous action was the end of the phase,
+    # then add 1 to the current_phase and return True.
     if hg_dict['action_max_index'] == len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1:
         hg_dict['current_phase'] += 1
         return do_increment_act_check(hg_dict, count, do_previous)
 
     # Otherwise, increment the action indexes and return True.
     hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
-    hg_dict['action_max_index'] = min(hg_dict['action_max_index'] + count, len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
+    hg_dict['action_max_index'] = min(hg_dict['action_max_index'] + count,
+                                      len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
     return True
 
 
@@ -1403,7 +1469,7 @@ def makeimage_player_statuses(players, placement=0, kills=0):
         players (str, PIL.Image, int)[] : The players, organized as a list of tuples.
                                           The first entry should be the player's photogenic username.
                                           The second entry should be the player's icon.
-                                          The third entry should be one of three values if both placement and kills are False:
+                                          The third entry should be one of three values if placement + kills are False:
                                               0: Alive
                                               1: Newly Dead
                                               2: Dead
@@ -1474,15 +1540,17 @@ def makeimage_player_statuses(players, placement=0, kills=0):
                 if isinstance(kills, int):
                     kill_str = f'{player[2]} {" Kill" if player[2] == 1 else " Kills"}'
                     player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str, font=player_font,
-                                       fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR, HG_STATUS_ALIVE_COLOR,
-                                                                               player[2] / kills))
+                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
+                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
+                                                                                                 HG_STATUS_ALIVE_COLOR,
+                                                                                                 player[2] / kills))
                 else:
                     kill_str = '0 Kills'
                     player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str, font=player_font,
-                                       fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR, HG_STATUS_ALIVE_COLOR,
-                                                                               player[2] / kills))
+                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
+                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
+                                                                                                 HG_STATUS_ALIVE_COLOR,
+                                                                                                 player[2] / kills))
 
             # Status
             else:
@@ -1552,8 +1620,10 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
         player_drawer.rectangle(
-            [(current_x - HG_HEADER_BORDER_BUFFER, current_y - HG_HEADER_BORDER_BUFFER),
-             (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER, current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
+            [(current_x - HG_HEADER_BORDER_BUFFER,
+              current_y - HG_HEADER_BORDER_BUFFER),
+             (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER,
+              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
             HG_HEADER_BACKGROUND_COLOR,
             HG_HEADER_BORDER_COLOR
         )
@@ -1580,7 +1650,8 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
         current_y += HG_ICON_SIZE + HG_TEXT_BUFFER
-        makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y, action_font)
+        makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y,
+                              action_font)
 
         # Adds to the current_y and num.
         current_y += HG_FONT_SIZE + HG_ICON_BUFFER
@@ -1605,8 +1676,10 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
     # If player dead, recolor to black and white.
     if dead:
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
-                                       white=misc.multiply_int_tuple((255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
-                                       mid=misc.multiply_int_tuple((128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
+                                       white=misc.multiply_int_tuple(
+                                           (255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
+                                       mid=misc.multiply_int_tuple(
+                                           (128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
     image.paste(player_pfp, (pfp_x, pfp_y))
 
     # Draws border around player icon.
@@ -1623,7 +1696,10 @@ def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_
 
     Arguments:
         remaining_text (str) : The remaining text.
-        players (int, str, bool)[] : The player list from the action. Second value should be the photogenic name for the user.
+        players (int, str, bool)[] : The player list from the action.
+                                     The first value should be the player id.
+                                     The second value of each tuple should be the photogenic name for the user.
+                                     The third value should be whether or not to draw them dead.
         drawer (PIL.ImageDraw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
         txt_y (int) : The y position of where to draw the text.
@@ -1665,7 +1741,8 @@ async def generate_full_game(hg_dict, message):
     # Create player statuses dict in the hg_dict.
     statuses = {}
     for player in hg_dict['players']:
-        statuses[player.id] = {'name': discord_info.get_photogenic_username(player), 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
+        statuses[player.id] = {'name': discord_info.get_photogenic_username(player), 'dead': False, 'hurt': False,
+                               'inv': [], 'kills': 0}
     hg_dict['statuses'] = statuses
 
     # Makes the phases.
@@ -1692,7 +1769,8 @@ async def generate_full_game(hg_dict, message):
         # Test for event.
         # Events can only occur at day/night 4. The chances of an event slowly increase over time.
         # If an event occurs, normal day/night actions are not taken.
-        if day_night >= 4 and turns_since_event > 1 and random.random() < 1 - (1 - HG_EVENT_DEFAULT_CHANCE)**turns_since_event:
+        if day_night >= 4 and turns_since_event > 1 \
+                and random.random() < 1 - (1 - HG_EVENT_DEFAULT_CHANCE)**turns_since_event:
             # Choose random event and generate the actions.
             the_event = random.choice(HG_EVENTS)
             generate_actions_outer(hg_dict, the_event[0], the_event[1], the_event[2])
@@ -1793,8 +1871,9 @@ async def generate_full_game(hg_dict, message):
                 break
 
         # Add win phase to phases
-        hg_dict['phases'].append({'type': 'win', 'act': [{'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
-                                                          'act': HG_WINNER_EVENT}],
+        hg_dict['phases'].append({'type': 'win',
+                                  'act': [{'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
+                                           'act': HG_WINNER_EVENT}],
                                   'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
 
     # Makes the placement screen.
@@ -1834,7 +1913,7 @@ async def generate_full_game(hg_dict, message):
 def generate_bloodbath(hg_dict):
     """
     Generates all the actions for each player in the bloodbath.
-    This is just like any other list of actions, but they're a lot more simplified because there are no prerequisite ones.
+    This is just like any other list of actions, but they're a lot more simplified because there are no trigger ones*.
 
     Arguments:
         hg_dict (dict) : The full game dict.
@@ -1907,7 +1986,8 @@ def generate_actions_trigger(hg_dict, trigger, available_players, actions):
         available_players (int[]) : The list of player id's that have yet to be given actions.
         actions (list) : The final list of actions that the picked action will be added to.
     """
-    # First, check and make sure that there are enough players available for this trigger to happen, for both success and fail.
+    # First, check and make sure that there are enough players available for this trigger to happen,
+    # for both success and fail.
     if ('success' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['success']])) or \
             ('fail' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['fail']])):
         return
@@ -1946,8 +2026,8 @@ def generate_actions_trigger(hg_dict, trigger, available_players, actions):
 
         # If a new curr_action was found, then add it to the list.
         if 'act' in curr_action:
-            chosen_actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False)], 'act': curr_action['act'],
-                                   'full': curr_action})
+            chosen_actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False)],
+                                   'act': curr_action['act'], 'full': curr_action})
 
     # Remove all the players with triggers from the available_players.
     for player in [action['players'][0][0] for action in chosen_actions]:
@@ -2025,7 +2105,8 @@ def generate_statuses(hg_statuses, action):
             hg_statuses[action['players'][ind][0]]['dead'] = True
         # Mark player's place in the game.
         for ind in action['full']['kill']:
-            hg_statuses[action['players'][ind][0]]['dead_num'] = [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
+            hg_statuses[action['players'][ind][0]]['dead_num'] = \
+                [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
 
     # Next, injuries.
     if 'hurt' in action['full']:
@@ -2273,13 +2354,16 @@ HELP_DOCUMENTATION_LIST = [
                               ('d', 'Remove the last player from the game. (Pregame)'),
                               ('d < player >', 'Remove a specific player from the game. (Pregame)'),
                               ('s', 'Shuffle around the players in the game. (Pregame, Postgame)'),
-                              ('s < # of players >', 'Shuffle around the specified number of players into the game. (Pregame, Postgame)'),
+                              ('s < # of players >', 'Shuffle around the specified number of players into the game. '
+                                                     '(Pregame, Postgame)'),
                               ('b', 'Toggle the participation of bots in the game. (Pregame)'),
                               ('p', 'Begin the game. (Pregame)'),
                               ('n', 'Display the next action. (Midgame, Postgame)'),
-                              ('n < # of actions >', 'Display the next variable number of actions. (Midgame, Postgame)'),
+                              ('n < # of actions >', 'Display the next variable number of actions. '
+                                                     '(Midgame, Postgame)'),
                               ('p', 'Display the previous action. (Midgame, Postgame)'),
-                              ('p < # of actions >', 'Display the previous variable number of actions. (Midgame, Postgame)'),
+                              ('p < # of actions >', 'Display the previous variable number of actions. '
+                                                     '(Midgame, Postgame)'),
                               ('r', 'Replay the game with the same players. (Postgame)'),
                               ('c', 'Cancel the game. (Pregame, Midgame, Postgame)'),
                               ('y', 'Confirm cancel. (Pregame, Postgame)'),
