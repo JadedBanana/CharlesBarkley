@@ -4,7 +4,7 @@ Converts numbers from other bases into hexadecimal.
 """
 # Imports
 from lib.util.logger import BotLogger as logging
-from lib.util import arguments, messaging
+from lib.util import arguments, messaging, misc
 
 
 async def hexadecimal(bot, message, argument):
@@ -20,7 +20,7 @@ async def hexadecimal(bot, message, argument):
         # Get the decimal version of the number.
         num = arguments.get_multibased_num_from_argument(argument)
         # Convert the decimal number into a hexadecimal one.
-        num = arguments.convert_num_from_decimal(num, 16)
+        num = misc.convert_num_from_decimal(num, 16)
 
         logging.info(message, f'requested hexadecimal conversion for {argument}, responded with 0x{num}')
         await messaging.send_text_message(message, '0x' + str(num))
