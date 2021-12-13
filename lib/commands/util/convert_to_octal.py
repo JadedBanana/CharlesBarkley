@@ -39,7 +39,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'octal',
-        'category': 'util',
+        'category': 'math',
         'description': 'Converts a given number to octal.',
         'examples': [('octal 45', 'Converts the number 45 from decimal to octal.'),
                      ('octal 0b110101', 'Converts the number 110101 from binary to octal.'),

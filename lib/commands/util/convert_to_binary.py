@@ -39,7 +39,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'binary',
-        'category': 'util',
+        'category': 'math',
         'description': 'Converts a given number to binary.',
         'examples': [('binary 10', 'Converts the number 10 from decimal to binary.'),
                      ('binary 0x1A', 'Converts the number 1A from hexadecimal to binary.'),

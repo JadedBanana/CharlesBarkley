@@ -40,7 +40,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'hexadecimal',
-        'category': 'util',
+        'category': 'math',
         'description': 'Converts a given number to hexadecimal.',
         'examples': [('hexadecimal 45', 'Converts the number 45 from decimal to hexadecimal.'),
                      ('hexadecimal 0b110101', 'Converts the number 110101 from binary to hexadecimal.'),

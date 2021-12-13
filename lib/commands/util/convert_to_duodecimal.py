@@ -40,7 +40,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'duodecimal',
-        'category': 'util',
+        'category': 'math',
         'description': 'Converts a given number to duodecimal.',
         'examples': [('duodecimal 45', 'Converts the number 45 from decimal to duodecimal.'),
                      ('duodecimal 0b110101', 'Converts the number 110101 from binary to duodecimal.'),

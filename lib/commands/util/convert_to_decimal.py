@@ -37,7 +37,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'decimal',
-        'category': 'util',
+        'category': 'math',
         'description': 'Converts a given number to decimal.',
         'examples': [('decimal 0b110101', 'Converts the number 110101 from binary to decimal.'),
                      ('decimal 0x1A', 'Converts the number 1A from hexadecimal to decimal.'),
