@@ -59,7 +59,7 @@ def launch():
 
     # Performing tempfile setup.
     from lib.util import temp_files
-    tempfiles.initialize()
+    temp_files.initialize()
 
     # Logging message.
     import logging
@@ -70,8 +70,8 @@ def launch():
     cron_thread.start()
 
     # Start the tempfiles loop so that old temp files get deleted.
-    tempfiles_thread = tempfiles.TempFilesThread()
-    tempfiles_thread.start()
+    temp_files_thread = temp_files.TempFilesThread()
+    temp_files_thread.start()
 
     # Get the current thread.
     import threading
@@ -79,7 +79,7 @@ def launch():
 
     # Run the watchdog class.
     from lib.util import watchdog
-    watchdog = watchdog.Watchdog(main_thread, cron_thread, tempfiles_thread)
+    watchdog = watchdog.Watchdog(main_thread, cron_thread, temp_files_thread)
     watchdog.start()
 
     # Now, finally launch the bot.
