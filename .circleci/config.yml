@@ -20,7 +20,7 @@
               python3 -m coverage run -m xmlrunner discover -v --output-file test/unit/test_results.xml
               python3 -m coverage report
               python3 -m coverage html
-              cp htmlcov/index.html htmlcov/__INDEX.html
+              cp htmlcov/index.html htmlcov/._=========================INDEX=========================.html
         - store_test_results:
             name: Store test results
             path: test/unit/test_results.xml
