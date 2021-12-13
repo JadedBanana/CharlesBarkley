@@ -3,10 +3,14 @@ Tempfiles helps with creating, maintaining, and deleting files in the temp/ dire
 Mainly deals with profile pictures (hence, that's what most of the methods are for).
 """
 # Package Imports
+import datetime
+
 from PIL import Image
+import threading
 import requests
 import logging
 import random
+import time
 import os
 
 
@@ -21,6 +25,10 @@ PFP_FILETYPE = '.webp'
 TEMP_FILE_LENGTH = 16
 TEMP_FILE_FILETYPE = '.png'
 TEMP_FILE_CHAR_POSSIBILITIES = '1234567890-=_+qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
+
+# Image deletion.
+TEMP_FILES_DELETION_INTERVAL = 60
+TEMP_FILES_MINIMUM_AGE = 20
 
 
 def initialize():
@@ -38,7 +46,7 @@ def initialize():
 
     # Clear profile pictures not in use, as well as leftover temp images.
     clear_profile_pictures_not_in_use()
-    clear_temporary_files()
+    clear_all_temporary_files()
 
 
 def checkout_profile_picture_by_user(user, message, command_key, size=None):
@@ -290,8 +298,7 @@ def save_temporary_text_file(text_str):
     return text_file_path
 
 
-
-def clear_temporary_files():
+def clear_all_temporary_files():
     """
     Clears (deletes) all the temporary images saved in the temp directory.
     """
@@ -304,3 +311,42 @@ def clear_temporary_files():
 
         # Delete the remaining files.
         os.remove(os.path.join(TEMP_DIR, temp_image))
+
+
+def clear_old_temporary_files():
+    """
+    Clears (deletes) old temporary files (that are past TEMP_FILES_MINIMUM_AGE seconds old).
+    """
+    # Iterate through all the images in the directory.
+    for temp_image in os.listdir(TEMP_DIR):
+
+        # Ignore directories.
+        if os.path.isdir(os.path.join(TEMP_DIR, temp_image)):
+            continue
+
+        # If the seconds are less than TEMP_FILES_MINIMUM_AGE, then ignore; otherwise delete.
+        if time.time() - os.path.getmtime(os.path.join(TEMP_DIR, temp_image)) >= TEMP_FILES_MINIMUM_AGE:
+            os.remove(os.path.join(TEMP_DIR, temp_image))
+
+
+class TempfilesThread(threading.Thread):
+    """
+    Thread designed to constantly delete the old tempfiles.
+    This prevents them from being all built up and whatever.
+    """
+
+    def run(self):
+        """
+        Loop infinitely, deleting old temporary files.
+        """
+        # Import time
+        import time
+
+        # Infinite loop.
+        while True:
+
+            # Delete old temporary files.
+            clear_old_temporary_files()
+
+            # Wait until next time to delete.
+            time.sleep(TEMP_FILES_DELETION_INTERVAL)

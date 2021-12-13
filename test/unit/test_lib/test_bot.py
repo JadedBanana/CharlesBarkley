@@ -1,10 +1,11 @@
+# Package Imports
 from unittest import mock, TestCase, IsolatedAsyncioTestCase
-
+from datetime import datetime
 import discord
 
+# Local Imports
 from lib.bot import JadieClient
 from lib import bot
-from datetime import datetime
 
 
 class TestBotSynchronous(TestCase):

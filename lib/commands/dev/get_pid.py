@@ -6,7 +6,7 @@ Gets the PID this bot is running from and sends it back as a text message.
 from lib.util.logger import BotLogger as logging
 from lib.util import messaging
 
-# Package imports
+# Package Imports
 import os
 
 

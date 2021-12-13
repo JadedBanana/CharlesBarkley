@@ -30,24 +30,24 @@ def launch():
     assets.asset_check()
 
     # Next, see if we're supposed to do the croncheck. If so, do that!
-    from lib import cron_checker
+    from lib.util import cron
     if environment.get('LAUNCH_RUN_CRONCHECK'):
 
         # Import cron and get the current cron string.
         from time import sleep
-        cron_str_1 = cron_checker.get_cronstring()
+        cron_str_1 = cron.get_cron_string()
 
         # If there isn't a cron string, we try again a second later.
         if not cron_str_1:
             sleep(1)
-            cron_str_1 = cron_checker.get_cronstring()
+            cron_str_1 = cron.get_cron_string()
 
         # If there STILL isn't a cron string, then we immediately move on to the next part.
         # Otherwise, we test for a second cron string about a minute later.
         if cron_str_1:
             # Wait a little less than a minute, then get the current cron string again.
             sleep(55)
-            cron_str_2 = cron_checker.get_cronstring()
+            cron_str_2 = cron.get_cron_string()
 
             # If the two cron strings are not the same, then we exit.
             if cron_str_1 != cron_str_2:
@@ -66,7 +66,21 @@ def launch():
     logging.info('Passed startup checks, performing basic setup')
 
     # Start the cron loop so that any instances of this class after this one don't start while we're running.
-    cron_checker.start_cron_loop()
+    cron_thread = cron.CronThread()
+    cron_thread.start()
+
+    # Start the tempfiles loop so that old temp files get deleted.
+    tempfiles_thread = tempfiles.TempfilesThread()
+    tempfiles_thread.start()
+
+    # Get the current thread.
+    import threading
+    main_thread = threading.current_thread()
+
+    # Run the watchdog class.
+    from lib.util import watchdog
+    watchdog = watchdog.Watchdog(main_thread, cron_thread, tempfiles_thread)
+    watchdog.start()
 
     # Now, finally launch the bot.
     from lib import bot

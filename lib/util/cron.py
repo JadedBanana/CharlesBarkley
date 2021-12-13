@@ -15,11 +15,11 @@ CRONTAB_STR_LENGTH = 64
 CRONTAB_CHAR_POSSIBILITIES = '1234567890-=_+()*&^%$#@!~`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFG HJKLZXCVBNM[]{};\':",.<>?/|\\'
 
 
-# get_cronstring is used for the launcher.
-def get_cronstring():
+def get_cron_string():
     """
-    Gets the cronstring from the file.
+    Gets the cron string from the file.
     If the file doesn't exist, it returns None.
+    Used often in the launcher.
     """
     # If the crontab check file isn't there, we return None
     if not path.isfile(CRONTAB_CHECK_FILE):
@@ -30,25 +30,36 @@ def get_cronstring():
         return r.read()
 
 
-# This class runs an infinite loop constantly writing new shit to the cron file.
-class CronLoop(threading.Thread):
+def write_cron_string():
+    """
+    Writes a new cron string to the file.
+    """
+    # Create the new cron string.
+    cron_str = ''.join(random.choice(CRONTAB_CHAR_POSSIBILITIES) for i in range(CRONTAB_STR_LENGTH))
+
+    # Open the file and write.
+    with open(CRONTAB_CHECK_FILE, 'w') as w:
+        w.write(cron_str)
+
+
+class CronThread(threading.Thread):
+    """
+    Thread designed to constantly write a random string of characters to the croncheck file.
+    This prevents cron jobs from launching two of the bot at once, since the launcher checks the croncheck file twice while booting up.
+    """
 
     def run(self):
         """
         Cron loop updates the cron file with new random strings so we don't create more than one instance at once thanks to cron.
         """
+        # Import time
         import time
+
+        # Infinite loop.
         while True:
-            cron_str = ''.join(random.choice(CRONTAB_CHAR_POSSIBILITIES) for i in range(CRONTAB_STR_LENGTH))
-            with open(CRONTAB_CHECK_FILE, 'w') as w:
-                w.write(cron_str)
+
+            # Write cron string.
+            write_cron_string()
+
+            # Wait until next time to write.
             time.sleep(CRONTAB_WAIT_INTERVAL)
-
-
-# Starts the cron loop. Used to write new shit to the cron file, forever.
-def start_cron_loop():
-    """
-    Starts the cron loop.
-    """
-    # Just starts a cron loop.
-    CronLoop(daemon=True).start()

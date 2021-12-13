@@ -19,7 +19,7 @@ import sys
 
 # Global bot variables
 GLOBAL_PREFIX = 'j!'
-VERSION_NUMBER = '0.7.2'
+VERSION_NUMBER = '0.7.3'
 
 
 class JadieClient(discord.Client):
