@@ -33,7 +33,7 @@ TEMP_FILES_MINIMUM_AGE = 20
 
 def initialize():
     """
-    Initializes the tempfiles module.
+    Initializes the temp_files module.
     Pretty much just used to make sure all the directories exist.
     """
     # Make temp dir
@@ -329,9 +329,9 @@ def clear_old_temporary_files():
             os.remove(os.path.join(TEMP_DIR, temp_image))
 
 
-class TempfilesThread(threading.Thread):
+class TempFilesThread(threading.Thread):
     """
-    Thread designed to constantly delete the old tempfiles.
+    Thread designed to constantly delete the old temp_files.
     This prevents them from being all built up and whatever.
     """
 

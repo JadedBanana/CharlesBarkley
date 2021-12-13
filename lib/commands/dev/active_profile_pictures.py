@@ -4,7 +4,7 @@ Sends the active profile picture dict, formatted as a codeblock.
 """
 # Local Imports
 from lib.util.logger import BotLogger as logging
-from lib.util import messaging, tempfiles
+from lib.util import messaging, temp_files
 
 
 async def active_pfps(bot, message, argument):

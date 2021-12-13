@@ -2,7 +2,7 @@
 Module handling message sending between the bot and Discord.
 """
 # Local Imports
-from lib.util import tempfiles
+from lib.util import temp_files
 
 # Package Imports
 import discord

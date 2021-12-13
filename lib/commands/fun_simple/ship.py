@@ -4,7 +4,7 @@ Ships two users together. Creepy!
 """
 # Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
-from lib.util import arguments, assets, messaging, misc, tempfiles
+from lib.util import arguments, assets, messaging, misc, temp_files
 from lib.util.logger import BotLogger as logging
 
 # Package Imports

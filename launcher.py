@@ -58,7 +58,7 @@ def launch():
     logger.basic_setup()
 
     # Performing tempfile setup.
-    from lib.util import tempfiles
+    from lib.util import temp_files
     tempfiles.initialize()
 
     # Logging message.
@@ -70,7 +70,7 @@ def launch():
     cron_thread.start()
 
     # Start the tempfiles loop so that old temp files get deleted.
-    tempfiles_thread = tempfiles.TempfilesThread()
+    tempfiles_thread = tempfiles.TempFilesThread()
     tempfiles_thread.start()
 
     # Get the current thread.

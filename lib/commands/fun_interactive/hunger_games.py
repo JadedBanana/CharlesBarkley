@@ -4,7 +4,7 @@ Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, UnableToFindUserError
-from lib.util import arguments, assets, environment, messaging, misc, parsing, tempfiles
+from lib.util import arguments, assets, environment, messaging, misc, parsing, temp_files
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
 
