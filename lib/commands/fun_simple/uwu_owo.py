@@ -4,7 +4,7 @@ Make a mockery out of people by converting their messages into uwu- or owo-speak
 """
 # Local Imports
 from lib.util.exceptions import FirstMessageInChannelError
-from lib.util import messaging, misc
+from lib.util import discord_info, messaging
 
 # Package Imports
 import random
@@ -182,7 +182,7 @@ async def uwu_owo_master(message, argument, use_owo=False):
     # Otherwise, we attempt to do it on the second-most recent message.
     try:
         # Attempt to grab the second-most recent message and run the thing.
-        content = (await misc.get_secondmost_recent_message(message)).content
+        content = (await discord_info.get_secondmost_recent_message(message)).content
         if content:
             await messaging.send_text_message(message, do_uwu_owo_replace(content, use_owo))
 

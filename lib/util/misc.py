@@ -4,42 +4,9 @@ Has a lot of very different methods.
 """
 # Local Imports
 from lib.util.arguments import MAX_CONVERT_DEPTH, CONVERT_CHARS
-from lib.util.exceptions import *
 
 # Package Imports
-from datetime import datetime
 import colorsys
-import discord
-import logging
-import pytz
-
-
-# Timezone names for different discord VoiceRegions.
-DISCORD_REGION_TIMEZONE_NAMES = {
-    'us-west': 'America/Los_Angeles',
-    'us-east': 'America/New_York',
-    'us-south': 'America/Chicago',
-    'us-central': 'America/Chicago',
-    'eu_west': 'Europe/London',
-    'eu_central': 'Europe/Berlin',
-    'singapore': 'Singapore',
-    'london': 'Europe/London',
-    'sydney': 'Australia/Sydney',
-    'amsterdam': 'Europe/Amsterdam',
-    'frankfurt': 'Europe/Berlin',
-    'brazil': 'Brazil/East',
-    'hongkong': 'Hongkong',
-    'russia': 'Europe/Moscow',
-    'japan': 'Asia/Tokyo',
-    'southafrica': 'Egypt',
-    'south-korea': 'Asia/Seoul',
-    'india': 'Asia/Kolkata',
-    'europe': 'Europe/Berlin',
-    'dubai': 'Asia/Dubai',
-    'vip-us-east': 'America/New_York',
-    'vip-us-west': 'America/Los_Angeles',
-    'vip-amsterdam': 'Europe/Amsterdam'
-}
 
 
 def calculate_time_passage(time_delta):
@@ -74,156 +41,6 @@ def calculate_time_passage(time_delta):
     return time_str
 
 
-def get_applicable_users(message, exclude_bots=True, exclude_users=None):
-    """
-    Returns a list of applicable users that fit the criteria provided.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-        exclude_bots (bool) : Whether or not to exclude bots from the list.
-        exclude_users (list) : Which users, if any, to exclude from the list.
-
-    Returns:
-        discord.user.User[] : A list of users that fit the criteria.
-
-    Raises:
-        CannotAccessUserlistError : Can't access the userlist.
-                                    This error is common when working from Windows.
-    """
-    # First, we get a list of all users.
-    # If this is a guild, grab the users in the guild.
-    if isinstance(message.channel, discord.TextChannel):
-        all_users = message.guild.members
-
-    # If this is a DM, grab the recipient.
-    elif isinstance(message.channel, discord.DMChannel):
-        all_users = [message.channel.recipient]
-
-    # Otherwise (group channel), pull the recipients.
-    else:
-        all_users = message.channel.recipients
-
-    # If there isn't an all_users, raise a CannotAccessUserlistError.
-    if len(all_users) < 2:
-        raise CannotAccessUserlistError()
-
-    # If we were told to not include bots, we get rid of them.
-    if exclude_bots:
-        for i in range(len(all_users) - 1, -1, -1):
-            if all_users[i].bot:
-                all_users.remove(all_users[i])
-
-    # We remove all the users in exclude_users, if any.
-    if exclude_users:
-        for usr in exclude_users:
-            if usr in all_users:
-                all_users.remove(usr)
-
-    # Returns.
-    return all_users
-
-
-
-def get_guild_regions_weighted(message):
-    """
-    Gets the supposed region for a guild.
-    This depends on the region overrides for each voice channel.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-
-    Returns:
-        dict : A list of voice regions and how often they appear in each voice channel.
-    """
-    # First, make sure this is a guild. If it isn't, just return an empty dict.
-    if not isinstance(message.channel, discord.TextChannel):
-        return {}
-
-    # Now, we keep a tally (score).
-    region_count = {}
-
-    # Iterate through voice channels.
-    for voice_channel in message.guild.voice_channels:
-
-        # Get rtc region.
-        region = voice_channel.rtc_region
-
-        # If it's None, then continue.
-        if not region:
-            continue
-
-        # Add it to the region_count.
-        if region in region_count:
-            region_count[region] += 1
-        else:
-            region_count[region] = 1
-
-    # Return the region_count.
-    return region_count
-
-
-def get_guild_time(message):
-    """
-    Gets a guild's average local time.
-    This is basicaly guessed by using the weighted guild regions.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-
-    Returns:
-        datetime.datetime : The average datetime across all the guild's channels.
-    """
-    # First, get the weighted guild regions.
-    guild_regions = get_guild_regions_weighted(message)
-
-    # List for keeping track of time weights.
-    time_weights = []
-
-    # Iterate through each guild region.
-    for region, weight in guild_regions.items():
-
-        # If the region is NOT In the discord region timezone names list, log an error and continue.
-        if region.value not in DISCORD_REGION_TIMEZONE_NAMES:
-            logging.error(f'VoiceRegion {region.value} completely unexpected')
-            continue
-
-        # Otherwise, add the timezone's current time to the list.
-        time_weights.append((datetime.now(pytz.timezone(DISCORD_REGION_TIMEZONE_NAMES[region.value])), weight))
-
-    # If there are no time_weights, just send the local time.
-    if not time_weights:
-        return datetime.now()
-
-    # Now that all the time weights are acquired, start adding.
-    time_total = 0
-
-    # Iterate through time and weights.
-    for time, weight in time_weights:
-
-        # Add up the times.
-        time_total += (time.timestamp() + time.tzinfo.utcoffset(time).total_seconds()) * weight
-
-    # Now, average it.
-    time_average = time_total / sum([weight for time, weight in time_weights])
-
-    # Create a datetime object from that average time and return.
-    return datetime.fromtimestamp(time_average)
-
-
-def get_photogenic_username(user):
-    """
-    Gets a more photogenic username based on the user's username and nickname.
-
-    Arguments:
-        user (discord.user.User) : The user.
-
-    Returns:
-        str : The photogenic username.
-    """
-    # Return.
-    return user.nick if user.nick else user.name
-
-
 def get_multi_index(source, arg):
     """
     Gets multiple indexes for the argument in the source.
@@ -253,28 +70,6 @@ def get_multi_index(source, arg):
 
     # Returns.
     return all_indexes
-
-
-async def get_secondmost_recent_message(message):
-    """
-    Gets the second-most recent message in a channel, given a message.
-
-    Arguments:
-        message (discord.message.Message) : The discord message object that triggered the command.
-
-    Returns:
-        discord.message.Message : The previous message in the channel.
-
-    Raises:
-        FirstMessageInChannelError : The message this method was called with is the first message in the channel.
-    """
-    # Simple get statement.
-    try:
-        return (await message.channel.history(limit=2).flatten())[1]
-
-    # If there's an index error, raise the FirstMessageInChannelError.
-    except IndexError:
-        raise FirstMessageInChannelError()
 
 
 def upper_per_word(input_str):

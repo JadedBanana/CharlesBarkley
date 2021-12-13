@@ -3,7 +3,7 @@ Arguments module helps with managing differently formatted arguments.
 """
 # Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError
-from lib.util import parsing, misc
+from lib.util import discord_info, misc, parsing
 
 
 # Variable statements.
@@ -58,7 +58,7 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
 
     # Otherwise, we search through the users and try to find matching strings.
     # First, we get a list of all users.
-    all_users = misc.get_applicable_users(message, exclude_bots, exclude_users)
+    all_users = discord_info.get_applicable_users(message, exclude_bots, exclude_users)
 
     # Then, we find the closest user.
     # This is prioritized as:
@@ -68,8 +68,8 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     # In the form of COUNT, INDEX(ES), and NON-ARGUMENT CHARACTER COUNT.
     # If two users match in one, the next best values are compared.
     # If two users match for all three, the preexisting one is prioritized.
-    # Users can be chosen more than once, but priority will be given to ones that also match once it has been put into the list.
-    # Duplicate users will be removed at the end.
+    # Users can be chosen more than once, but priority will be given to ones that also match once it has been put into
+    # the list. Duplicate users will be removed at the end.
     pointed_users = []
 
     # This list will store the following:

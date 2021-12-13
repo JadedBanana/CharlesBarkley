@@ -5,7 +5,7 @@ Obnoxiously copies another user's messages.
 # Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
 from lib.util.logger import BotLogger as logging
-from lib.util import arguments, messaging, misc
+from lib.util import arguments, discord_info, messaging
 
 # Package Imports
 import discord
@@ -74,7 +74,7 @@ async def copy_user(bot, message, argument):
         COPIED_USERS[copy_key] = []
 
     # Otherwise, copy the user.
-    await messaging.send_text_message(message, f'Now copying user {misc.get_photogenic_username(user)}')
+    await messaging.send_text_message(message, f'Now copying user {discord_info.get_photogenic_username(user)}')
     if user.id not in COPIED_USERS[copy_key]:
         COPIED_USERS[copy_key].append(user.id)
         logging.info(message, 'requested copy for user ' + str(user) + ', now copying')

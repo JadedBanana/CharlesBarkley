@@ -4,7 +4,7 @@ Ships two users together. Creepy!
 """
 # Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError, CannotAccessUserlistError
-from lib.util import arguments, assets, messaging, misc, temp_files
+from lib.util import arguments, assets, discord_info, messaging, temp_files
 from lib.util.logger import BotLogger as logging
 
 # Package Imports
@@ -74,10 +74,11 @@ async def ship(bot, message, argument):
 
         # Grab partner 1, if necessary
         if not partner_1:
-            partner_1 = random.choice(misc.get_applicable_users(message, exclude_bots=True, exclude_users=[bot.user]))
+            partner_1 = random.choice(
+                discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=[bot.user]))
 
         # Grab partner 2.
-        partner_2 = random.choice(misc.get_applicable_users(message, exclude_bots=True, exclude_users=[
+        partner_2 = random.choice(discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=[
             bot.user, partner_1
         ]))
 
@@ -85,8 +86,10 @@ async def ship(bot, message, argument):
         logging.info(message, f'requested ship, shipped {partner_1} and {partner_2}')
 
         # Gets the PFP for partner 1 and 2.
-        partner_1_img = await tempfiles.checkout_profile_picture_by_user_with_typing(partner_1, message, 'ship', (ICON_SIZE, ICON_SIZE))
-        partner_2_img = await tempfiles.checkout_profile_picture_by_user_with_typing(partner_2, message, 'ship', (ICON_SIZE, ICON_SIZE))
+        partner_1_img = await temp_files.checkout_profile_picture_by_user_with_typing(
+            partner_1, message, 'ship', (ICON_SIZE, ICON_SIZE))
+        partner_2_img = await temp_files.checkout_profile_picture_by_user_with_typing(
+            partner_2, message, 'ship', (ICON_SIZE, ICON_SIZE))
 
         # Gets the image for the heart (aww!)
         heart_img = assets.open_image(HEART_IMG)
@@ -103,7 +106,7 @@ async def ship(bot, message, argument):
         # Vary the title based on whether or not this bot is getting shipped.
         await messaging.send_image_based_embed(message, together_canvas, random.choice(
             BASHFUL_MESSAGES if partner_1 == bot.user else NORMAL_MESSAGES).format(
-            misc.get_photogenic_username(partner_1), misc.get_photogenic_username(partner_2)
+            discord_info.get_photogenic_username(partner_1), discord_info.get_photogenic_username(partner_2)
         ), EMBED_COLOR)
 
         # Cleanup -- closing Images and deleting them off disk.
@@ -113,8 +116,8 @@ async def ship(bot, message, argument):
         together_canvas.close()
 
         # Retire the profile pictures.
-        tempfiles.retire_profile_picture_by_user(partner_1, message, 'ship')
-        tempfiles.retire_profile_picture_by_user(partner_2, message, 'ship')
+        temp_files.retire_profile_picture_by_user(partner_1, message, 'ship')
+        temp_files.retire_profile_picture_by_user(partner_2, message, 'ship')
 
     # On CannotAccessUserlistError, log an error and send an apology message.
     except CannotAccessUserlistError:

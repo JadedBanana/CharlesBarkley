@@ -3,7 +3,7 @@ Feliz command.
 Gets the current time then returns an appropriate image depending on the day of the week.
 """
 # Local Imports
-from lib.util import assets, messaging, misc, parsing
+from lib.util import assets, discord_info, messaging, parsing
 from lib.util.logger import BotLogger as logging
 
 # Package Imports
@@ -60,7 +60,7 @@ async def feliz(bot, message, argument):
                 intended_date = FELIZ_ARGUMENTS[word]
 
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -92,7 +92,7 @@ async def feliz_lunes(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -118,7 +118,7 @@ async def feliz_martes(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -144,7 +144,7 @@ async def feliz_miercoles(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -170,7 +170,7 @@ async def feliz_jueves(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -196,7 +196,7 @@ async def feliz_viernes(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -222,7 +222,7 @@ async def feliz_sabado(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
@@ -248,7 +248,7 @@ async def feliz_domingo(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Get the current date and time.
-    current_datetime = misc.get_guild_time(message)
+    current_datetime = discord_info.get_guild_time(message)
 
     # Get the day of the week.
     actual_date = current_datetime.weekday()
