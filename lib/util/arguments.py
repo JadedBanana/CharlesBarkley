@@ -7,10 +7,6 @@ from lib.util import discord_info, misc, parsing
 
 
 # Variable statements.
-from lib.util.misc import convert_num_to_decimal
-
-CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
-MAX_CONVERT_DEPTH = -16
 NONDECIMAL_BASES = {
     '0x': 16,
     '0d': 12,

@@ -2,11 +2,13 @@
 Misc util methods module.
 Has a lot of very different methods.
 """
-# Local Imports
-from lib.util.arguments import MAX_CONVERT_DEPTH, CONVERT_CHARS
-
 # Package Imports
 import colorsys
+
+
+# Constants.
+CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+_'
+MAX_CONVERT_DEPTH = -16
 
 
 def calculate_time_passage(time_delta):
