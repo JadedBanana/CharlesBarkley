@@ -2261,7 +2261,7 @@ REACTIVE_COMMAND_LIST = [
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'hungergames',
-        'category': 'fun',
+        'category': 'fun_interactive',
         'description': 'Simulates the Hunger Games simulator, using users in this Discord chat. One per channel.',
         'examples': [('hungergames', 'Generates a Hunger Games with 24 players.'),
                      ('hungergames 64', 'Generates a Hunger Games with 64 players.')],

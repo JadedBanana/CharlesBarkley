@@ -116,7 +116,7 @@ REACTIVE_COMMAND_LIST = [
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'copy',
-        'category': 'fun',
+        'category': 'fun_simple',
         'description': 'Can be used to make the bot copy someone else. How annoying!',
         'examples': [('copy @dummy#0000', 'Copies the user @dummy#0000.'),
                      ('copy dummy', "Copies the user with the name closest to 'dummy'.")],

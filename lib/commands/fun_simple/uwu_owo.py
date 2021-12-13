@@ -225,7 +225,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'uwu',
-        'category': 'fun',
+        'category': 'fun_simple',
         'description': 'Converts a message into uwu-speak.',
         'examples': [('uwu', 'Takes all the text in the last message and converts it into uwu-speak.'),
                      ('uwu somebody once told me', "Converts 'somebody once told me' to uwu-speak.")],
@@ -233,7 +233,7 @@ HELP_DOCUMENTATION_LIST = [
     },
     {
         'command_name': 'owo',
-        'category': 'fun',
+        'category': 'fun_simple',
         'description': 'Converts a message into owo-speak.',
         'examples': [('owo', 'Takes all the text in the last message and converts it into owo-speak.'),
                      ('owo somebody once told me', "Converts 'somebody once told me' to owo-speak.")],

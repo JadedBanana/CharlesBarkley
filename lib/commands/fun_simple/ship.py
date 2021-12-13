@@ -129,7 +129,7 @@ PUBLIC_COMMAND_DICT = {
 HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'ship',
-        'category': 'fun',
+        'category': 'fun_simple',
         'description': 'Ships two users together.',
         'examples': [('ship', 'Creates a ship with two random users.'),
                      ('ship @dummy#0000', 'Creates a ship with the user @dummy#0000 as one of the partners.'),
