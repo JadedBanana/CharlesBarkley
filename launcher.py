@@ -10,7 +10,31 @@ def launch():
     Launch method.
     Performs some checks, then launches the bot.
     """
-    # First things first, see if any working directory was provided in the running arguments.
+    # Parse running parameters.
+    parse_running_parameters()
+
+    # Run the primary initializers.
+    run_primary_initializers()
+
+    if cron_check_passed():
+        pass
+
+    # Run secondary initializers.
+    run_secondary_initializers()
+
+    start_background_threads()
+
+    # Now, finally launch the bot.
+    from lib import bot
+    bot.launch()
+
+
+def parse_running_parameters():
+    """
+    Parses running parameters.
+    At the moment, only checks for a new working directory.
+    """
+    # Imports.
     import sys
     import os
 
@@ -21,6 +45,12 @@ def launch():
             # Found a new working dir, switch to there.
             os.chdir(arg[12:])
 
+
+def run_primary_initializers():
+    """
+    Runs the initializers that must be run PRIOR to the cron check.
+    Should be the ones that would end up terminating the program if they ran into a problem.
+    """
     # First things first, load up the .env variables.
     from lib.util import environment
     environment.load_dotenv()
@@ -29,8 +59,20 @@ def launch():
     from lib.util import assets
     assets.asset_check()
 
-    # Next, see if we're supposed to do the croncheck. If so, do that!
+
+def cron_check_passed():
+    """
+    Runs the cron check.
+    Only runs if it's outlined to do so in .env.
+
+    Returns:
+        bool : Whether or not the cron check passed.
+    """
+    # Imports.
     from lib.util import cron
+    from lib.util import environment
+
+    # Only run the check if we're supposed to.
     if environment.get('LAUNCH_RUN_CRONCHECK'):
 
         # Import cron and get the current cron string.
@@ -45,13 +87,23 @@ def launch():
         # If there STILL isn't a cron string, then we immediately move on to the next part.
         # Otherwise, we test for a second cron string about a minute later.
         if cron_str_1:
+
             # Wait a little less than a minute, then get the current cron string again.
             sleep(55)
             cron_str_2 = cron.get_cron_string()
 
             # If the two cron strings are not the same, then we exit.
             if cron_str_1 != cron_str_2:
-                exit(0)
+                return False
+
+    # Otherwise, return True.
+    return True
+
+
+def run_secondary_initializers():
+    """
+
+    """
 
     # Performing logger setup.
     from lib.util import logger
@@ -65,11 +117,17 @@ def launch():
     import logging
     logging.info('Passed startup checks, performing basic setup')
 
+
+def start_background_threads():
+
+
     # Start the cron loop so that any instances of this class after this one don't start while we're running.
+    from lib.util import cron
     cron_thread = cron.CronThread()
     cron_thread.start()
 
     # Start the tempfiles loop so that old temp files get deleted.
+    from lib.util import temp_files
     temp_files_thread = temp_files.TempFilesThread()
     temp_files_thread.start()
 
@@ -81,10 +139,6 @@ def launch():
     from lib.util import watchdog
     watchdog = watchdog.Watchdog(main_thread, cron_thread, temp_files_thread)
     watchdog.start()
-
-    # Now, finally launch the bot.
-    from lib import bot
-    bot.launch()
 
 
 # If this is the main thread, launch.
