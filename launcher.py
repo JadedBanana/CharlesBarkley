@@ -113,7 +113,7 @@ def run_secondary_initializers():
     import logging
     logging.info('Passed startup checks, performing basic setup')
 
-    # Performing tempfile setup.
+    # Performing temp file setup.
     from lib.util import temp_files
     temp_files.initialize()
 

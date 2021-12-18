@@ -23,8 +23,8 @@ async def send_text_message(message, text_str):
 
     # If this happened, then the message was too long. Send as file.
     except discord.errors.HTTPException:
-        # First, have the tempfiles module create a temporary text file on-disk.
-        text_file_path = tempfiles.save_temporary_text_file(text_str)
+        # First, have the temp_files module create a temporary text file on-disk.
+        text_file_path = temp_files.save_temporary_text_file(text_str)
 
         # Next, instantiate the file and send the message.
         file = discord.File(text_file_path, filename='text_message.txt')
@@ -95,8 +95,8 @@ async def send_image_based_embed(message, image, title, embed_color, footer=''):
         embed_color (int) : The color of the embed's sidebar thing.
         footer (str) : The footer text, if any.
     """
-    # First, have the tempfiles module create a temporary image on-disk.
-    image_path = tempfiles.save_temporary_image(image)
+    # First, have the temp_files module create a temporary image on-disk.
+    image_path = temp_files.save_temporary_image(image)
 
     # Next, instantiate the embed object, then a file, and set the embed to use the file as its image.
     embed = discord.Embed(title=title, colour=embed_color)
