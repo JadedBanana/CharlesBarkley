@@ -16,17 +16,18 @@ def launch():
     # Run the primary initializers.
     run_primary_initializers()
 
+    # If the cron check passed, then run the rest of the program.
     if cron_check_passed():
-        pass
 
-    # Run secondary initializers.
-    run_secondary_initializers()
+        # Run secondary initializers.
+        run_secondary_initializers()
 
-    start_background_threads()
+        # Start the background threads.
+        start_background_threads()
 
-    # Now, finally launch the bot.
-    from lib import bot
-    bot.launch()
+        # Now, finally launch the bot.
+        from lib import bot
+        bot.launch()
 
 
 def parse_running_parameters():
@@ -102,31 +103,31 @@ def cron_check_passed():
 
 def run_secondary_initializers():
     """
-
+    Runs secondary initializers.
     """
-
     # Performing logger setup.
     from lib.util import logger
     logger.basic_setup()
-
-    # Performing tempfile setup.
-    from lib.util import temp_files
-    temp_files.initialize()
 
     # Logging message.
     import logging
     logging.info('Passed startup checks, performing basic setup')
 
+    # Performing tempfile setup.
+    from lib.util import temp_files
+    temp_files.initialize()
+
 
 def start_background_threads():
-
-
+    """
+    Starts the background threads and adds them to the watchdog.
+    """
     # Start the cron loop so that any instances of this class after this one don't start while we're running.
     from lib.util import cron
     cron_thread = cron.CronThread()
     cron_thread.start()
 
-    # Start the tempfiles loop so that old temp files get deleted.
+    # Start the temp files loop so that old temp files get deleted.
     from lib.util import temp_files
     temp_files_thread = temp_files.TempFilesThread()
     temp_files_thread.start()
