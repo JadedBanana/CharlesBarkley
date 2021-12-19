@@ -98,7 +98,7 @@ async def quota_reached_send_message(message):
     target_time = datetime(year=target_time.year, month=target_time.month, day=target_time.day, hour=YOUTUBE_QUOTA_RESET_HOUR)
 
     # Get time until quota and return that.
-    quota_str = misc.calculate_time_passage(target_time - datetime.now())
+    quota_str = misc.format_time_delta_str(target_time - datetime.now())
     await messaging.send_text_message(message, f'Youtube quota of 100 videos reached. Try again in {quota_str}')
 
 

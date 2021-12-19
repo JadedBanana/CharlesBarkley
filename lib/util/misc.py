@@ -11,9 +11,9 @@ CONVERT_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+
 MAX_CONVERT_DEPTH = -16
 
 
-def calculate_time_passage(time_delta):
+def format_time_delta_str(time_delta):
     """
-    Creates the time delta string and reports to channel, then returns time delta string.
+    Creates the time delta string.
 
     Arguments:
         time_delta (datetime.time_delta) : The time delta (change in time).
