@@ -69,3 +69,21 @@ class TestMisc(TestCase):
 
         # Run assertions.
         self.assertEqual(indexes, [0, 2])
+
+
+    def test_upper_per_word_starting(self):
+        """lib.util.misc.upper_per_word.starting"""
+        # Run the method.
+        result = misc.upper_per_word('whatever')
+
+        # Run assertions.
+        self.assertEqual(result, 'Whatever')
+
+
+    def test_upper_per_word_after_space(self):
+        """lib.util.misc.upper_per_word.after_space"""
+        # Run the method.
+        result = misc.upper_per_word('... okay')
+
+        # Run assertions.
+        self.assertEqual(result, '... Okay')
