@@ -23,7 +23,7 @@ async def octal(bot, message, argument):
         num = misc.convert_num_from_decimal(num, 8)
 
         logging.info(message, f'requested octal conversion for {argument}, responded with 0o{num}')
-        await messaging.send_text_message(message, '0o' + str(num))
+        return await messaging.send_text_message(message, '0o' + str(num))
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):

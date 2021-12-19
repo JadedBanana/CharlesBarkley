@@ -23,7 +23,7 @@ async def duodecimal(bot, message, argument):
         num = misc.convert_num_from_decimal(num, 12)
 
         logging.info(message, f'requested duodecimal conversion for {argument}, responded with 0d{num}')
-        await messaging.send_text_message(message, '0d' + str(num))
+        return await messaging.send_text_message(message, '0d' + str(num))
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):

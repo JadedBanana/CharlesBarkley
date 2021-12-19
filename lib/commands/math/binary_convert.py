@@ -23,7 +23,7 @@ async def binary(bot, message, argument):
         num = misc.convert_num_from_decimal(num, 2)
 
         logging.info(message, f'requested binary conversion for {argument}, responded with 0b{num}')
-        await messaging.send_text_message(message, '0b' + str(num))
+        return await messaging.send_text_message(message, '0b' + str(num))
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):
