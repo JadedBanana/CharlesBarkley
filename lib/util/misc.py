@@ -67,8 +67,8 @@ def get_multi_index(source, arg):
 
         # Updates outer variables.
         all_indexes.append(len_removed + next_index)
-        len_removed+= next_index + len(arg)
-        source = source[next_index + len(arg):]
+        len_removed += next_index + 1
+        source = source[next_index + 1:]
 
     # Returns.
     return all_indexes
