@@ -91,8 +91,6 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
                 len(user.roles) if hasattr(user, 'roles') else 0
             ))
 
-    print(pointed_users)
-
     # If there are no pointed_users, then raise the error.
     if not pointed_users:
         raise UnableToFindUserError(pointed_users, approx_user)
