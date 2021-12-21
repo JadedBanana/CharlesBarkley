@@ -15,8 +15,9 @@ def load_commands():
         DuplicateCommandError : 2 commands are using the same name.
 
     Returns:
-        dict, dict, list, dict : The public command dict, developer command dict, reactive command list, and specialized command dict,
-                                 in that exact order.
+        dict, dict, list, dict, list : The public command dict, developer command dict, reactive command list,
+                                       specialized command dict, and command initialize method list,
+                                       in that exact order.
     """
     # Imports
     from lib.util.exceptions import DuplicateCommandError
@@ -28,6 +29,7 @@ def load_commands():
     developer_command_dict = {}
     reactive_command_list = []
     specialized_command_dict = {}
+    command_initialize_method_list = []
 
     # Load the package name of each package in 'commands' folder.
     for importer, package_name, is_package in pkgutil.iter_modules(['lib/commands']):
@@ -115,13 +117,14 @@ def load_commands():
 
             # Finally, check for an initialize method.
             if hasattr(module, 'initialize') and isinstance(module.initialize, type(load_commands)):
-                module.initialize()
+                command_initialize_method_list.append(module.initialize)
 
         # Log the total commands implemented this package.
         logging.info(f"Loaded {commands_implemented} commands from command package '{package_name}'")
 
     # Return the dicts.
-    return public_command_dict, developer_command_dict, reactive_command_list, specialized_command_dict
+    return public_command_dict, developer_command_dict, reactive_command_list, specialized_command_dict, \
+           command_initialize_method_list
 
 
 async def run_standard_command(command_name, command_method, bot, message, argument):
