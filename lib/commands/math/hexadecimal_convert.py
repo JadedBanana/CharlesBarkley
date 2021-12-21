@@ -18,7 +18,7 @@ async def hexadecimal(bot, message, argument):
     """
     try:
         # Get the decimal version of the number.
-        num = arguments.get_multibased_num_from_argument(argument)
+        num = arguments.get_multi_based_num_from_argument(argument)
         # Convert the decimal number into a hexadecimal one.
         num = misc.convert_num_from_decimal(num, 16)
 

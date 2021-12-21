@@ -18,7 +18,7 @@ async def decimal(bot, message, argument):
     """
     try:
         # Get the decimal version of the number.
-        num = arguments.get_multibased_num_from_argument(argument)
+        num = arguments.get_multi_based_num_from_argument(argument)
 
         logging.info(message, f'requested decimal conversion for {argument}, responded with 0d{num}')
         return await messaging.send_text_message(message, int(num) if num % 1 == 0 else num)

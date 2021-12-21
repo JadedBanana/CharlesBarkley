@@ -10,7 +10,7 @@ from lib.util import discord_info, misc, parsing
 
 
 # Variable statements.
-NONDECIMAL_BASES = {
+NON_DECIMAL_BASES = {
     '0x': 16,
     '0d': 12,
     '0o': 8,
@@ -141,7 +141,7 @@ def sort_closest_user_list(item1, item2):
     return item2[5] - item1[5]
 
 
-def get_multibased_num_from_argument(argument):
+def get_multi_based_num_from_argument(argument):
     """
     Gets the number from an argument.
     Numbers can be in base 2, 8, 10, 12, or 16, but non-10 bases must be preceded
@@ -159,11 +159,11 @@ def get_multibased_num_from_argument(argument):
     # Gets usages for arguments
     argument = parsing.normalize_string(argument).lower()
 
-    # Go through nondecimal bases.
-    for base in NONDECIMAL_BASES:
+    # Go through non-decimal bases.
+    for base in NON_DECIMAL_BASES:
         if argument.startswith(base):
             # Attempt to convert.
-            return misc.convert_num_to_decimal(argument[2:], NONDECIMAL_BASES[base])
+            return misc.convert_num_to_decimal(argument[2:], NON_DECIMAL_BASES[base])
 
     # If we've made it this far, then it means that the number is a decimal base.
     return float(argument)
