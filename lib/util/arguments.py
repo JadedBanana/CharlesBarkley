@@ -96,7 +96,7 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
         raise UnableToFindUserError(pointed_users, approx_user)
 
     # Sort.
-    pointed_users = sorted(pointed_users, key=cmp_to_key(sort_pointed_userlist))
+    pointed_users = sorted(pointed_users, key=cmp_to_key(sort_closest_user_list))
 
     # If we're operating under a limit, we return only limit amount.
     if limit:
@@ -106,9 +106,10 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     return [pointed_tuple[0] for pointed_tuple in pointed_users]
 
 
-def sort_pointed_userlist(item1, item2):
+def sort_closest_user_list(item1, item2):
     """
-    Sorts a pointed userlist.
+    Sorts the closest user list.
+    Used exclusively in get_closest_users. Separated for sorting reasons.
 
     Arguments:
         item1 (discord.User, float, float, int, int, int) : A tuple representing an entry in the pointed_users list.
