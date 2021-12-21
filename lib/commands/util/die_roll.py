@@ -229,14 +229,13 @@ async def perform_roll(message, count, sides, addendum):
     # Next, create the addendum string.
     addendum_str = f'{" + " if addendum > 0 else " - "}{addendum}' if addendum else ''
 
-    # Next, create the basic embed object, with one field.
-    embed = discord.Embed(title=EMBED_TITLE, colour=EMBED_COLOR)
-    embed.add_field(
-        name=f'Final Result: __{sum(rolls) + addendum}__',
-        value=f'[{count}d{sides}: {", ".join(str(roll) for roll in rolls)}]{addendum_str}'
-    )
+    # Next, create the basic embed object.
+    embed = discord.Embed(title=EMBED_TITLE, colour=EMBED_COLOR,
+                          description=f'[**{count}d{sides}**: {", ".join(str(roll) for roll in rolls)}]{addendum_str}\n'
+                                      f'Final Result: **{sum(rolls) + addendum}**')
 
-    # Send message.
+    # Send message and log.
+    logging.info(message, f'requested die roll with {count} rolls, {sides} sides, {addendum} addendum, result {sum(rolls) + addendum}')
     await messaging.send_embed_without_local_image(message, embed)
 
 

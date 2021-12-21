@@ -14,7 +14,7 @@ import discord
 
 
 # Weather constants
-WEATHER_API_KEY = environment.get('WEATHER_API_KEY')
+WEATHER_API_KEY = None  # Initialized in initialize method
 WEATHER_API_URL = 'http://api.openweathermap.org/data/2.5/weather?appid={}&q={}'
 WEATHER_ALT_COUNTRY_CODES = {
     'BO': 'Bolivia', 'FK': 'Falkland Islands', 'FM': 'Micronesia', 'GB': 'United Kingdom', 'IR': 'Iran',
@@ -692,6 +692,15 @@ async def weather(bot, message, argument):
 
     # Send message.
     await messaging.send_embed_without_local_image(message, embed)
+
+
+def initialize():
+    """
+    Initializes the command.
+    """
+    # Sets some global variables using environment.get
+    global WEATHER_API_KEY
+    WEATHER_API_KEY = environment.get('WEATHER_API_KEY')
 
 
 # Command values

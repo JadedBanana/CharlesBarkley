@@ -4,7 +4,7 @@ Gets how long the bot has been up for.
 """
 # Local Imports
 from lib.util.logger import BotLogger as logging
-from lib.util.misc import calculate_time_passage
+from lib.util.misc import format_time_delta_str
 from lib.util import messaging
 
 # Package Imports
@@ -27,7 +27,7 @@ async def uptime(bot, message, argument):
 
     # Gets the time passage string.
     time_delta = datetime.today() - bot.bot_uptime
-    time_str = calculate_time_passage(time_delta)
+    time_str = format_time_delta_str(time_delta)
 
     # Sends report, logs message
     logging.info(message, f'requested uptime, responded with {time_str}')

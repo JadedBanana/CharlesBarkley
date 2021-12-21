@@ -31,8 +31,9 @@ class TestBotSynchronous(TestCase):
         m_i.return_value = None
         m_a.return_value = 'intentional'
         help_init = mock.MagicMock()
-        m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], {'toggleignoredev': 'snart',
-                                                                                     'help_init': help_init}
+        command_initialize_method_list = [mock.MagicMock(), mock.MagicMock()]
+        m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], \
+                            {'toggleignoredev': 'snart', 'help_init': help_init}, command_initialize_method_list
 
         # Run the method.
         client = JadieClient()
@@ -52,6 +53,8 @@ class TestBotSynchronous(TestCase):
         self.assertEqual(client.reactive_command_list, ['awesome'])
         self.assertEqual(client.toggle_ignore_developer, 'snart')
         help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        for initialize_method in command_initialize_method_list:
+            initialize_method.assert_called_once_with()
         self.assertFalse(client.ignore_developer)
         self.assertEqual(client.developer_ids, [12, 31, 50])
         m_a.assert_called()

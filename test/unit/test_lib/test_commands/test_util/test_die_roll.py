@@ -441,20 +441,6 @@ class TestDieRollAsynchronous(IsolatedAsyncioTestCase):
 
     @mock.patch('lib.util.logger.BotLogger.info')
     @mock.patch('lib.util.messaging.send_text_message')
-    async def test_parse_addendum_no_signs(self, m_stm, m_i):
-        """lib.commands.util.die_roll.parse_addendum.no_signs"""
-        # Run the method.
-        addendum, remaining_argument = await die_roll.parse_addendum('message', 'whatever')
-
-        # Run assertions.
-        self.assertEqual(addendum, 0)
-        self.assertEqual(remaining_argument, 'whatever')
-        m_i.assert_not_called()
-        m_stm.assert_not_called()
-
-
-    @mock.patch('lib.util.logger.BotLogger.info')
-    @mock.patch('lib.util.messaging.send_text_message')
     async def test_parse_addendum_positive_valid(self, m_stm, m_i):
         """lib.commands.util.die_roll.parse_addendum.positive.valid"""
         # Run the method.

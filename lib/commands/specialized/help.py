@@ -12,7 +12,10 @@ from lib.util import assets, messaging, parsing
 HELP_EMBED_COLOR = (107 << 16) + (115 << 8) + 135
 HELP_EMBED_DESCRIPTION = '''Type `{0}help [command]` for more help eg. `{0}help randomwiki`'''
 HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS = {
-    'fun': 'Fun',
+    'fun_interactive': 'Interactive Fun',
+    'fun_simple': 'Simple Fun',
+    'info': 'Info',
+    'math': 'Math',
     'util': 'Utility'
 }
 
@@ -24,7 +27,7 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize(version_number, global_prefix):
+def initialize_help(version_number, global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
@@ -246,11 +249,16 @@ def generate_home_help_page_embeds(version_number, global_prefix, home_help_page
         public_embed.add_field(name=category_clean, value=' '.join([f'`{command}`' for command in commands]), inline=True)
         developer_embed.add_field(name=category_clean, value=' '.join([f'`{command}`' for command in commands]), inline=True)
 
+    # If the length of the home_help_page_dict is not divisible by 3, add on enough so that it is
+    for i in range(len(public_embed.fields) * 2 % 3):
+        public_embed.add_field(name='\u200b', value='\u200b', inline=True)
+        developer_embed.add_field(name='\u200b', value='\u200b', inline=True)
+
     # Add the dev_only commands to the developer embed.
     if 'dev_only' in home_help_page_dict:
         developer_embed.add_field(name='Developer-Only',
                                   value=' '.join([f'`{command}`' for command in home_help_page_dict['dev_only']]),
-                                  inline=True)
+                                  inline=False)
 
     # Return.
     return public_embed, developer_embed
@@ -362,7 +370,7 @@ PUBLIC_COMMAND_DICT = {
     'help': help_command
 }
 SPECIALIZED_COMMAND_DICT = {
-    'help_init': initialize
+    'help_init': initialize_help
 }
 HELP_DOCUMENTATION_LIST = [
     {

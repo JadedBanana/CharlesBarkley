@@ -19,7 +19,7 @@ import sys
 
 # Global bot variables
 GLOBAL_PREFIX = 'j!'
-VERSION_NUMBER = '0.7.4'
+VERSION_NUMBER = '0.7.5'
 
 
 class JadieClient(discord.Client):
@@ -43,11 +43,14 @@ class JadieClient(discord.Client):
         self.deployment_client = environment.get("DEPLOYMENT_CLIENT")
 
         # Load the commands.
-        self.public_command_dict, self.developer_command_dict, self.reactive_command_list, specialized_command_dict = \
-            commands.load_commands()
+        self.public_command_dict, self.developer_command_dict, self.reactive_command_list, \
+            specialized_command_dict, command_initialize_method_list = commands.load_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
         specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
+        # Initialize the commands that need initialization.
+        for initialize_method in command_initialize_method_list:
+            initialize_method()
 
         # Set variable for whether or not to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False
