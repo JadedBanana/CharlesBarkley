@@ -158,12 +158,11 @@ def get_multibased_num_from_argument(argument):
         int | float : The specified number, in decimal.
     """
     # Gets usages for arguments
-    argument = parsing.normalize_string(argument)
-    argument2 = argument.lower()
+    argument = parsing.normalize_string(argument).lower()
 
     # Go through nondecimal bases.
     for base in NONDECIMAL_BASES:
-        if argument2.startswith(base):
+        if argument.startswith(base):
             # Attempt to convert.
             return misc.convert_num_to_decimal(argument[2:], NONDECIMAL_BASES[base])
 
