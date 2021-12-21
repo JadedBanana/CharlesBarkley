@@ -123,7 +123,7 @@ def sort_closest_user_list(item1, item2):
         item2 (discord.User, float, float, int, int, int) : Same format as item1, but different user.
 
     Returns:
-        int : 1 if item1 goes first, -1 if item2 goes first.
+        int : < 0 if item1 goes first, > 0 if item2 goes first.
     """
     # First, compare the sum of the nick percentage and username percentage.
     if item1[1] + item1[2] != item2[1] + item2[2]:
@@ -131,11 +131,11 @@ def sort_closest_user_list(item1, item2):
 
     # Then, compare the nick index.
     if item1[3] != item2[3]:
-        return item2[3] - item1[3]
+        return item1[3] - item2[3]
 
     # Next, compare the username index.
     if item1[4] != item2[4]:
-        return item2[4] - item1[4]
+        return item1[4] - item2[4]
 
     # Finally, compare the role count.
     return item2[5] - item1[5]
