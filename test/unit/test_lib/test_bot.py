@@ -12,7 +12,7 @@ class TestBotSynchronous(TestCase):
 
 
     @mock.patch('lib.util.environment.get')
-    @mock.patch('lib.commands.load_commands')
+    @mock.patch('lib.commands.load_all_commands')
     @mock.patch('discord.Intents.all')
     @mock.patch('discord.Client.__init__')
     def test_init(self, m_i, m_a, m_lc, m_eg):

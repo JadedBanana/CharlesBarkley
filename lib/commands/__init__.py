@@ -5,7 +5,7 @@ This __init__.py file has a method for loading the commands and methods for runn
 from lib.util.logger import BotLogger as logging
 
 
-def load_commands():
+def load_all_commands():
     """
     Loads all the commands from the sub-folders and puts them into three command dicts (one developer-only, one for general users, and
     one for specific commands hardcoded into the bot).
@@ -49,7 +49,7 @@ def load_commands():
                 for command_name, command_method in module.PUBLIC_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(command_method, type(load_commands)):
+                    if isinstance(command_method, type(load_all_commands)):
 
                         # Log and increment.
                         logging.info(f"Loading normal command '{command_name}' from '{package_name + '.' + subpackage_name}'")
@@ -68,7 +68,7 @@ def load_commands():
                 for command_name, command_method in module.DEVELOPER_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(command_method, type(load_commands)):
+                    if isinstance(command_method, type(load_all_commands)):
 
                         # Log and increment.
                         logging.info(f"Loading developer command '{command_name}' from '{package_name + '.' + subpackage_name}'")
@@ -87,7 +87,7 @@ def load_commands():
                 for command in module.REACTIVE_COMMAND_LIST:
 
                     # Assert that the method is, well, a method.
-                    if isinstance(command, type(load_commands)):
+                    if isinstance(command, type(load_all_commands)):
 
                         # Log and increment.
                         logging.info(f"Loading reactive command from '{package_name + '.' + subpackage_name}'")
@@ -103,7 +103,7 @@ def load_commands():
                 for command_name, command_method in module.SPECIALIZED_COMMAND_DICT.items():
 
                     # Assert that the method is, well, a method.
-                    if isinstance(command_method, type(load_commands)):
+                    if isinstance(command_method, type(load_all_commands)):
 
                         # Log and increment.
                         logging.info(f"Loading specialized command '{command_name}' from '{package_name + '.' + subpackage_name}'")
@@ -116,7 +116,7 @@ def load_commands():
                             specialized_command_dict[command_name] = command_method
 
             # Finally, check for an initialize method.
-            if hasattr(module, 'initialize') and isinstance(module.initialize, type(load_commands)):
+            if hasattr(module, 'initialize') and isinstance(module.initialize, type(load_all_commands)):
                 command_initialize_method_list.append(module.initialize)
 
         # Log the total commands implemented this package.

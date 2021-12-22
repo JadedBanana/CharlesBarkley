@@ -44,7 +44,7 @@ class JadieClient(discord.Client):
 
         # Load the commands.
         self.public_command_dict, self.developer_command_dict, self.reactive_command_list, \
-            specialized_command_dict, command_initialize_method_list = commands.load_commands()
+            specialized_command_dict, command_initialize_method_list = commands.load_all_commands()
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
         specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
