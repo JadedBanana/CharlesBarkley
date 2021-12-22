@@ -74,7 +74,7 @@ async def copy_user(bot, message, argument):
         COPIED_USERS[copy_key] = []
 
     # Otherwise, copy the user.
-    await messaging.send_text_message(message, f'Now copying user {discord_info.get_photogenic_username(user)}')
+    await messaging.send_text_message(message, f'Now copying user {user.display_name}')
     if user.id not in COPIED_USERS[copy_key]:
         COPIED_USERS[copy_key].append(user.id)
         logging.info(message, 'requested copy for user ' + str(user) + ', now copying')

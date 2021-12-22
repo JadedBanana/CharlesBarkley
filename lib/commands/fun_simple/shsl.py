@@ -851,13 +851,13 @@ async def do_shsl_thing(message, argument, use_shsl=True):
         }})
 
     # Creates the title string.
-    title_str = f'{"You are" if uses_author else discord_info.get_photogenic_username(student) + " is"} the '\
+    title_str = f'{"You are" if uses_author else student.display_name + " is"} the '\
                 f'{"SHSL" if use_shsl else "Ultimate"} {talent}{talent_dict["desc"]}'
     # Formats the title string with the proper pronouns.
     for i in range(len(SHSL_PRONOUNS)):
         title_str = title_str.replace('{' + str(i) + '}', SHSL_PRONOUNS[i][0 if uses_author else 1])
     # Replaces the {14} in the title string with the name of the student.
-    title_str.replace('{14}', discord_info.get_photogenic_username(student))
+    title_str.replace('{14}', student.display_name)
 
     # Creates the background image layers.
     background_bottom = assets.open_image('danganronpa_bg/drbottom.png')
@@ -875,7 +875,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
     talent_blur = Image.new('L', (1280, 720))
 
     # Creates user name without emoji.
-    student_name = discord_info.get_photogenic_username(student)
+    student_name = student.display_name
     # Iterate through each character in the name and pull out any characters with ord's greater than the max.
     i = 0
     while i < len(student_name):

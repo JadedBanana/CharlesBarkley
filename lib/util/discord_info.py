@@ -37,20 +37,6 @@ DISCORD_REGION_TIMEZONE_NAMES = {
 }
 
 
-def get_photogenic_username(user):
-    """
-    Gets a more photogenic username based on the user's username and nickname.
-
-    Arguments:
-        user (discord.user.User) : The user.
-
-    Returns:
-        str : The photogenic username.
-    """
-    # Return.
-    return user.nick if user.nick else user.name
-
-
 def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     """
     Returns a list of applicable users that fit the criteria provided.

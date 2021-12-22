@@ -22,8 +22,8 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     """
     Gets the closest users to the given argument. Returns a list of users.
     The closest user is the one that matches the closest as prioritized:
-        1. photogenic name + username combined percentage
-        2. photogenic name index
+        1. display name + username combined percentage
+        2. display name index
         3. username index
         4. role count (relevance?)
     If two users match in one, the next best values are compared.
@@ -76,17 +76,17 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     # For each user, gather the required variables and put them into the pointed_users.
     for user in all_users:
 
-        # Get photogenic username and username.
-        photogenic_username = discord_info.get_photogenic_username(user).lower()
+        # Get display name and username.
+        display_name = user.display_name.lower()
         username = user.name.lower()
 
-        # If the argument is in either the photogenic username or the username, then add them to the list.
-        if approx_user in photogenic_username or approx_user in username:
+        # If the argument is in either the display name or the username, then add them to the list.
+        if approx_user in display_name or approx_user in username:
             pointed_users.append((
                 user,
-                misc.get_string_closeness(photogenic_username, approx_user),
+                misc.get_string_closeness(display_name, approx_user),
                 misc.get_string_closeness(username, approx_user),
-                photogenic_username.find(approx_user),
+                display_name.find(approx_user),
                 username.find(approx_user),
                 len(user.roles) if hasattr(user, 'roles') else 0
             ))
