@@ -694,8 +694,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
                         # Log and send message.
                         logging.info(message, f'added player {player} to Hunger Games instance')
-                        return await send_pregame(message, hg_dict,
-                                                  f'Added {discord_info.get_photogenic_username(player)} to the game.')
+                        return await send_pregame(message, hg_dict, f'Added {player.display_name} to the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
                 logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
@@ -753,7 +752,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
         # Send the message and junk.
         logging.info(message, f'added player {added_user} to Hunger Games instance')
-        await send_pregame(message, hg_dict, f'Added {discord_info.get_photogenic_username(added_user)} to the game.')
+        await send_pregame(message, hg_dict, f'Added {added_user.display_name} to the game.')
 
     # If we can't access the userlist, send an error.
     except CannotAccessUserlistError:
@@ -801,9 +800,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
                         # Log and send embed.
                         logging.info(message, f'removed player {player} from Hunger Games instance')
                         async with message.channel.typing():
-                            return await send_pregame(message, hg_dict,
-                                                      f'Removed {discord_info.get_photogenic_username(player)} '
-                                                      f'from the game.')
+                            return await send_pregame(message, hg_dict, f'Removed {player.display_name} from the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
                 logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
@@ -828,8 +825,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
         # Send the message and junk.
         logging.info(message, f'removed player {removed_player} from Hunger Games instance')
         async with message.channel.typing():
-            await send_pregame(message, hg_dict,
-                               f'Removed {discord_info.get_photogenic_username(removed_player)} from the game.')
+            await send_pregame(message, hg_dict, f'Removed {removed_player.display_name} from the game.')
 
     # If we can't access the userlist, send an error.
     except CannotAccessUserlistError:
@@ -1193,7 +1189,7 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
         title (str) : The title of the embed, if any.
     """
     # Get all the player data.
-    player_data = [(discord_info.get_photogenic_username(player),
+    player_data = [(player.display_name,
                     temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
                                                                 (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
                    for player in hg_dict['players']]
@@ -1467,7 +1463,7 @@ def makeimage_player_statuses(players, placement=0, kills=0):
 
     Arguments:
         players (str, PIL.Image, int)[] : The players, organized as a list of tuples.
-                                          The first entry should be the player's photogenic username.
+                                          The first entry should be the player's display name.
                                           The second entry should be the player's icon.
                                           The third entry should be one of three values if placement + kills are False:
                                               0: Alive
@@ -1698,7 +1694,7 @@ def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_
         remaining_text (str) : The remaining text.
         players (int, str, bool)[] : The player list from the action.
                                      The first value should be the player id.
-                                     The second value of each tuple should be the photogenic name for the user.
+                                     The second value of each tuple should be the display name for the user.
                                      The third value should be whether or not to draw them dead.
         drawer (PIL.ImageDraw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
@@ -1741,8 +1737,7 @@ async def generate_full_game(hg_dict, message):
     # Create player statuses dict in the hg_dict.
     statuses = {}
     for player in hg_dict['players']:
-        statuses[player.id] = {'name': discord_info.get_photogenic_username(player), 'dead': False, 'hurt': False,
-                               'inv': [], 'kills': 0}
+        statuses[player.id] = {'name': player.display_name, 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
     hg_dict['statuses'] = statuses
 
     # Makes the phases.

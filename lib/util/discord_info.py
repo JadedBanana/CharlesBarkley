@@ -37,20 +37,6 @@ DISCORD_REGION_TIMEZONE_NAMES = {
 }
 
 
-def get_photogenic_username(user):
-    """
-    Gets a more photogenic username based on the user's username and nickname.
-
-    Arguments:
-        user (discord.user.User) : The user.
-
-    Returns:
-        str : The photogenic username.
-    """
-    # Return.
-    return user.nick if user.nick else user.name
-
-
 def get_applicable_users(message, exclude_bots=True, exclude_users=None):
     """
     Returns a list of applicable users that fit the criteria provided.
@@ -103,7 +89,7 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
 def get_guild_time(message):
     """
     Gets a guild's average local time.
-    This is basicaly guessed by using the weighted guild regions.
+    This is basically guessed by using the weighted guild regions.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered the command.

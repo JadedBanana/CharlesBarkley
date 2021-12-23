@@ -227,3 +227,15 @@ def convert_num_to_decimal(n, base):
 
     # Return the decimal number.
     return decimal_num
+
+
+def get_string_closeness(source, arg):
+    """
+    Gets the string closeness for the argument in the given string.
+    This is measured by the amount of the string is the argument divided by the length of the string.
+
+    Returns:
+        float : The amount of the string that is the argument.
+    """
+    # Simple replace and divide.
+    return 1 - (len(source.replace(arg, '')) / len(source))

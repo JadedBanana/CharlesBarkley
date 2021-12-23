@@ -106,7 +106,7 @@ async def ship(bot, message, argument):
         # Vary the title based on whether or not this bot is getting shipped.
         await messaging.send_image_based_embed(message, together_canvas, random.choice(
             BASHFUL_MESSAGES if partner_1 == bot.user else NORMAL_MESSAGES).format(
-            discord_info.get_photogenic_username(partner_1), discord_info.get_photogenic_username(partner_2)
+            partner_1.display_name, partner_2.display_name
         ), EMBED_COLOR)
 
         # Cleanup -- closing Images and deleting them off disk.

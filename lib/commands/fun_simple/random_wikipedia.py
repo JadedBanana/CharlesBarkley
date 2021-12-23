@@ -20,8 +20,15 @@ async def random_wikipedia(bot, message, argument):
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
-    # A simple and easy call.
-    wiki_page = wikipedia.page(wikipedia.random(1))
+    # Set wiki_page to None.
+    wiki_page = None
+
+    # As long as we don't have a wiki page, try to get one.
+    while not wiki_page:
+        try:
+            wiki_page = wikipedia.page(wikipedia.random(1))
+        except wikipedia.PageError or wikipedia.RedirectError or wikipedia.DisambiguationError:
+            pass
 
     # Log and send the message back.
     logging.info(message, f'requested random wikipedia page, returned {wiki_page}')

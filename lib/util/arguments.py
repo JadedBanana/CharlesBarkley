@@ -1,13 +1,16 @@
 """
 Arguments module helps with managing differently formatted arguments.
 """
+# Package Imports
+from functools import cmp_to_key
+
 # Local Imports
 from lib.util.exceptions import NoUserSpecifiedError, UnableToFindUserError
 from lib.util import discord_info, misc, parsing
 
 
 # Variable statements.
-NONDECIMAL_BASES = {
+NON_DECIMAL_BASES = {
     '0x': 16,
     '0d': 12,
     '0o': 8,
@@ -19,13 +22,14 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     """
     Gets the closest users to the given argument. Returns a list of users.
     The closest user is the one that matches the closest as prioritized:
-        1. nick
-        2. username
-        3. id
-    In the form of COUNT, INDEX(ES), and NON-ARGUMENT CHARACTER COUNT.
+        1. display name + username combined percentage
+        2. display name index
+        3. username index
+        4. role count (relevance?)
     If two users match in one, the next best values are compared.
-    If two users match for all three, the preexisting one is prioritized.
-    Users can be chosen more than once, but priority will be given to ones that also match once it has been put into the list.
+    If two users match for all, the preceding one is prioritized.
+    Users can be chosen more than once,
+    but priority will be given to ones that also match once it has been put into the list.
     Duplicate users will be removed at the end.
 
     Arguments:
@@ -34,6 +38,9 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
         exclude_bots (bool) : Whether or not to exclude bots from the list. Defaults to False.
         exclude_users (list) : Which users to exclude from the list. Defaults to None.
         limit (int) : The maximum amount of users in the list. Defaults to None.
+
+    Returns:
+        discord.User[] : A list of users.
     """
     # Checks to see if this message specifically mentions anyone.
     # If so, immediately return that.
@@ -57,144 +64,84 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     all_users = discord_info.get_applicable_users(message, exclude_bots, exclude_users)
 
     # Then, we find the closest user.
-    # This is prioritized as:
-    #   1. nick
-    #   2. username
-    #   3. id
-    # In the form of COUNT, INDEX(ES), and NON-ARGUMENT CHARACTER COUNT.
-    # If two users match in one, the next best values are compared.
-    # If two users match for all three, the preexisting one is prioritized.
-    # Users can be chosen more than once, but priority will be given to ones that also match once it has been put into
-    # the list. Duplicate users will be removed at the end.
+    # This list contains tuples such that:
+    #   0 = user object
+    #   1 = nick percentage
+    #   2 = username percentage
+    #   3 = nick index
+    #   4 = username index
+    #   5 = role count
     pointed_users = []
 
-    # This list will store the following:
-    #   1. The user object
-    #   2. Whether or not the user is already in pointed_users
-    #   3. The COUNTS for argument appearance in nick and username
-    #   4. The INDEXES for argument appearance in nick and username
-    #   5. The NON-ARGUMENT CHARACTER COUNT for argument appearance in nick and username
-    #   6. The COUNTS, INDEXES, and NON-ARGUMENT CHARACTER COUNT for argument appearance in id
-    current_user_priority = []
+    # For each user, gather the required variables and put them into the pointed_users.
+    for user in all_users:
 
-    # Iterate through all users
-    for usr in all_users:
+        # Get display name and username.
+        display_name = user.display_name.lower()
+        username = user.name.lower()
 
-        # Test to see if argument is in the user's attributes described above
-        if any([approx_user in str(attr).lower() for attr in [usr.name, usr.nick if usr.nick else '', usr.id]]):
+        # If the argument is in either the display name or the username, then add them to the list.
+        if approx_user in display_name or approx_user in username:
+            pointed_users.append((
+                user,
+                misc.get_string_closeness(display_name, approx_user),
+                misc.get_string_closeness(username, approx_user),
+                display_name.find(approx_user),
+                username.find(approx_user),
+                len(user.roles) if hasattr(user, 'roles') else 0
+            ))
 
-            # Gathering the values for the attributes
-            in_pointed_users = usr in pointed_users
-            counts = [attr.lower().count(approx_user) for attr in [usr.name, usr.nick if usr.nick else '']]
-            indexes = [misc.get_multi_index(attr.lower(), approx_user) for attr in [usr.name + '#' + usr.discriminator, usr.nick if usr.nick else '']]
-            non_argument_char_count = [len(attr) - len(approx_user) * attr.lower().count(approx_user) for attr in [usr.name + '#' + usr.discriminator, usr.nick if usr.nick else '']]
-            id_stuffs = [str(usr.id).count(approx_user), misc.get_multi_index(str(usr.id), approx_user), len(str(usr.id)) - len(approx_user) * str(usr.id).count(approx_user)]
-
-            # Seeing if there is already a user in current_user_priority. If so, we do comparison.
-            if current_user_priority:
-                # If this user is the same as the one in current_user_priority, we continue.
-                if usr == current_user_priority[0]:
-                    continue
-
-                # Otherwise, we prioritize the one that isn't already in_pointed_users.
-                # If both, we let the first one stay.
-                if in_pointed_users:
-                    continue
-                if current_user_priority[1]:
-                    current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                    continue
-
-                # Gottem says whether or not we got one out in the previous check,
-                gottem = False
-
-                # Next, we check and see which has the highest count in username and nick.
-                for i in range(2):
-                    if current_user_priority[2][i] < counts[i]:
-                        current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                        gottem = True
-                    elif current_user_priority[2][i] > counts[i]:
-                        gottem = True
-
-                # Do gottem check.
-                if gottem:
-                    continue
-
-                # Next, we check and see whose occurrences happen FIRST.
-                for i in range(2):
-                    for j in range(len(current_user_priority[3][i])):
-                        if current_user_priority[3][i][j] < indexes[i][j]:
-                            current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                            gottem = True
-                        elif current_user_priority[3][i][j] > indexes[i][j]:
-                            gottem = True
-
-                # Do gottem check.
-                if gottem:
-                    continue
-
-                # Next, we check and see which has the lowest non-argument character count in username and nick.
-                for i in range(2):
-                    if current_user_priority[4][i] > non_argument_char_count[i]:
-                        current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                        gottem = True
-                    elif current_user_priority[4][i] < non_argument_char_count[i]:
-                        gottem = True
-
-                # Do gottem check.
-                if gottem:
-                    continue
-
-                # Finally, we do the same for the id's.
-                # First, the count.
-                if current_user_priority[5][0] < id_stuffs[0]:
-                    current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                    continue
-                elif current_user_priority[5][0] > id_stuffs[0]:
-                    continue
-
-                # Then, the indexes.
-                for j in range(len(current_user_priority[5][1])):
-                    if current_user_priority[5][1][j] < id_stuffs[1][j]:
-                        current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                        gottem = True
-                    elif current_user_priority[5][1][j] > id_stuffs[1][j]:
-                        gottem = True
-
-                # Do gottem check.
-                if gottem:
-                    continue
-
-                # Finally, the lowest non-argument character count.
-                if current_user_priority[5][2] > id_stuffs[2]:
-                    current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-                    continue
-                elif current_user_priority[5][2] < id_stuffs[2]:
-                    continue
-
-            # If there isn't a user in the current_user_priority, we set it to the current one.
-            else:
-                current_user_priority = [usr, in_pointed_users, counts, indexes, non_argument_char_count, id_stuffs]
-
-    # Now that that's out of the way, we test and see if the current_user_priority has a thing in it.
-    if current_user_priority:
-        # If it's already in pointed_users, we ignore it.
-        if current_user_priority[0] not in pointed_users:
-            pointed_users.append(current_user_priority[0])
-
-    # If there is no current_user_priority, we throw an UnableToFindUserError.
-    else:
+    # If there are no pointed_users, then raise the error.
+    if not pointed_users:
         raise UnableToFindUserError(pointed_users, approx_user)
 
-    # If we're operating under a limit, we return the second the limit matches.
+    # Sort.
+    pointed_users = sorted(pointed_users, key=cmp_to_key(sort_closest_user_list))
+
+    # If we're operating under a limit, we return only limit amount.
     if limit:
-        if len(pointed_users) == limit:
-            return pointed_users
+        return [pointed_tuple[0] for pointed_tuple in pointed_users[:limit]]
 
     # Return.
-    return pointed_users
+    return [pointed_tuple[0] for pointed_tuple in pointed_users]
 
 
-def get_multibased_num_from_argument(argument):
+def sort_closest_user_list(item1, item2):
+    """
+    Sorts the closest user list.
+    Used exclusively in get_closest_users. Separated for sorting reasons.
+
+    Arguments:
+        item1 (discord.User, float, float, int, int, int) : A tuple representing an entry in the pointed_users list.
+                                                            It should be formatted such that index:
+                                                                0 = user object
+                                                                1 = nick percentage
+                                                                2 = username percentage
+                                                                3 = nick index
+                                                                4 = username index
+                                                                5 = role count
+        item2 (discord.User, float, float, int, int, int) : Same format as item1, but different user.
+
+    Returns:
+        int : < 0 if item1 goes first, > 0 if item2 goes first.
+    """
+    # First, compare the sum of the nick percentage and username percentage.
+    if item1[1] + item1[2] != item2[1] + item2[2]:
+        return item2[1] + item2[2] - item1[1] - item1[2]
+
+    # Then, compare the nick index.
+    if item1[3] != item2[3]:
+        return item1[3] - item2[3]
+
+    # Next, compare the username index.
+    if item1[4] != item2[4]:
+        return item1[4] - item2[4]
+
+    # Finally, compare the role count.
+    return item2[5] - item1[5]
+
+
+def get_multi_based_num_from_argument(argument):
     """
     Gets the number from an argument.
     Numbers can be in base 2, 8, 10, 12, or 16, but non-10 bases must be preceded
@@ -210,14 +157,13 @@ def get_multibased_num_from_argument(argument):
         int | float : The specified number, in decimal.
     """
     # Gets usages for arguments
-    argument = parsing.normalize_string(argument)
-    argument2 = argument.lower()
+    argument = parsing.normalize_string(argument).lower()
 
-    # Go through nondecimal bases.
-    for base in NONDECIMAL_BASES:
-        if argument2.startswith(base):
+    # Go through non-decimal bases.
+    for base in NON_DECIMAL_BASES:
+        if argument.startswith(base):
             # Attempt to convert.
-            return misc.convert_num_to_decimal(argument[2:], NONDECIMAL_BASES[base])
+            return misc.convert_num_to_decimal(argument[2:], NON_DECIMAL_BASES[base])
 
     # If we've made it this far, then it means that the number is a decimal base.
     return float(argument)
