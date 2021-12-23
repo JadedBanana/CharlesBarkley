@@ -29,6 +29,25 @@ YOUTUBE_RICKROLL_CHANCE = 0.002
 YOUTUBE_QUOTA_REACHED = False
 
 
+async def random_youtube_master(bot, message, argument):
+    """
+    Generates a random youtube link.
+    In the case of the Youtube Token Quota being hit, an appropriate error message will be presented to the user.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Attempts to get the random video.
+    try:
+        await get_random_video(message)
+
+    # urllib.error.HTTPError happens when the quota has been reached.
+    except urllib.error.HTTPError:
+        await quota_reached_send_message(message)
+
+
 async def get_random_video(message):
     """
     Gets a random video and sends it to the channel.
@@ -100,25 +119,6 @@ async def quota_reached_send_message(message):
     # Get time until quota and return that.
     quota_str = misc.format_time_delta_str(target_time - datetime.now())
     await messaging.send_text_message(message, f'Youtube quota of 100 videos reached. Try again in {quota_str}')
-
-
-async def random_youtube_master(bot, message, argument):
-    """
-    Generates a random youtube link.
-    In the case of the Youtube Token Quota being hit, an appropriate error message will be presented to the user.
-
-    Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
-        message (discord.message.Message) : The discord message object that triggered this command.
-        argument (str) : The command's argument, if any.
-    """
-    # Attempts to get the random video.
-    try:
-        await get_random_video(message)
-
-    # urllib.error.HTTPError happens when the quota has been reached.
-    except urllib.error.HTTPError:
-        await quota_reached_send_message(message)
 
 
 def initialize():
