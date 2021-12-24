@@ -70,6 +70,13 @@ async def random_anime_custom_user(message, user):
         logging.info(message, f'requested random anime from user {user}, invalid')
         await messaging.send_text_message(message, f"Invalid user '{user}'.")
 
+    # On IndexError, user has NO ptw.
+    except IndexError:
+
+        # Log and send.
+        logging.info(message, f'requested random anime from user {user}, no ptw')
+        await messaging.send_text_message(message, 'That user has no anime tagged as plan-to-watch.')
+
 
 async def random_anime_default(message):
     """
