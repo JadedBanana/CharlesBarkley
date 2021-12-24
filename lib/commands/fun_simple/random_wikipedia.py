@@ -13,7 +13,7 @@ import wikipedia
 
 async def random_wikipedia(bot, message, argument):
     """
-    Generates a random youtube link.
+    Generates a random wikipedia link and sends it.
 
     Arguments:
         bot (lib.bot.JadieClient) : The bot object that called this command.

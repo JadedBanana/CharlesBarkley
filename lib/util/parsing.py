@@ -21,13 +21,8 @@ def normalize_string(input_str):
     # Newlines, tabs
     input_str = input_str.replace('\t', ' ').replace('\n', ' ')
 
-    # Start spaces
-    while input_str.startswith(' '):
-        input_str = input_str[1:]
-
-    # End spaces
-    while input_str.endswith(' '):
-        input_str = input_str[:len(input_str) - 1]
+    # Remove spaces on the ends
+    input_str = input_str.strip(' ')
 
     # Double spaces
     while '  ' in input_str:

@@ -140,6 +140,19 @@ async def send_embed_without_local_image(message, embed):
     await message.channel.send(embed=embed)
 
 
+async def send_embed_without_local_image_with_text_message(message, text_str, embed):
+    """
+    Sends a pre-made embed (with a web-hosted image) back to the channel the trigger message came from.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        text_str (str) : The text message's intended text.
+        embed (discord.Embed) : The discord embed object that was made by whatever class called this function.
+    """
+    # Send the message.
+    await message.channel.send(text_str, embed=embed)
+
+
 def format_codeblock_message(text_str, size):
     """
     Formats a codeblock message.
