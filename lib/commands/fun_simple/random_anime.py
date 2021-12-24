@@ -38,7 +38,8 @@ async def random_anime_master(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # First, see if the argument exists.
-    if argument := parsing.normalize_string(argument):
+    argument = parsing.normalize_string(argument)
+    if argument:
         await random_anime_custom_user(message, argument)
 
     # If not, use the default values.
