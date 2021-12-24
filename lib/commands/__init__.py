@@ -6,6 +6,7 @@ import pkgutil
 
 # Local Imports
 from lib.util.logger import BotLogger as logging
+from lib.util import messaging
 
 
 def load_all_commands():
@@ -331,7 +332,15 @@ async def run_standard_command(command_name, command_method, bot, message, argum
     """
     # Try/catch for error handling
     try:
-        await command_method(bot, message, argument)
+
+        # If the command_method is in the disabled commands, then send a response.
+        if command_method in bot.disabled_commands:
+            logging.info(message, f"Tried to use disabled command {command_method}.")
+            await messaging.send_text_message(message, 'That command is currently disabled, sorry!')
+
+        # Otherwise, run the command.
+        else:
+            await command_method(bot, message, argument)
 
     # On exception, report the error back to the user.
     except Exception as e:
@@ -346,7 +355,6 @@ async def run_standard_command(command_name, command_method, bot, message, argum
                                (f"detected argument '{argument}'" if argument else 'no detected argument') + f":\n{traceback_str}")
 
         # Send the message.
-        from lib.util import messaging
         await messaging.send_error_message(message, bot.global_prefix, traceback_str)
 
 
@@ -376,5 +384,4 @@ async def run_reactive_command(command_method, bot, message):
                                f"{traceback_str}")
 
         # Send the message.
-        from lib.util import messaging
         await messaging.send_error_message(message, bot.global_prefix, traceback_str)

@@ -45,9 +45,11 @@ class JadieClient(discord.Client):
         # Load the commands.
         self.public_command_dict, self.developer_command_dict, self.reactive_command_list, \
             specialized_command_dict, command_initialize_method_list = commands.load_all_commands()
+
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
         specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
+
         # Initialize the commands that need initialization.
         for initialize_method in command_initialize_method_list:
             initialize_method()
@@ -55,6 +57,16 @@ class JadieClient(discord.Client):
         # Set variable for whether or not to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False
         self.developer_ids = [int(dev_id) for dev_id in environment.get("DEVELOPER_DISCORD_IDS")]
+
+        # Set up disabled commands.
+        self.disabled_commands = \
+            [self.public_command_dict[command_name] for command_name in environment.get('DISABLED_COMMANDS')
+             if command_name in self.public_command_dict]
+
+        # Log disabled commands.
+        logging.info(f'Command(s) {", ".join([repr(command_method) for command_method in self.disabled_commands])} '
+                     f'disabled outright.'
+                     if self.disabled_commands else 'No commands are currently disabled.')
 
         # Discord client init
         intents = discord.Intents.all()
