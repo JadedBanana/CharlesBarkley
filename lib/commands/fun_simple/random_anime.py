@@ -24,7 +24,6 @@ PRELOADED_ANIME_URLS = {}
 PRELOADED_ANIME_FROM_USERS = []
 PRELOADED_DEFAULT_PAGES = []
 ALL_DEFAULT_PAGES_PRELOADED = False
-EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
 async def random_anime_master(bot, message, argument):
