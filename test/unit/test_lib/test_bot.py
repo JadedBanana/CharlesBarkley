@@ -15,10 +15,10 @@ class TestBotSynchronous(TestCase):
     @mock.patch('lib.commands.load_all_commands')
     @mock.patch('discord.Intents.all')
     @mock.patch('discord.Client.__init__')
-    def test_init(self, m_i, m_a, m_lc, m_eg):
-        """lib.bot.JadieClient.__init__"""
+    def test_init_no_disabled_commands(self, m_i, m_a, m_lc, m_eg):
+        """lib.bot.JadieClient.__init__.no_disabled_commands"""
         # Side effect method for environment.get
-        environ_vars = [True, ['12', '31', '50']]
+        environ_vars = [True, ['12', '31', '50'], []]
         environ_called_with = []
         def environment_get_side_effect(*args, **kwargs):
             environ_called_with.append(args)
@@ -44,7 +44,7 @@ class TestBotSynchronous(TestCase):
         self.assertFalse(client.connected_before)
         self.assertFalse(client.reconnected_since)
         self.assertEqual(client.global_prefix, bot.GLOBAL_PREFIX)
-        self.assertTrue(len(environ_called_with) == 2)
+        self.assertTrue(len(environ_called_with) == 3)
         self.assertEqual(environ_called_with[0], ('DEPLOYMENT_CLIENT',))
         self.assertEqual(client.deployment_client, True)
         m_lc.assert_called()
@@ -57,6 +57,164 @@ class TestBotSynchronous(TestCase):
             initialize_method.assert_called_once_with()
         self.assertFalse(client.ignore_developer)
         self.assertEqual(client.developer_ids, [12, 31, 50])
+        self.assertEqual(environ_called_with[2], ('DISABLED_COMMANDS',))
+        self.assertEqual(client.disabled_commands, [])
+        m_a.assert_called()
+        m_i.assert_called_with(client, intents='intentional')
+
+
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.commands.load_all_commands')
+    @mock.patch('discord.Intents.all')
+    @mock.patch('discord.Client.__init__')
+    def test_init_yes_disabled_commands(self, m_i, m_a, m_lc, m_eg):
+        """lib.bot.JadieClient.__init__.yes_disabled_commands"""
+        # Side effect method for environment.get
+        environ_vars = [True, ['12', '31', '50'], ['fuckyeah']]
+        environ_called_with = []
+        def environment_get_side_effect(*args, **kwargs):
+            environ_called_with.append(args)
+            var = environ_vars[0]
+            environ_vars.remove(var)
+            return var
+        m_eg.side_effect = environment_get_side_effect
+
+        # Return stuff for everything else
+        m_i.return_value = None
+        m_a.return_value = 'intentional'
+        help_init = mock.MagicMock()
+        command_initialize_method_list = [mock.MagicMock(), mock.MagicMock()]
+        m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], \
+                            {'toggleignoredev': 'snart', 'help_init': help_init}, command_initialize_method_list
+
+        # Run the method.
+        client = JadieClient()
+
+        # Run assertions.
+        self.assertIsInstance(client.bot_start_time, datetime)
+        self.assertIsNone(client.bot_uptime)
+        self.assertFalse(client.connected_before)
+        self.assertFalse(client.reconnected_since)
+        self.assertEqual(client.global_prefix, bot.GLOBAL_PREFIX)
+        self.assertTrue(len(environ_called_with) == 3)
+        self.assertEqual(environ_called_with[0], ('DEPLOYMENT_CLIENT',))
+        self.assertEqual(client.deployment_client, True)
+        m_lc.assert_called()
+        self.assertEqual(client.public_command_dict, {'fuckyeah': 'bro'})
+        self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
+        self.assertEqual(client.reactive_command_list, ['awesome'])
+        self.assertEqual(client.toggle_ignore_developer, 'snart')
+        help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        for initialize_method in command_initialize_method_list:
+            initialize_method.assert_called_once_with()
+        self.assertFalse(client.ignore_developer)
+        self.assertEqual(client.developer_ids, [12, 31, 50])
+        self.assertEqual(environ_called_with[2], ('DISABLED_COMMANDS',))
+        self.assertEqual(client.disabled_commands, ['bro'])
+        m_a.assert_called()
+        m_i.assert_called_with(client, intents='intentional')
+
+
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.commands.load_all_commands')
+    @mock.patch('discord.Intents.all')
+    @mock.patch('discord.Client.__init__')
+    def test_init_bad_disabled_commands(self, m_i, m_a, m_lc, m_eg):
+        """lib.bot.JadieClient.__init__.bad_disabled_commands"""
+        # Side effect method for environment.get
+        environ_vars = [True, ['12', '31', '50'], ['nothing should match']]
+        environ_called_with = []
+        def environment_get_side_effect(*args, **kwargs):
+            environ_called_with.append(args)
+            var = environ_vars[0]
+            environ_vars.remove(var)
+            return var
+        m_eg.side_effect = environment_get_side_effect
+
+        # Return stuff for everything else
+        m_i.return_value = None
+        m_a.return_value = 'intentional'
+        help_init = mock.MagicMock()
+        command_initialize_method_list = [mock.MagicMock(), mock.MagicMock()]
+        m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], \
+                            {'toggleignoredev': 'snart', 'help_init': help_init}, command_initialize_method_list
+
+        # Run the method.
+        client = JadieClient()
+
+        # Run assertions.
+        self.assertIsInstance(client.bot_start_time, datetime)
+        self.assertIsNone(client.bot_uptime)
+        self.assertFalse(client.connected_before)
+        self.assertFalse(client.reconnected_since)
+        self.assertEqual(client.global_prefix, bot.GLOBAL_PREFIX)
+        self.assertTrue(len(environ_called_with) == 3)
+        self.assertEqual(environ_called_with[0], ('DEPLOYMENT_CLIENT',))
+        self.assertEqual(client.deployment_client, True)
+        m_lc.assert_called()
+        self.assertEqual(client.public_command_dict, {'fuckyeah': 'bro'})
+        self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
+        self.assertEqual(client.reactive_command_list, ['awesome'])
+        self.assertEqual(client.toggle_ignore_developer, 'snart')
+        help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        for initialize_method in command_initialize_method_list:
+            initialize_method.assert_called_once_with()
+        self.assertFalse(client.ignore_developer)
+        self.assertEqual(client.developer_ids, [12, 31, 50])
+        self.assertEqual(environ_called_with[2], ('DISABLED_COMMANDS',))
+        self.assertEqual(client.disabled_commands, [])
+        m_a.assert_called()
+        m_i.assert_called_with(client, intents='intentional')
+
+
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.commands.load_all_commands')
+    @mock.patch('discord.Intents.all')
+    @mock.patch('discord.Client.__init__')
+    def test_init_dev_disabled_commands(self, m_i, m_a, m_lc, m_eg):
+        """lib.bot.JadieClient.__init__.dev_disabled_commands"""
+        # Side effect method for environment.get
+        environ_vars = [True, ['12', '31', '50'], ['awwyeah']]
+        environ_called_with = []
+        def environment_get_side_effect(*args, **kwargs):
+            environ_called_with.append(args)
+            var = environ_vars[0]
+            environ_vars.remove(var)
+            return var
+        m_eg.side_effect = environment_get_side_effect
+
+        # Return stuff for everything else
+        m_i.return_value = None
+        m_a.return_value = 'intentional'
+        help_init = mock.MagicMock()
+        command_initialize_method_list = [mock.MagicMock(), mock.MagicMock()]
+        m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], \
+                            {'toggleignoredev': 'snart', 'help_init': help_init}, command_initialize_method_list
+
+        # Run the method.
+        client = JadieClient()
+
+        # Run assertions.
+        self.assertIsInstance(client.bot_start_time, datetime)
+        self.assertIsNone(client.bot_uptime)
+        self.assertFalse(client.connected_before)
+        self.assertFalse(client.reconnected_since)
+        self.assertEqual(client.global_prefix, bot.GLOBAL_PREFIX)
+        self.assertTrue(len(environ_called_with) == 3)
+        self.assertEqual(environ_called_with[0], ('DEPLOYMENT_CLIENT',))
+        self.assertEqual(client.deployment_client, True)
+        m_lc.assert_called()
+        self.assertEqual(client.public_command_dict, {'fuckyeah': 'bro'})
+        self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
+        self.assertEqual(client.reactive_command_list, ['awesome'])
+        self.assertEqual(client.toggle_ignore_developer, 'snart')
+        help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        for initialize_method in command_initialize_method_list:
+            initialize_method.assert_called_once_with()
+        self.assertFalse(client.ignore_developer)
+        self.assertEqual(client.developer_ids, [12, 31, 50])
+        self.assertEqual(environ_called_with[2], ('DISABLED_COMMANDS',))
+        self.assertEqual(client.disabled_commands, [])
         m_a.assert_called()
         m_i.assert_called_with(client, intents='intentional')
 
