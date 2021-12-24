@@ -37,14 +37,59 @@ async def random_anime_master(bot, message, argument):
     """
     # First, see if the argument exists.
     if argument := parsing.normalize_string(argument):
-        anime_id, anime_url = get_random_anime_from_user_ptw(argument)
+        await random_anime_custom_user(message, argument)
 
     # If not, use the default values.
     else:
-        anime_id, anime_url = get_random_anime_from_default_user()
+        await random_anime_default(message)
+
+
+async def random_anime_custom_user(message, user):
+    """
+    Generates a random anime page from the given user's plan to watch section.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        user (str) : The username of the user to pull anime from.
+    """
+    # Try / catch just in case username doesn't exist.
+    try:
+
+        # Fetch the anime.
+        async with message.channel.typing():
+            anime_id, anime_url = get_random_anime_from_user_ptw(user)
+
+        # Log and send.
+        logging.info(message, f'requested random anime from user {user}, responded with MAL id {anime_id}')
+        await messaging.send_text_message(message, anime_url)
+
+    # On KeyError, invalid user.
+    except KeyError:
+
+        # Log and send.
+        logging.info(message, f'requested random anime from user {user}, invalid')
+        await messaging.send_text_message(message, f"Invalid user '{user}'.")
+
+
+async def random_anime_default(message):
+    """
+    Generates a random anime page from the default user OR the preloaded anime, if that exists.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+    """
+    # If the preloaded anime exist, then pull from that.
+    if PRELOADED_ANIME_URLS:
+        anime_id = random.choice(PRELOADED_ANIME_URLS)
+        anime_url = PRELOADED_ANIME_URLS[anime_id]
+
+    # Otherwise, get it from the request.
+    else:
+        async with message.channel.typing():
+            anime_id, anime_url = get_random_anime_from_default_user()
 
     # Log and send.
-    logging.info(message, f'requested random anime, responded with MAL id {anime_id}')
+    logging.info(message, f'requested random anime from default, responded with MAL id {anime_id}')
     await messaging.send_text_message(message, anime_url)
 
 
@@ -59,7 +104,7 @@ def get_random_anime_from_user_ptw(user):
         int, str : The MAL id of the anime, followed by its URL.
     """
     # Make the API call.
-    response = requests.get(PTW_API_URL.format(user))
+    response = requests.get(PTW_API_URL.format(user), timeout=10)
     anime_list_json = response.json()['anime']
 
     # Add this user's list to the preloaded anime, if we are doing that.
@@ -85,7 +130,7 @@ def get_random_anime_from_default_user():
     page_num = random.choices(DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS)[0]
 
     # Make the API call.
-    response = requests.get(ALL_API_URL.format(DEFAULT_USER, page_num))
+    response = requests.get(ALL_API_URL.format(DEFAULT_USER, page_num), timeout=10)
     anime_list_json = response.json()['anime']
 
     # Pick a random one.
@@ -149,7 +194,8 @@ def initialize():
 # Command values
 PUBLIC_COMMAND_DICT = {
     'randomanime': random_anime_master,
-    'randommal': random_anime_master
+    'randommal': random_anime_master,
+    'randomani': random_anime_master
 }
 HELP_DOCUMENTATION_LIST = [
     {
@@ -159,7 +205,7 @@ HELP_DOCUMENTATION_LIST = [
                        "specific user's plan-to-watch section.",
         'examples': [('randomanime', 'Generates a random anime.'),
                      ('randomanime ManWild', "Picks a random anime from MAL user 'ManWild's plan-to-watch list.")],
-        'aliases': ['randommal'],
+        'aliases': ['randommal', 'randomani'],
         'usages': ['randomanime', 'randomanime < user >']
     }
 ]
