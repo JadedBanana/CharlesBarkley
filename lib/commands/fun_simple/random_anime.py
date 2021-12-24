@@ -34,7 +34,7 @@ async def random_anime_master(bot, message, argument):
     """
     # First, see if the argument exists.
     if argument := parsing.normalize_string(argument):
-        anime = get_random_anime(argument, [1], [1], False)
+        anime = get_random_anime(argument, [1], [1], True)
 
     # If not, use the default values.
     else:
@@ -62,7 +62,7 @@ def get_random_anime(user, page_numbers, page_weights, do_ptw=False):
     page_num = random.choices(page_numbers, page_weights)[0]
 
     # Make the API call.
-    response = requests.get(API_URL.format(user, 'plantowatch' if do_ptw else 'all', page_num))
+    response = requests.get(API_URL.format(user, 'ptw' if do_ptw else 'all', page_num))
     anime_list_json = response.json()['anime']
 
     # Return a random one.
