@@ -17,7 +17,8 @@ import random
 DEFAULT_USER = None  # Initialized in initialize method
 DEFAULT_PAGE_NUMBERS = None  # Initialized in initialize method
 DEFAULT_PAGE_WEIGHTS = None  # Initialized in initialize method
-API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/{1}/{2}'
+PTW_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/ptw'
+ALL_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/{1}/{2}'
 ANIME_PER_PAGE = 300
 EMBED_COLOR =  (46 << 16) + (81 << 8) + 162
 
@@ -34,7 +35,7 @@ async def random_anime_master(bot, message, argument):
     """
     # First, see if the argument exists.
     if argument := parsing.normalize_string(argument):
-        anime = get_random_anime(argument, [1], [1], True)
+        anime = get_random_anime_from_user_ptw(argument)
 
     # If not, use the default values.
     else:
@@ -43,6 +44,24 @@ async def random_anime_master(bot, message, argument):
     # Log and send.
     logging.info(message, f"requested random anime, responded with MAL id {anime['mal_id']}")
     await messaging.send_text_message(message, anime['url'])
+
+
+def get_random_anime_from_user_ptw(user):
+    """
+    Gets a random anime from the given user's plan-to-watch section.
+
+    Arguments:
+        user (str) : The username of the user to pull anime from.
+
+    Returns:
+        dict : Dict representing anime data.
+    """
+    # Make the API call.
+    response = requests.get(PTW_API_URL.format(user))
+    anime_list_json = response.json()['anime']
+
+    # Return a random one.
+    return random.choice(anime_list_json)
 
 
 def get_random_anime(user, page_numbers, page_weights, do_ptw=False):
