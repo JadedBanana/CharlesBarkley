@@ -20,7 +20,8 @@ DEFAULT_PAGE_WEIGHTS = None  # Initialized in initialize method
 ANIME_PER_PAGE = 300
 PTW_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/ptw'
 ALL_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/all/{1}'
-PRELOADED_ANIME = []
+PRELOADED_ANIME_URLS = {}
+PRELOADED_ANIME_FROM_USERS = []
 EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
@@ -36,15 +37,15 @@ async def random_anime_master(bot, message, argument):
     """
     # First, see if the argument exists.
     if argument := parsing.normalize_string(argument):
-        anime = get_random_anime_from_user_ptw(argument)
+        anime_id, anime_url = get_random_anime_from_user_ptw(argument)
 
     # If not, use the default values.
     else:
-        anime = get_random_anime_from_default_user()
+        anime_id, anime_url = get_random_anime_from_default_user()
 
     # Log and send.
-    logging.info(message, f"requested random anime, responded with MAL id {anime['mal_id']}")
-    await messaging.send_text_message(message, anime['url'])
+    logging.info(message, f'requested random anime, responded with MAL id {anime_id}')
+    await messaging.send_text_message(message, anime_url)
 
 
 def get_random_anime_from_user_ptw(user):
@@ -55,21 +56,20 @@ def get_random_anime_from_user_ptw(user):
         user (str) : The username of the user to pull anime from.
 
     Returns:
-        dict : Dict representing anime data.
+        int, str : The MAL id of the anime, followed by its URL.
     """
     # Make the API call.
     response = requests.get(PTW_API_URL.format(user))
     anime_list_json = response.json()['anime']
 
+    # Add this user's list to the preloaded anime, if we are doing that.
+    add_user_list_to_preloaded_if_not_already(user, anime_list_json)
+
     # Pick a random one.
     chosen_anime = random.choice(anime_list_json)
 
-    # If this isn't in the preloaded anime and we are preloading anime, add it.
-    if PRELOADED_ANIME and chosen_anime['mal_id'] not in PRELOADED_ANIME:
-        PRELOADED_ANIME[chosen_anime['mal_id']] = chosen_anime['url']
-
-    # Return the chosen anime.
-    return chosen_anime
+    # Return the chosen anime's id and url.
+    return chosen_anime['mal_id'], chosen_anime['url']
 
 
 def get_random_anime_from_default_user():
@@ -79,7 +79,7 @@ def get_random_anime_from_default_user():
     Ideally, the default user has a LOT of anime in their list.
 
     Returns:
-        dict : Dict representing anime data.
+        int, str : The MAL id of the anime, followed by its URL.
     """
     # Picks which page to pull from.
     page_num = random.choices(DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS)[0]
@@ -88,8 +88,41 @@ def get_random_anime_from_default_user():
     response = requests.get(ALL_API_URL.format(DEFAULT_USER, page_num))
     anime_list_json = response.json()['anime']
 
-    # Return a random one.
-    return random.choice(anime_list_json)
+    # Pick a random one.
+    chosen_anime = random.choice(anime_list_json)
+
+    # Return the chosen anime's id and url.
+    return chosen_anime['mal_id'], chosen_anime['url']
+
+
+def add_user_list_to_preloaded_if_not_already(user, anime_list_json):
+    """
+    Adds all the anime from the anime list that are missing from the preloaded anime list to the preloaded anime list.
+    Only works if this user hasn't had their stuff preloaded yet.
+
+    Arguments:
+        user (str) : The username of the user this list came from.
+        anime_list_json: The complete anime list JSON for this user.
+    """
+    # Initial check.
+    if not PRELOADED_ANIME_URLS or user in PRELOADED_ANIME_FROM_USERS:
+        return
+
+    # Run the other method.
+    add_user_list_to_preloaded(anime_list_json)
+
+
+def add_user_list_to_preloaded(anime_list_json):
+    """
+    Adds all the anime from the anime list that are missing from the preloaded anime list to the preloaded anime list.
+
+    Arguments:
+        anime_list_json: The complete anime list JSON for this user.
+    """
+    # Iterate through each anime entry and put it in if it isn't yet there.
+    for anime in anime_list_json:
+        if anime['mal_id'] not in PRELOADED_ANIME_URLS:
+            PRELOADED_ANIME_URLS[anime['mal_id']] = anime['url']
 
 
 def initialize():
