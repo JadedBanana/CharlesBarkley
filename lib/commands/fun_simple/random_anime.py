@@ -22,6 +22,8 @@ PTW_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/ptw'
 ALL_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/all/{1}'
 PRELOADED_ANIME_URLS = {}
 PRELOADED_ANIME_FROM_USERS = []
+PRELOADED_DEFAULT_PAGES = []
+ALL_DEFAULT_PAGES_PRELOADED = False
 EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
@@ -75,7 +77,8 @@ async def random_anime_custom_user(message, user):
 
         # Log and send.
         logging.info(message, f'requested random anime from user {user}, no ptw')
-        await messaging.send_text_message(message, 'That user has no anime tagged as plan-to-watch.')
+        await messaging.send_text_message(message, 'That user either has no anime tagged as plan-to-watch, or the '
+                                                   'MyAnimeList API had a bad day. Try again later.')
 
 
 async def random_anime_default(message):
@@ -85,19 +88,20 @@ async def random_anime_default(message):
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # If the preloaded anime exist, then pull from that.
-    if PRELOADED_ANIME_URLS:
-        anime_id = random.choice(PRELOADED_ANIME_URLS)
-        anime_url = PRELOADED_ANIME_URLS[anime_id]
+    # Get the random anime.
+    try:
+        anime_id, anime_url = await get_random_anime_from_default_user(message)
 
-    # Otherwise, get it from the request.
-    else:
-        async with message.channel.typing():
-            anime_id, anime_url = get_random_anime_from_default_user()
+        # Log and send.
+        logging.info(message, f'requested random anime from default, responded with MAL id {anime_id}')
+        await messaging.send_text_message(message, anime_url)
 
-    # Log and send.
-    logging.info(message, f'requested random anime from default, responded with MAL id {anime_id}')
-    await messaging.send_text_message(message, anime_url)
+    # On IndexError, MAL API had a bad day.
+    except IndexError:
+
+        # Log and send.
+        logging.info(message, f'requested random anime from default, MAL API error')
+        await messaging.send_text_message(message, 'MyAnimeList API had an error, try again later.')
 
 
 def get_random_anime_from_user_ptw(user):
@@ -124,21 +128,64 @@ def get_random_anime_from_user_ptw(user):
     return chosen_anime['mal_id'], chosen_anime['url']
 
 
-def get_random_anime_from_default_user():
+async def get_random_anime_from_default_user(message):
     """
     Gets a random anime from the default user.
     Basically, just picks a random anime from their list.
     Ideally, the default user has a LOT of anime in their list.
+    Will act differently depending on whether or not everything is preloaded.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
 
     Returns:
         int, str : The MAL id of the anime, followed by its URL.
     """
+    # If we have preloaded all the pages, then just pick a random one from the preloaded list.
+    if ALL_DEFAULT_PAGES_PRELOADED:
+        return random.choice(list(PRELOADED_ANIME_URLS.items()))
+
+    # Otherwise, make a request... and GET it.
+    async with message.channel.typing():
+        return get_random_anime_from_default_user_download()
+
+
+def get_random_anime_from_default_user_download():
+    """
+    Gets a random anime from the default user by downloading from MyAnimeList.
+    Only downloads pages that haven't been downloaded before.
+
+    Returns:
+        int, str : The MAL id of the anime, followed by its URL.
+    """
+    # Instantiates global variable.
+    global DEFAULT_PAGE_WEIGHTS, ALL_DEFAULT_PAGES_PRELOADED
+
     # Picks which page to pull from.
-    page_num = random.choices(DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS)[0]
+    page_num = random.choices(
+        [page_num for page_num in DEFAULT_PAGE_NUMBERS if page_num not in PRELOADED_DEFAULT_PAGES],
+        DEFAULT_PAGE_WEIGHTS
+    )[0]
+
+    # Appends that page to PRELOADED_DEFAULT_PAGES.
+    PRELOADED_DEFAULT_PAGES.append(page_num)
+
+    # Modifies the DEFAULT_PAGE_WEIGHTS depending on if the page_num is the last page.
+    if page_num == DEFAULT_PAGE_NUMBERS[-1]:
+        DEFAULT_PAGE_WEIGHTS = DEFAULT_PAGE_WEIGHTS[:-1]
+    else:
+        DEFAULT_PAGE_WEIGHTS = DEFAULT_PAGE_WEIGHTS[1:]
+
+    # Set the value of ALL_DEFAULT_PAGES_PRELOADED.
+    ALL_DEFAULT_PAGES_PRELOADED = \
+        not [page_num for page_num in DEFAULT_PAGE_NUMBERS if page_num not in PRELOADED_DEFAULT_PAGES]
 
     # Make the API call.
     response = requests.get(ALL_API_URL.format(DEFAULT_USER, page_num), timeout=10)
     anime_list_json = response.json()['anime']
+
+    # Add the anime list to the preloaded.
+    add_user_list_to_preloaded(anime_list_json)
 
     # Pick a random one.
     chosen_anime = random.choice(anime_list_json)
@@ -182,6 +229,10 @@ def initialize():
     Initializes the command.
     In this case, uses environment variables to set default values.
     """
+    # Log.
+    import logging
+    logging.info('Initializing fun_simple.random_anime...')
+
     # Global variable establishments.
     global DEFAULT_USER, DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS
 
@@ -208,8 +259,9 @@ HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'randomanime',
         'category': 'fun_simple',
-        'description': 'Generates a random Anime using MyAnimeList. Can be used to pick ANY anime, or one from a'
-                       "specific user's plan-to-watch section.",
+        'description': 'Generates a random Anime using MyAnimeList. Can be used to pick ANY anime, or one from a '
+                       "specific user's plan-to-watch section."
+                       'Because of how finnicky the MAL API is, spamming the command is not recommended.',
         'examples': [('randomanime', 'Generates a random anime.'),
                      ('randomanime ManWild', "Picks a random anime from MAL user 'ManWild's plan-to-watch list.")],
         'aliases': ['randommal', 'randomani'],
