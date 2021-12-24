@@ -17,10 +17,11 @@ import random
 DEFAULT_USER = None  # Initialized in initialize method
 DEFAULT_PAGE_NUMBERS = None  # Initialized in initialize method
 DEFAULT_PAGE_WEIGHTS = None  # Initialized in initialize method
-PTW_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/ptw'
-ALL_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/{1}/{2}'
 ANIME_PER_PAGE = 300
-EMBED_COLOR =  (46 << 16) + (81 << 8) + 162
+PTW_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/ptw'
+ALL_API_URL = 'https://api.jikan.moe/v3/user/{0}/animelist/all/{1}'
+PRELOADED_ANIME = []
+EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
 async def random_anime_master(bot, message, argument):
@@ -39,7 +40,7 @@ async def random_anime_master(bot, message, argument):
 
     # If not, use the default values.
     else:
-        anime = get_random_anime(DEFAULT_USER, DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS)
+        anime = get_random_anime_from_default_user()
 
     # Log and send.
     logging.info(message, f"requested random anime, responded with MAL id {anime['mal_id']}")
@@ -60,28 +61,31 @@ def get_random_anime_from_user_ptw(user):
     response = requests.get(PTW_API_URL.format(user))
     anime_list_json = response.json()['anime']
 
-    # Return a random one.
-    return random.choice(anime_list_json)
+    # Pick a random one.
+    chosen_anime = random.choice(anime_list_json)
+
+    # If this isn't in the preloaded anime and we are preloading anime, add it.
+    if PRELOADED_ANIME and chosen_anime['mal_id'] not in PRELOADED_ANIME:
+        PRELOADED_ANIME[chosen_anime['mal_id']] = chosen_anime['url']
+
+    # Return the chosen anime.
+    return chosen_anime
 
 
-def get_random_anime(user, page_numbers, page_weights, do_ptw=False):
+def get_random_anime_from_default_user():
     """
-    Gets a random anime.
-
-    Arguments:
-        user (str) : The username of the user to pull anime from.
-        page_numbers (int[]) : The page numbers, organized in a list from 1 to n.
-        page_weights (int[]) : The number of entries per page. Should be indexed the same as page_numbers.
-        do_ptw (bool) : Whether to do the plan-to-watch section rather than all sections. Defaults to False.
+    Gets a random anime from the default user.
+    Basically, just picks a random anime from their list.
+    Ideally, the default user has a LOT of anime in their list.
 
     Returns:
         dict : Dict representing anime data.
     """
     # Picks which page to pull from.
-    page_num = random.choices(page_numbers, page_weights)[0]
+    page_num = random.choices(DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS)[0]
 
     # Make the API call.
-    response = requests.get(API_URL.format(user, 'ptw' if do_ptw else 'all', page_num))
+    response = requests.get(ALL_API_URL.format(DEFAULT_USER, page_num))
     anime_list_json = response.json()['anime']
 
     # Return a random one.
