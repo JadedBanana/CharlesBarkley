@@ -250,7 +250,8 @@ def initialize():
 
 # Command values
 PUBLIC_COMMAND_DICT = {
-    'randommanga': random_manga_master
+    'randommanga': random_manga_master,
+    'randomanga': random_manga_master
 }
 HELP_DOCUMENTATION_LIST = [
     {
