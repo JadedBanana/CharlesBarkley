@@ -690,7 +690,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
                         # Checkout their profile picture.
                         await temp_files.checkout_profile_picture_by_user_with_typing(player, message, 'hg_filehold',
-                                                                                      (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                                      return_image=False)
 
                         # Log and send message.
                         logging.info(message, f'added player {player} to Hunger Games instance')
@@ -748,7 +748,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
         # Checkout the added user.
         await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold',
-                                                                      (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                      return_image=False)
 
         # Send the message and junk.
         logging.info(message, f'added player {added_user} to Hunger Games instance')
@@ -890,7 +890,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
                 added_player = random.choice(other_players)
                 hg_players_no_bots.append(added_player)
                 await temp_files.checkout_profile_picture_by_user_with_typing(added_player, message, 'hg_filehold',
-                                                                             (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                              return_image=False)
 
             # Otherwise, send an error message.
             else:
@@ -1191,7 +1191,7 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     # Get all the player data.
     player_data = [(player.display_name,
                     temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
-                                                                (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
+                                                                size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0)
                    for player in hg_dict['players']]
 
     # Generate the player statuses image.
@@ -1884,7 +1884,7 @@ async def generate_full_game(hg_dict, message):
     new_players = {}
     for player in hg_dict['players']:
         new_players[player.id] = temp_files.checkout_profile_picture_by_user(player, message, 'hunger_games_full',
-                                                                            (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                             size=(HG_ICON_SIZE, HG_ICON_SIZE))
     hg_dict['players'] = new_players
 
     # Updates hunger games dict.

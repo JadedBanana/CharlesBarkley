@@ -49,7 +49,7 @@ def initialize():
     clear_all_temporary_files()
 
 
-def checkout_profile_picture_by_user(user, message, command_key, size=None):
+def checkout_profile_picture_by_user(user, message, command_key, return_image=True, size=None):
     """
     Checks out a profile picture for temporary use.
     Will download the profile picture if it doesn't yet exist in the files.
@@ -59,8 +59,12 @@ def checkout_profile_picture_by_user(user, message, command_key, size=None):
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
+        return_image (bool) : Whether or not to return the image. Defaults to True.
         size ((int, int)) : The size, represented by a 2-entry tuple of ints.
                             Width first, then height.
+
+    Returns:
+        PIL.Image : The profile picture as an image, if return_image is True.
     """
     # First, see if the user's profile picture is already in the dict. If it isn't, then download it.
     if user.id not in ACTIVE_PROFILE_PICTURES:
@@ -69,19 +73,20 @@ def checkout_profile_picture_by_user(user, message, command_key, size=None):
     # Then, modify the user profile picture data.
     ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
 
-    # Then, get the image.
-    image = ACTIVE_PROFILE_PICTURES[user.id][0].copy()
+    # Then if told to do so, get the image.
+    if return_image:
+        image = ACTIVE_PROFILE_PICTURES[user.id][0].copy()
 
-    # If it should be resized, then resize it.
-    if size and size > (0, 0):
-        image = image.resize((size[0], size[1]),
-                             Image.NEAREST if image.width < size[0] or image.height < size[1] else Image.LANCZOS)
+        # If it should be resized, then resize it.
+        if size and size > (0, 0):
+            image = image.resize((size[0], size[1]),
+                                 Image.NEAREST if image.width < size[0] or image.height < size[1] else Image.LANCZOS)
 
-    # And return the image.
-    return image
+        # And return the image.
+        return image
 
 
-async def checkout_profile_picture_by_user_with_typing(user, message, command_key, size=None):
+async def checkout_profile_picture_by_user_with_typing(user, message, command_key, return_image=True, size=None):
     """
     Checks out a profile picture for temporary use.
     Will download the profile picture if it doesn't yet exist in the files.
@@ -92,16 +97,20 @@ async def checkout_profile_picture_by_user_with_typing(user, message, command_ke
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
+        return_image (bool) : Whether or not to return the image. Defaults to True.
         size ((int, int)) : The size, represented by a 2-entry tuple of ints.
                             Width first, then height.
+
+    Returns:
+        PIL.Image : The profile picture as an image, if return_image is True.
     """
     # If the user isn't downloaded yet, then run the checkout_profile_picture_by_user method with typing.
     if user not in ACTIVE_PROFILE_PICTURES:
         async with message.channel.typing():
-            return checkout_profile_picture_by_user(user, message, command_key, size)
+            return checkout_profile_picture_by_user(user, message, command_key, return_image, size)
 
     # Otherwise, don't type.
-    return checkout_profile_picture_by_user(user, message, command_key, size)
+    return checkout_profile_picture_by_user(user, message, command_key, return_image, size)
 
 
 def checkout_profile_picture_by_user_bulk(users, message, command_key):

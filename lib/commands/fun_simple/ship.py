@@ -87,9 +87,9 @@ async def ship(bot, message, argument):
 
         # Gets the PFP for partner 1 and 2.
         partner_1_img = await temp_files.checkout_profile_picture_by_user_with_typing(
-            partner_1, message, 'ship', (ICON_SIZE, ICON_SIZE))
+            partner_1, message, 'ship', imagesize=(ICON_SIZE, ICON_SIZE))
         partner_2_img = await temp_files.checkout_profile_picture_by_user_with_typing(
-            partner_2, message, 'ship', (ICON_SIZE, ICON_SIZE))
+            partner_2, message, 'ship', imagesize=(ICON_SIZE, ICON_SIZE))
 
         # Gets the image for the heart (aww!)
         heart_img = assets.open_image(HEART_IMG)
