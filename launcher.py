@@ -117,6 +117,10 @@ def run_secondary_initializers():
     from lib.util import temp_files
     temp_files.initialize()
 
+    # Connecting to database.
+    from lib.util import database
+    database.initialize()
+
 
 def start_background_threads():
     """
