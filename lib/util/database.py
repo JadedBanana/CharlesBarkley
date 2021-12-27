@@ -2,7 +2,6 @@
 from lib.util import environment
 
 # Package Imports
-from sqlalchemy.exc import ArgumentError, OperationalError, NoSuchModuleError, UnboundExecutionError
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import create_engine
 import logging
@@ -10,16 +9,14 @@ import sys
 
 # List of tables we should expect to see in the database.
 # Functions similar to lib.util.environment's EXPECTED_DOTENV_VARS.
-EXPECTED_DATABASE_TABLES = [
-    'reminder'
-]
+# The dict is keyed by the table name in SQL, and the result is the attribute set in this module.
+EXPECTED_DATABASE_TABLES = {
+    'reminder': 'REMINDER_TABLE'
+}
 
 # Database variables
 BASE = None
 ENGINE = None
-
-# Database tables
-REMINDER_TABLE = None
 
 
 def initialize():
@@ -29,14 +26,50 @@ def initialize():
     # Set the outside values as global, so we can modify them.
     global BASE, ENGINE
 
-    # Set the base.
-    BASE = automap_base()
+    # Wrap with try/catch case to detect ALL exceptions.
+    try:
 
-    # Set the engine.
-    ENGINE = create_engine(environment.get('SQLALCHEMY_DATABASE_URL'))
+        # Set the base.
+        BASE = automap_base()
 
-    # Prepare the base with the engine.
-    BASE.prepare(ENGINE, reflect=True)
+        # Set the engine.
+        ENGINE = create_engine(environment.get('SQLALCHEMY_DATABASE_URL'))
+
+        # Prepare the base with the engine.
+        BASE.prepare(ENGINE, reflect=True)
+
+    # On exception, log the error and exit.
+    except Exception as e:
+        logging.error('Error occurred during database mapping.')
+        logging.error(str(e).replace('\n\n', '\n'))
+
+        # If we are supposed to exit, exit.
+        if environment.get('EXIT_ON_DATABASE_FAILURE'):
+            sys.exit(-1)
+
+        # Otherwise, just return.
+        return
 
     # If we've made it this far, then yay! Log our success.
     logging.info('Database connection established successfully.')
+
+    # Variables keeping track of stuff in the loop.
+    this_module = sys.modules[__name__]
+    missing_tables = False
+
+    # Iterate through the expected database tables.
+    for database_table, module_table in EXPECTED_DATABASE_TABLES.items():
+
+        # Check and make sure that the database table exists.
+        # If so, set it as the attribute here.
+        if hasattr(BASE.classes, database_table):
+            setattr(this_module, module_table, getattr(BASE.classes, database_table))
+
+        # Database table does not exist, log warning.
+        else:
+            missing_tables = True
+            logging.warning(f'Expected database table {database_table} in database, not found.')
+
+    # Warn user if missing any tables.
+    if missing_tables:
+        logging.warning('Related commands may not function correctly as a result of missing database tables.')
