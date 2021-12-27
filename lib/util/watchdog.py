@@ -22,7 +22,7 @@ def exit_from_main_thread_crash():
 
 def exit_from_cron_thread_crash():
     """
-    Exits from a main thread crash.
+    Exits from a cron thread crash.
     """
     # Log and exit.
     logging.critical('WATCHDOG: Cron thread crashed.')
@@ -31,7 +31,7 @@ def exit_from_cron_thread_crash():
 
 def exit_from_temp_files_thread_crash():
     """
-    Exits from a main thread crash.
+    Exits from a temp files thread crash.
     """
     # Log and exit.
     logging.critical('WATCHDOG: Temp files thread crashed.')
