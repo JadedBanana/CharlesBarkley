@@ -16,8 +16,8 @@ def exit_from_main_thread_crash():
     Exits from a main thread crash.
     """
     # Log and exit.
-    logging.critical('Main thread crashed.')
-    sys.exit(-1)
+    logging.critical('WATCHDOG: Main thread crashed.')
+    stop_all_threads()
 
 
 def exit_from_cron_thread_crash():
@@ -25,8 +25,8 @@ def exit_from_cron_thread_crash():
     Exits from a main thread crash.
     """
     # Log and exit.
-    logging.critical('Cron thread crashed.')
-    sys.exit(-1)
+    logging.critical('WATCHDOG: Cron thread crashed.')
+    stop_all_threads()
 
 
 def exit_from_temp_files_thread_crash():
@@ -34,8 +34,31 @@ def exit_from_temp_files_thread_crash():
     Exits from a main thread crash.
     """
     # Log and exit.
-    logging.critical('Temp files thread crashed.')
-    sys.exit(-1)
+    logging.critical('WATCHDOG: Temp files thread crashed.')
+    stop_all_threads()
+
+
+def stop_all_threads():
+    """
+    Stop all threads.
+    This is done by terminating the program via the command line.
+    Execution varies based on what operating system we're running on.
+    As of right now, only works on Windows and UNIX-based systems.
+    """
+    # Imports.
+    import subprocess
+    import platform
+    import os
+
+    # First, get the PID.
+    pid = os.getpid()
+
+    # If running on Windows, use taskkill command.
+    if platform.system() == 'Windows':
+        subprocess.run(['taskkill', '-F', '/PID', str(pid)])
+
+    # Otherwise, run the linux-based one.
+    subprocess.run(['kill', '-9', str(pid)])
 
 
 class Watchdog(threading.Thread):
