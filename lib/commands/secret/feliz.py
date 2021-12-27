@@ -67,12 +67,12 @@ async def feliz(bot, message, argument):
 
     # Log the order.
     if intended_date == -1:
-        logging.info(message, f'queria saber cual dia del semana es hoy, feliz {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria saber cual dia del semana es hoy, feliz {NUMBER_DAYS[actual_date]}!')
     elif intended_date == actual_date:
-        logging.info(message, f'queria celebrar el dia del semana con espacios, feliz {argument}! '
+        logging.debug(message, f'queria celebrar el dia del semana con espacios, feliz {argument}! '
                               f'Feliz {NUMBER_DAYS[actual_date]}!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana con espacios, pero no es '
+        logging.debug(message, f'queria celebrar el dia del semana con espacios, pero no es '
                               f'{argument}, no, por que seria {NUMBER_DAYS[intended_date]}?! '
                               f'Hoy es {NUMBER_DAYS[actual_date]}!')
 
@@ -99,9 +99,9 @@ async def feliz_lunes(bot, message, argument):
 
     # Log the order.
     if actual_date == 0:
-        logging.info(message, f'queria celebrar el dia del semana, feliz lunes!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz lunes!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es lunes, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es lunes, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 0, actual_date != 0)
@@ -125,9 +125,9 @@ async def feliz_martes(bot, message, argument):
 
     # Log the order.
     if actual_date == 1:
-        logging.info(message, f'queria celebrar el dia del semana, feliz martes!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz martes!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es martes, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es martes, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 1, actual_date != 1)
@@ -151,9 +151,9 @@ async def feliz_miercoles(bot, message, argument):
 
     # Log the order.
     if actual_date == 2:
-        logging.info(message, f'queria celebrar el dia del semana, feliz miercoles!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz miercoles!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es miercoles, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es miercoles, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 2, actual_date != 2)
@@ -177,9 +177,9 @@ async def feliz_jueves(bot, message, argument):
 
     # Log the order.
     if actual_date == 3:
-        logging.info(message, f'queria celebrar el dia del semana, feliz jueves!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz jueves!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es jueves, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es jueves, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 3, actual_date != 3)
@@ -203,9 +203,9 @@ async def feliz_viernes(bot, message, argument):
 
     # Log the order.
     if actual_date == 4:
-        logging.info(message, f'queria celebrar el dia del semana, feliz viernes!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz viernes!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es viernes, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es viernes, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 4, actual_date != 4)
@@ -229,9 +229,9 @@ async def feliz_sabado(bot, message, argument):
 
     # Log the order.
     if actual_date == 5:
-        logging.info(message, f'queria celebrar el dia del semana, feliz sabado!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz sabado!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es sabado, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es sabado, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 5, actual_date != 5)
@@ -255,9 +255,9 @@ async def feliz_domingo(bot, message, argument):
 
     # Log the order.
     if actual_date == 6:
-        logging.info(message, f'queria celebrar el dia del semana, feliz domingo!')
+        logging.debug(message, f'queria celebrar el dia del semana, feliz domingo!')
     else:
-        logging.info(message, f'queria celebrar el dia del semana, pero no es domingo, es {NUMBER_DAYS[actual_date]}!')
+        logging.debug(message, f'queria celebrar el dia del semana, pero no es domingo, es {NUMBER_DAYS[actual_date]}!')
 
     # Send the message.
     await feliz_send_image(message, 6, actual_date != 6)

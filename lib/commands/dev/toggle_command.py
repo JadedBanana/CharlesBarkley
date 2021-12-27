@@ -26,26 +26,26 @@ async def disable_command(bot, message, argument):
     # First, see if the argument exists.
     argument = parsing.normalize_string(argument)
     if not argument:
-        logging.info(message, 'attempted to disable command, no argument')
+        logging.debug(message, 'attempted to disable command, no argument')
         return await messaging.send_text_message(message, f"Must specify a command.")
 
     # See if the command is in the bot's public command dict.
     argument = argument.lower()
     if argument not in bot.public_command_dict:
-        logging.info(message, f"attempted to disable command '{argument}', unknown")
+        logging.debug(message, f"attempted to disable command '{argument}', unknown")
         return await messaging.send_text_message(message, f"Unknown command '{argument}'.")
 
     # See if the command is already disabled.
     enabled_method = bot.public_command_dict[argument]
     if enabled_method in bot.disabled_commands:
-        logging.info(message, f"attempted to disable command {enabled_method}, already disabled")
+        logging.debug(message, f"attempted to disable command {enabled_method}, already disabled")
         return await messaging.send_text_message(message, f"Command {enabled_method} is already disabled.")
 
     # Disable the command.
     bot.disabled_commands.append(enabled_method)
 
     # Log and send.
-    logging.info(message, f"disabled command {enabled_method}")
+    logging.debug(message, f"disabled command {enabled_method}")
     await messaging.send_text_message(message, f"Command {enabled_method} has been disabled.")
 
 
@@ -63,26 +63,26 @@ async def enable_command(bot, message, argument):
     # First, see if the argument exists.
     argument = parsing.normalize_string(argument)
     if not argument:
-        logging.info(message, 'attempted to enable command, no argument')
+        logging.debug(message, 'attempted to enable command, no argument')
         return await messaging.send_text_message(message, f"Must specify a command.")
 
     # See if the command is in the bot's public command dict.
     argument = argument.lower()
     if argument not in bot.public_command_dict:
-        logging.info(message, f"attempted to enable command '{argument}', unknown")
+        logging.debug(message, f"attempted to enable command '{argument}', unknown")
         return await messaging.send_text_message(message, f"Unknown command '{argument}'.")
 
     # See if the command is already disabled.
     disabled_method = bot.public_command_dict[argument]
     if disabled_method not in bot.disabled_commands:
-        logging.info(message, f"attempted to enable command {disabled_method}, already enabled")
+        logging.debug(message, f"attempted to enable command {disabled_method}, already enabled")
         return await messaging.send_text_message(message, f"Command {disabled_method} is already enabled.")
 
     # Disable the command.
     bot.disabled_commands.remove(disabled_method)
 
     # Log and send.
-    logging.info(message, f"enabled command {disabled_method}")
+    logging.debug(message, f"enabled command {disabled_method}")
     await messaging.send_text_message(message, f"Command {disabled_method} has been enabled.")
 
 
@@ -96,7 +96,7 @@ async def list_disabled_commands(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Log the order.
-    logging.info(message, 'Ordered disabled commands.')
+    logging.debug(message, 'Ordered disabled commands.')
 
     # If there are no commands disabled, send a command saying so.
     if not bot.disabled_commands:

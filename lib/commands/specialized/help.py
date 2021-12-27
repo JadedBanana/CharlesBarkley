@@ -89,7 +89,7 @@ def get_command_dicts():
     for importer, package_name, is_package in pkgutil.iter_modules(['lib/commands']):
 
         # Log package name and set variable tracking commands implemented.
-        log.info(f"Loading help documentation from command package '{package_name}'...")
+        log.debug(f"Loading help documentation from command package '{package_name}'...")
         help_pages_implemented = 0
 
         # Now that we have the package name of each module, load its sub-modules.
@@ -114,7 +114,7 @@ def get_command_dicts():
                         raise DuplicateCommandError(command_name)
 
                     # Log and add 1 to the help_pages_implemented.
-                    log.info(f"Loading help documentation from '{package_name + '.' + subpackage_name}' for command '{command_name}'")
+                    log.debug(f"Loading help documentation from '{package_name + '.' + subpackage_name}' for command '{command_name}'")
                     help_pages_implemented += 1
 
                     # Check for command category (put into category)
@@ -202,7 +202,7 @@ def get_command_dicts():
                     command_specific_help_page_dict[command_name] = command_specific_help_page
 
         # Log the total commands implemented this package.
-        log.info(f"Loaded {help_pages_implemented} help documentation pages from command package '{package_name}'")
+        log.debug(f"Loaded {help_pages_implemented} help documentation pages from command package '{package_name}'")
 
     # Return the command dicts.
     return home_help_page_dict, command_specific_help_page_dict
@@ -346,7 +346,7 @@ async def help_command(bot, message, argument):
 
     # If there's a command found in there, then use that.
     if intended_command:
-        logging.info(message, f'requested help page for command {intended_command}')
+        logging.debug(message, f'requested help page for command {intended_command}')
 
         # If it's a string, send the base command.
         if isinstance(COMMAND_SPECIFIC_HELP_EMBEDS[word], str):
@@ -356,11 +356,11 @@ async def help_command(bot, message, argument):
 
     # Otherwise, send a different one depending on whether or not the author is a developer.
     elif message.author.id in bot.developer_ids:
-        logging.info(message, 'requested developer home help page')
+        logging.debug(message, 'requested developer home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,
                                                                  assets.get_asset_path(HOME_HELP_PAGE_ICON))
     else:
-        logging.info(message, 'requested public home help page')
+        logging.debug(message, 'requested public home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, PUBLIC_HOME_HELP_EMBED,
                                                                  assets.get_asset_path(HOME_HELP_PAGE_ICON))
 

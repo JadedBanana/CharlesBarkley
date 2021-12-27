@@ -53,7 +53,7 @@ async def ship(bot, message, argument):
     """
     # Make sure this command isn't being used in a DM.
     if isinstance(message.channel, discord.DMChannel):
-        logging.info(message, 'requested ship, but in DMs, so invalid')
+        logging.debug(message, 'requested ship, but in DMs, so invalid')
         return await messaging.send_text_message(message, 'This command cannot be used in DMs.')
 
     # This try/catch surrounding the whole thing is just in case we can't access the userlist.
@@ -65,7 +65,7 @@ async def ship(bot, message, argument):
 
         # On UnableToFindUserError, tell the user they couldn't find the desired one.
         except UnableToFindUserError:
-            logging.info(message, f"requested ship for user '{argument}', invalid")
+            logging.debug(message, f"requested ship for user '{argument}', invalid")
             return await messaging.send_text_message(message, f"Could not find user '{argument}'.")
 
         # If no user was specified, then we just need to grab 2 users as opposed to one.
@@ -83,7 +83,7 @@ async def ship(bot, message, argument):
         ]))
 
         # Log this ship
-        logging.info(message, f'requested ship, shipped {partner_1} and {partner_2}')
+        logging.debug(message, f'requested ship, shipped {partner_1} and {partner_2}')
 
         # Gets the PFP for partner 1 and 2.
         partner_1_img = await temp_files.checkout_profile_picture_by_user_with_typing(

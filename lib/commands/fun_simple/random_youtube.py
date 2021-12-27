@@ -58,7 +58,7 @@ async def get_random_video(message):
     """
     # Rolls the random chance for a rick roll...
     if random.random() < YOUTUBE_RICKROLL_CHANCE:
-        logging.info(message, 'requested random video, rickrolled them')
+        logging.debug(message, 'requested random video, rickrolled them')
         return await messaging.send_text_message(message, YOUTUBE_RICKROLL_URL)
 
     # Random chance failed, perform the normal random youtube video generation.
@@ -89,7 +89,7 @@ async def get_random_video(message):
     choice = random.randint(0, len(video_ids) - 1)
 
     # Return selected video.
-    logging.info(message, f'requested random video, returned video id {video_ids[choice]} '
+    logging.debug(message, f'requested random video, returned video id {video_ids[choice]} '
                           f'which was result {str(choice)} in results for {random_search}')
     await messaging.send_text_message(message, YOUTUBE_VIDEO_URL_FORMAT.format(video_ids[choice]))
 
@@ -103,7 +103,7 @@ async def quota_reached_send_message(message):
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # First, log that the quota has been reached thanks to THIS Bozo.
-    logging.info(message, 'requested random video, quota reached')
+    logging.debug(message, 'requested random video, quota reached')
 
     # Next, we get the time delta between now and when the quota should be reset.
     # This starts by getting a target time variable, set to today.

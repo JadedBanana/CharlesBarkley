@@ -824,7 +824,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
 
     # On UnableToFindUserError, tell the user they couldn't find the desired one.
     except UnableToFindUserError:
-        logging.info(message, f"requested ultimate/shsl title for user '{argument}', invalid")
+        logging.debug(message, f"requested ultimate/shsl title for user '{argument}', invalid")
         return await messaging.send_text_message(message, f"Could not find user '{argument}'.")
 
     # On CannotAccessUserlistError, log an error and send an apology message.
@@ -974,7 +974,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
                                           ultimate_image.size[1] - student_sprite.size[1] + 30), student_sprite)
 
     # Sends the message.
-    logging.info(message, 'requested ultimate/shsl talent')
+    logging.debug(message, 'requested ultimate/shsl talent')
     await messaging.send_image_based_embed(message, ultimate_image, title_str, SHSL_EMBED_COLOR)
 
 

@@ -62,7 +62,7 @@ def load_commands_from_package(package_name, public_command_dict, developer_comm
     import logging
 
     # Log package name and set variable tracking commands implemented.
-    logging.info(f"Loading commands from command package '{package_name}'...")
+    logging.debug(f"Loading commands from command package '{package_name}'...")
     commands_implemented = 0
 
     # Now that we have the package name, load its modules.
@@ -73,7 +73,7 @@ def load_commands_from_package(package_name, public_command_dict, developer_comm
                                                           command_initialize_method_list)
 
     # Log the total commands implemented this package.
-    logging.info(f"Loaded {commands_implemented} commands from command package '{package_name}'")
+    logging.debug(f"Loaded {commands_implemented} commands from command package '{package_name}'")
 
 
 def load_commands_from_module(loaded_module, module_name, package_name, public_command_dict, developer_command_dict,
@@ -204,7 +204,7 @@ def load_normal_commands_from_command_dict(command_dict, module_name, package_na
         if isinstance(command_method, type(load_normal_commands_from_module)):
 
             # Log and increment.
-            logging.info(
+            logging.debug(
                 f"Loading {command_type_str} command '{command_name}' from '{package_name + '.' + module_name}'")
             commands_implemented += 1
 
@@ -247,7 +247,7 @@ def load_reactive_commands_from_module(loaded_module, module_name, package_name,
             # Assert that the method is, well, a method.
             if isinstance(command, type(load_all_commands)):
                 # Log and increment.
-                logging.info(f"Loading reactive command from '{package_name + '.' + module_name}'")
+                logging.debug(f"Loading reactive command from '{package_name + '.' + module_name}'")
                 commands_implemented += 1
 
                 # Put it in!
@@ -312,7 +312,7 @@ def load_initialize_method_from_module_if_exists(loaded_module, module_name, pac
         command_initialize_method_list.append(loaded_module.initialize)
 
         # Log and return.
-        logging.info(f"Loaded initializer method from '{package_name}.{module_name}'")
+        logging.debug(f"Loaded initializer method from '{package_name}.{module_name}'")
         return 1
 
     # Return.
@@ -335,7 +335,7 @@ async def run_standard_command(command_name, command_method, bot, message, argum
 
         # If the command_method is in the disabled commands, then send a response.
         if command_method in bot.disabled_commands:
-            logging.info(message, f"Tried to use disabled command {command_method}.")
+            logging.debug(message, f"Tried to use disabled command {command_method}.")
             await messaging.send_text_message(message, 'That command is currently disabled, sorry!')
 
         # Otherwise, run the command.

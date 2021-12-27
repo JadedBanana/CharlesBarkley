@@ -83,10 +83,10 @@ class JadieClient(discord.Client):
 
         # Logs list of servers the bot is in
         if not self.guilds:
-            logging.info(f'No active guilds')
+            logging.debug(f'No active guilds')
         else:
             for guild in self.guilds:
-                logging.info(f'Active in guild "{guild.name}" with id {guild.id}')
+                logging.debug(f'Active in guild "{guild.name}" with id {guild.id}')
 
         # Bot uptime
         self.bot_uptime = datetime.today()

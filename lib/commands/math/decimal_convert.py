@@ -20,12 +20,12 @@ async def decimal(bot, message, argument):
         # Get the decimal version of the number.
         num = arguments.get_multi_based_num_from_argument(argument)
 
-        logging.info(message, f'requested decimal conversion for {argument}, responded with 0d{num}')
+        logging.debug(message, f'requested decimal conversion for {argument}, responded with 0d{num}')
         return await messaging.send_text_message(message, int(num) if num % 1 == 0 else num)
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):
-        logging.info(message, f'requested decimal conversion for {argument}, invalid')
+        logging.debug(message, f'requested decimal conversion for {argument}, invalid')
         return await messaging.send_text_message(message, 'Invalid number.')
 
 

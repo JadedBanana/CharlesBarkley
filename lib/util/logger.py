@@ -35,7 +35,6 @@ LOG_LEVEL_OVERRIDES = {
 }
 
 
-
 def basic_setup():
     """
     Performs basic setup for the logging module.

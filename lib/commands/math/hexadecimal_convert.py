@@ -22,12 +22,12 @@ async def hexadecimal(bot, message, argument):
         # Convert the decimal number into a hexadecimal one.
         num = misc.convert_num_from_decimal(num, 16)
 
-        logging.info(message, f'requested hexadecimal conversion for {argument}, responded with 0x{num}')
+        logging.debug(message, f'requested hexadecimal conversion for {argument}, responded with 0x{num}')
         return await messaging.send_text_message(message, '0x' + str(num))
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):
-        logging.info(message, f'requested hexadecimal conversion for {argument}, invalid')
+        logging.debug(message, f'requested hexadecimal conversion for {argument}, invalid')
         return await messaging.send_text_message(message, 'Invalid number.')
 
 

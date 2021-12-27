@@ -21,7 +21,7 @@ async def swooce(bot, message, argument):
         argument (str) : The command's argument, if any.
     """
     # Log and send.
-    logging.info(message, 'swooced right in')
+    logging.debug(message, 'swooced right in')
     await messaging.send_text_message(message, SWOOCE)
 
 

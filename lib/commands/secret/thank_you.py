@@ -32,7 +32,7 @@ async def thank_you(bot, message, argument):
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
-    logging.info(message, 'thanked the bot')
+    logging.debug(message, 'thanked the bot')
     await messaging.send_text_message(message, random.choice(THANK_YOU_RESPONSES))
 
 

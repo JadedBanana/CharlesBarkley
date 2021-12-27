@@ -30,7 +30,7 @@ async def runtime(bot, message, argument):
     time_str = format_time_delta_str(time_delta)
 
     # Sends report, logs message
-    logging.info(message, f'requested runtime, responded with {time_str}')
+    logging.debug(message, f'requested runtime, responded with {time_str}')
     await messaging.send_text_message(message, f'Jadi3Pi has been running for {time_str}.')
 
 
