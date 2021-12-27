@@ -3,6 +3,7 @@ from lib.util import environment
 
 # Package Imports
 from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import logging
 import sys
@@ -11,12 +12,16 @@ import sys
 # Functions similar to lib.util.environment's EXPECTED_DOTENV_VARS.
 # The dict is keyed by the table name in SQL, and the result is the attribute set in this module.
 EXPECTED_DATABASE_TABLES = {
-    'reminder': 'REMINDER_TABLE'
+    'reminders': 'REMINDER_TABLE',
+    'hg_actions': 'HG_ACTION_TABLE',
+    'hg_action_wrappers': 'HG_ACTION_WRAPPER_TABLE',
+    'hg_phases': 'HG_PHASES_TABLE',
 }
 
 # Database variables
 BASE = None
 ENGINE = None
+SESSION = None
 
 
 def initialize():
@@ -24,7 +29,7 @@ def initialize():
     Initializes the database and pulls all the required tables.
     """
     # Set the outside values as global, so we can modify them.
-    global BASE, ENGINE
+    global BASE, ENGINE, SESSION
 
     # Wrap with try/catch case to detect ALL exceptions.
     try:
@@ -35,13 +40,16 @@ def initialize():
         # Set the engine.
         ENGINE = create_engine(environment.get('SQLALCHEMY_DATABASE_URL'))
 
-        # Prepare the base with the engine.
+        # Prepare the base and the session with the engine.
         BASE.prepare(ENGINE, reflect=True)
+        SESSION = sessionmaker(ENGINE)()
 
     # On exception, log the error and exit.
     except Exception as e:
         logging.error('Error occurred during database mapping.')
-        logging.error(str(e).replace('\n\n', '\n'))
+        import traceback
+        logging.error(traceback.format_exc().replace('\n\n', '\n'))
+
 
         # If we are supposed to exit, exit.
         if environment.get('EXIT_ON_DATABASE_FAILURE'):
