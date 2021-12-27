@@ -19,10 +19,21 @@ LOGGING_LEVELS = [
     logging.ERROR,
     logging.CRITICAL
 ]
+
 # Logs dir.
 LOGS_DIR = None
+
 # Log file name.
 LOG_FILE = None
+
+# Logging modules to override the logging level for.
+LOG_LEVEL_OVERRIDES = {
+    'discord': logging.WARNING,
+    'urllib3.connectionpool': logging.WARNING,
+    'PIL.image': logging.WARNING,
+    'asyncio': logging.WARNING
+}
+
 
 
 def basic_setup():
@@ -30,6 +41,10 @@ def basic_setup():
     Performs basic setup for the logging module.
     Sets the logging format and level, as well as making the logging directory if we are set to log to a file.
     """
+    # Override log levels for all the modules that are set to do so.
+    for override, level in LOG_LEVEL_OVERRIDES.items():
+        logging.getLogger(override).setLevel(level)
+
     # Check if we are supposed to log to a file.
     if environment.get('LOG_TO_FILE'):
 
