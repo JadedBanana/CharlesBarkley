@@ -45,7 +45,7 @@ async def confirm_reboot(bot, message):
         next_bot_start_time = datetime(current_time.year, current_time.month, current_time.day, current_time.hour, current_time.minute) + timedelta(seconds=time_delta_seconds)
 
         # Notify user.
-        logging.debug(message, 'Confirmed remote restart, restarting')
+        logging.info(message, 'Confirmed remote restart, restarting')
         await messaging.send_text_message(message, 'Confirmed. Performing remote reboot...')
         await messaging.send_text_message(message, f'Bot is estimated to be back up in approximately {(next_bot_start_time - current_time).seconds} seconds.')
 
@@ -57,7 +57,7 @@ async def confirm_reboot(bot, message):
 
         # Set reboot confirmation to False, log, and send message back.
         REBOOT_CONFIRMATION = False
-        logging.debug(message, 'Aborted remote restart')
+        logging.info(message, 'Aborted remote restart')
         await messaging.send_text_message(message, 'Remote reboot aborted.')
 
     # Invalid response.
@@ -85,7 +85,7 @@ async def remote_reboot(bot, message, argument):
     REBOOT_CHANNEL = message.channel.id
 
     # Log and send the message.
-    logging.debug(message, 'Ordered remote reboot, confirming...')
+    logging.info(message, 'Ordered remote reboot, confirming...')
     await messaging.send_text_message(message, 'Confirm remote reboot? (y/n)')
 
 

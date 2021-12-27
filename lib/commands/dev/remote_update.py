@@ -22,7 +22,7 @@ async def remote_update(bot, message, argument):
     decoded_output = process.communicate()[0].decode('utf-8')
 
     # Log, then send report.
-    logging.debug(message, 'Ordered remote update.')
+    logging.info(message, 'Ordered remote update.')
     await messaging.send_text_message(message, 'Git output: ```' + decoded_output + '```')
     await messaging.send_text_message(message,
                                       'If update completed successfully, feel free to manually reboot using j!reboot')

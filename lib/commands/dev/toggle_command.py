@@ -45,7 +45,7 @@ async def disable_command(bot, message, argument):
     bot.disabled_commands.append(enabled_method)
 
     # Log and send.
-    logging.debug(message, f"disabled command {enabled_method}")
+    logging.info(message, f"disabled command {enabled_method}")
     await messaging.send_text_message(message, f"Command {enabled_method} has been disabled.")
 
 
@@ -82,7 +82,7 @@ async def enable_command(bot, message, argument):
     bot.disabled_commands.remove(disabled_method)
 
     # Log and send.
-    logging.debug(message, f"enabled command {disabled_method}")
+    logging.info(message, f"enabled command {disabled_method}")
     await messaging.send_text_message(message, f"Command {disabled_method} has been enabled.")
 
 
