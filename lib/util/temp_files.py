@@ -245,7 +245,7 @@ def load_profile_picture(user):
     logging.info(f'Tempfile management downloading profile picture for user id {user.id}')
 
     # Gets the user's avatar URL.
-    pfp_url = user.avatar_url
+    pfp_url = user.avatar
 
     # Downloads image in bytes
     image_bytes = requests.get(pfp_url).content
