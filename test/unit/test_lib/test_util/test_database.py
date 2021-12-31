@@ -8,6 +8,118 @@ from lib.util import database
 class TestDatabase(TestCase):
 
 
+    def test_database_available_no_base_no_engine_no_session(self):
+        """lib.util.database.database_available.no_base.no_engine.no_session"""
+        # Set the database module's attributes.
+        database.BASE = None
+        database.ENGINE = None
+        database.SESSION = None
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_no_base_no_engine_yes_session(self):
+        """lib.util.database.database_available.no_base.no_engine.yes_session"""
+        # Set the database module's attributes.
+        database.BASE = None
+        database.ENGINE = None
+        database.SESSION = True
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_no_base_yes_engine_no_session(self):
+        """lib.util.database.database_available.no_base.yes_engine.no_session"""
+        # Set the database module's attributes.
+        database.BASE = None
+        database.ENGINE = True
+        database.SESSION = None
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_no_base_yes_engine_yes_session(self):
+        """lib.util.database.database_available.no_base.yes_engine.yes_session"""
+        # Set the database module's attributes.
+        database.BASE = None
+        database.ENGINE = True
+        database.SESSION = True
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_yes_base_no_engine_no_session(self):
+        """lib.util.database.database_available.yes_base.no_engine.no_session"""
+        # Set the database module's attributes.
+        database.BASE = True
+        database.ENGINE = None
+        database.SESSION = None
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_yes_base_no_engine_yes_session(self):
+        """lib.util.database.database_available.yes_base.no_engine.yes_session"""
+        # Set the database module's attributes.
+        database.BASE = True
+        database.ENGINE = None
+        database.SESSION = True
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_yes_base_yes_engine_no_session(self):
+        """lib.util.database.database_available.yes_base.yes_engine.no_session"""
+        # Set the database module's attributes.
+        database.BASE = True
+        database.ENGINE = True
+        database.SESSION = None
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertFalse(database_available)
+
+
+    def test_database_available_yes_base_yes_engine_yes_session(self):
+        """lib.util.database.database_available.yes_base.yes_engine.yes_session"""
+        # Set the database module's attributes.
+        database.BASE = True
+        database.ENGINE = True
+        database.SESSION = True
+
+        # Run the method.
+        database_available = database.database_available()
+
+        # Run assertions.
+        self.assertTrue(database_available)
+
+
     @mock.patch('lib.util.environment.get')
     @mock.patch('lib.util.database.database_available')
     def test_get_disabled_commands_from_missing_tables_do_database_available_missing(self, m_da, m_eg):
