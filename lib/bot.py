@@ -4,7 +4,7 @@ The main meat of the bot. Inherits from discord.Client, is the main point at whi
 into self processing.
 """
 # Local Imports
-from lib.util import environment, parsing
+from lib.util import database, environment, parsing
 from lib import commands
 
 # Package Imports
@@ -59,18 +59,39 @@ class JadieClient(discord.Client):
         self.developer_ids = [int(dev_id) for dev_id in environment.get("DEVELOPER_DISCORD_IDS")]
 
         # Set up disabled commands.
-        self.disabled_commands = \
-            [self.public_command_dict[command_name] for command_name in environment.get('DISABLED_COMMANDS')
-             if command_name in self.public_command_dict]
-
-        # Log disabled commands.
-        logging.info(f'Command(s) {", ".join([repr(command_method) for command_method in self.disabled_commands])} '
-                     f'disabled outright.'
-                     if self.disabled_commands else 'No commands are currently disabled.')
+        self.disabled_commands = self.get_disabled_commands()
 
         # Discord client init
         intents = discord.Intents.all()
         discord.Client.__init__(self, intents=intents)
+
+
+    def get_disabled_commands(self):
+        """
+        Gathers all disabled commands and puts them into a list.
+        Uses the public command dict as a baseline, so that should be set up first.
+        """
+        # Get the initial disabled command list (starting with the baseline environment.get)
+        disabled_command_list_by_dotenv = [self.public_command_dict[command_name] for command_name in
+                                           environment.get('DISABLED_COMMANDS')
+                                           if command_name in self.public_command_dict]
+        logging.info(f'Command(s) '
+                     f'{", ".join(repr(command_method) for command_method in disabled_command_list_by_dotenv)} '
+                     f'disabled by entry in .env.' if disabled_command_list_by_dotenv else
+                     'No commands disabled by entry in .env.')
+
+        # Pull the rest of the disabled commands from the database module. (No repeats!)
+        disabled_command_list_by_database = [self.public_command_dict[command_name] for command_name in
+                                             database.get_disabled_commands_from_missing_tables()
+                                             if command_name in self.public_command_dict]
+        logging.info(f'Command(s) '
+                     f'{", ".join(repr(command_method) for command_method in disabled_command_list_by_database)} '
+                     f'disabled by lack of database tables.' if disabled_command_list_by_database else
+                     'No commands disabled by lack of databasr tables.')
+
+        # Return the two combined.
+        return disabled_command_list_by_dotenv + \
+               list(set(disabled_command_list_by_database) - set(disabled_command_list_by_dotenv))
 
 
     async def on_ready(self):
