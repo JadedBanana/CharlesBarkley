@@ -92,6 +92,17 @@ def initialize():
         logging.warning('Related commands may not function correctly as a result of missing database tables.')
 
 
+def database_available():
+    """
+    Returns whether the database is available or not.
+
+    Returns:
+        bool : Whether the database is available or not.
+    """
+    # Simple return.
+    return all([BASE, ENGINE, SESSION])
+
+
 def get_disabled_commands_from_missing_tables():
     """
     Gets the disabled table names according to the missing tables.
@@ -104,7 +115,7 @@ def get_disabled_commands_from_missing_tables():
         return []
 
     # Second, test if base, engine, or session exist. If not, send back ALL of them.
-    if not any([BASE, ENGINE, SESSION]):
+    if not database_available():
         return [command_name for command_name in COMMANDS_USING_DATABASE_TABLES]
 
     # Otherwise, go through them all individually and add them if they don't have tables here.
