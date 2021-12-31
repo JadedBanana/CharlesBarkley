@@ -31,6 +31,9 @@ def initialize():
     # Set the outside values as global, so we can modify them.
     global BASE, ENGINE, SESSION
 
+    # Log.
+    logging.info('Attempting to make connection to database...')
+
     # Wrap with try/catch case to detect ALL exceptions.
     try:
 
@@ -48,7 +51,7 @@ def initialize():
     except Exception as e:
         logging.error('Error occurred during database mapping.')
         import traceback
-        logging.error(traceback.format_exc().replace('\n\n', '\n'))
+        logging.error(traceback.format_exc().replace('\n\n', '\n').strip('\n'))
 
 
         # If we are supposed to exit, exit.

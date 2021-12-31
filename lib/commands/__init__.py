@@ -346,7 +346,7 @@ async def run_standard_command(command_name, command_method, bot, message, argum
     except Exception as e:
         # Get the traceback_str.
         import traceback
-        traceback_str = traceback.format_exc().replace('\n\n', '\n')
+        traceback_str = traceback.format_exc().replace('\n\n', '\n').strip('\n')
         while traceback_str[-1] == '\n':
             traceback_str = traceback_str[:-1]
 
@@ -375,9 +375,7 @@ async def run_reactive_command(command_method, bot, message):
     except Exception as e:
         # Get the traceback_str.
         import traceback
-        traceback_str = traceback.format_exc().replace('\n\n', '\n')
-        while traceback_str[-1] == '\n':
-            traceback_str = traceback_str[:-1]
+        traceback_str = traceback.format_exc().replace('\n\n', '\n').strip('\n')
 
         # Log the error.
         logging.error(message, f"Caused exception with message content '{message.content}', reactive command for {command_method}:\n"
