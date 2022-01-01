@@ -75,6 +75,7 @@ class JadieClient(discord.Client):
         disabled_command_list_by_dotenv = [self.public_command_dict[command_name] for command_name in
                                            environment.get('DISABLED_COMMANDS')
                                            if command_name in self.public_command_dict]
+
         logging.info(f'Command(s) '
                      f'{", ".join(repr(command_method) for command_method in disabled_command_list_by_dotenv)} '
                      f'disabled by entry in .env.' if disabled_command_list_by_dotenv else
@@ -90,8 +91,7 @@ class JadieClient(discord.Client):
                      'No commands disabled by lack of databasr tables.')
 
         # Return the two combined.
-        return disabled_command_list_by_dotenv + \
-               list(set(disabled_command_list_by_database) - set(disabled_command_list_by_dotenv))
+        return list(set(disabled_command_list_by_database + disabled_command_list_by_dotenv))
 
 
     async def on_ready(self):
