@@ -468,7 +468,7 @@ async def hunger_games_start(bot, message, argument):
     """
     # Make sure this command isn't being used in a DM.
     if isinstance(message.channel, discord.DMChannel):
-        logging.info(message, 'requested hunger games, but in DMs, so invalid')
+        logging.debug(message, 'requested hunger games, but in DMs, so invalid')
         return await messaging.send_text_message(message, 'This command cannot be used in DMs.')
 
     # Gets the hunger games key (channel id).
@@ -506,7 +506,7 @@ async def hunger_games_start(bot, message, argument):
 
     # Send the initial cast
     await send_pregame(message, hg_dict)
-    logging.info(message, f'started Hunger Games instance with {len(hg_dict["players"])} players')
+    logging.debug(message, f'started Hunger Games instance with {len(hg_dict["players"])} players')
 
 
 async def hunger_games_update(bot, message):
@@ -576,7 +576,7 @@ async def hunger_games_detect_expiration(bot, message):
                     temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
 
             # Send a message quoting inactivity.
-            logging.info(message, f'Triggered hunger games expiration for channel {hg_key}')
+            logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
             channel = bot.get_channel(int(hg_key))
             await channel.send('Hunger Games canceled due to inactivity.')
 
@@ -666,7 +666,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
     """
     # Cancels if the game is already max size.
     if len(hg_dict['players']) == HG_MAX_GAMESIZE:
-        logging.info(message, 'tried to add player to Hunger Games instance, max size reached')
+        logging.debug(message, 'tried to add player to Hunger Games instance, max size reached')
         return await messaging.send_text_message(message, 'Maximum game size already reached.')
 
     # Try/catch to catch CannotAccessUserlistError.
@@ -690,14 +690,14 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
                         # Checkout their profile picture.
                         await temp_files.checkout_profile_picture_by_user_with_typing(player, message, 'hg_filehold',
-                                                                                      (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                                      return_image=False)
 
                         # Log and send message.
-                        logging.info(message, f'added player {player} to Hunger Games instance')
+                        logging.debug(message, f'added player {player} to Hunger Games instance')
                         return await send_pregame(message, hg_dict, f'Added {player.display_name} to the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
-                logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
+                logging.debug(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
                 return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
 
             # If no user was specified, then call this method again with only one term in the response.
@@ -706,7 +706,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
             # If no user could be found, then send back old reliable.
             except UnableToFindUserError:
-                logging.info(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
+                logging.debug(message, f"attempted to add user '{argument_str}' to hunger games instance, invalid")
                 return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
 
         # If there isn't a second argument, attempt to get a completely random player.
@@ -721,12 +721,12 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
                 user_list_with_bots = discord_info.get_applicable_users(message, exclude_bots=False,
                                                                         exclude_users=hg_dict['players'])
                 if user_list_with_bots:
-                    logging.info(message, 'attempted to add random user to hunger games instance, '
+                    logging.debug(message, 'attempted to add random user to hunger games instance, '
                                           'no non-bot users available')
                     return await messaging.send_text_message(message,
                                                              "Every user who isn't a bot is already in the game.")
                 else:
-                    logging.info(message, 'attempted to add random user to hunger games instance, '
+                    logging.debug(message, 'attempted to add random user to hunger games instance, '
                                           'no more users available')
                     return await messaging.send_text_message(message,
                                                              "Every user in the server is already in the game.")
@@ -739,7 +739,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
             # If the user list is empty, then tell the users that.
             if not user_list:
-                logging.info(message, 'attempted to add random user to hunger games instance, no more users available')
+                logging.debug(message, 'attempted to add random user to hunger games instance, no more users available')
                 return await messaging.send_text_message(message, "Every user in the server is already in the game.")
 
         # With the user list, grab a random user.
@@ -748,10 +748,10 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
         # Checkout the added user.
         await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold',
-                                                                      (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                      return_image=False)
 
         # Send the message and junk.
-        logging.info(message, f'added player {added_user} to Hunger Games instance')
+        logging.debug(message, f'added player {added_user} to Hunger Games instance')
         await send_pregame(message, hg_dict, f'Added {added_user.display_name} to the game.')
 
     # If we can't access the userlist, send an error.
@@ -772,7 +772,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
     """
     # Cancels if the game is already min size.
     if len(hg_dict['players']) == HG_MIN_GAMESIZE:
-        logging.info(message, 'tried to remove player from Hunger Games instance, min size reached')
+        logging.debug(message, 'tried to remove player from Hunger Games instance, min size reached')
         return await messaging.send_text_message(message, 'Minimum game size already reached.')
 
     # Try/catch to catch CannotAccessUserlistError.
@@ -798,12 +798,12 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
                         temp_files.retire_profile_picture_by_user(player, message, 'hg_filehold')
 
                         # Log and send embed.
-                        logging.info(message, f'removed player {player} from Hunger Games instance')
+                        logging.debug(message, f'removed player {player} from Hunger Games instance')
                         async with message.channel.typing():
                             return await send_pregame(message, hg_dict, f'Removed {player.display_name} from the game.')
 
                 # If we didn't find a player, then send an invalid user thing.
-                logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
+                logging.debug(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
                 return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
 
             # If no user was specified, then call this method again with only one term in the response.
@@ -812,7 +812,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
 
             # If no user could be found, then send back old reliable.
             except UnableToFindUserError:
-                logging.info(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
+                logging.debug(message, f"attempted to remove user '{argument_str}' from hunger games instance, invalid")
                 return await messaging.send_text_message(message, f"Could not find user '{argument_str}'.")
 
         # If there isn't a second argument, remove the last player in the game.
@@ -823,7 +823,7 @@ async def hunger_games_update_pregame_delete(hg_key, hg_dict, response, message)
         temp_files.retire_profile_picture_by_user(removed_player, message, 'hg_filehold')
 
         # Send the message and junk.
-        logging.info(message, f'removed player {removed_player} from Hunger Games instance')
+        logging.debug(message, f'removed player {removed_player} from Hunger Games instance')
         async with message.channel.typing():
             await send_pregame(message, hg_dict, f'Removed {removed_player.display_name} from the game.')
 
@@ -844,7 +844,7 @@ async def hunger_games_update_pregame_proceed(hg_key, hg_dict, response, message
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Log and send message.
-    logging.info(message, 'initiated Hunger Games')
+    logging.debug(message, 'initiated Hunger Games')
     await messaging.send_text_message(message, 'Generating Hunger Games instance...')
 
     # Set hunger games variables.
@@ -890,11 +890,11 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
                 added_player = random.choice(other_players)
                 hg_players_no_bots.append(added_player)
                 await temp_files.checkout_profile_picture_by_user_with_typing(added_player, message, 'hg_filehold',
-                                                                             (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                              return_image=False)
 
             # Otherwise, send an error message.
             else:
-                logging.info(message, 'attempted to remove bots from Hunger Games instance, not enough users')
+                logging.debug(message, 'attempted to remove bots from Hunger Games instance, not enough users')
                 return await messaging.send_text_message(message, 'Not enough non-bots to disallow bots.')
 
         # Allows it.
@@ -905,7 +905,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         hg_dict['uses_bots'] = not hg_dict['uses_bots']
 
         # Send message and log.
-        logging.info(message, 'removed bots from Hunger Games instance')
+        logging.debug(message, 'removed bots from Hunger Games instance')
         async with message.channel.typing():
             await send_pregame(message, hg_dict, 'Removed bots from the game.')
 
@@ -915,7 +915,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
         hg_dict['uses_bots'] = not hg_dict['uses_bots']
 
         # Log and send message.
-        logging.info(message, 'added bots to Hunger Games instance')
+        logging.debug(message, 'added bots to Hunger Games instance')
         async with message.channel.typing():
             await send_pregame(message, hg_dict, 'Allowed bots into the game.')
 
@@ -1052,7 +1052,7 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
     # If the game is complete, perform a normal exit.
     if hg_dict['complete']:
         # Send the message and log.
-        logging.info(message, 'finished + closed Hunger Games')
+        logging.debug(message, 'finished + closed Hunger Games')
         await messaging.send_text_message(message, 'Thanks for playing!')
 
         # Delete the game.
@@ -1065,7 +1065,7 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
 
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
-        logging.info(message, 'requested cancel for Hunger Games')
+        logging.debug(message, 'requested cancel for Hunger Games')
         await messaging.send_text_message(message, 'Cancel Hunger Games? (y/n)')
 
         # Set the boolean value.
@@ -1083,7 +1083,7 @@ async def hunger_games_update_midgame_still_generating(hg_key, hg_dict, response
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Logs and sends message.
-    logging.info(message, 'requested hunger games, still generating (impatient little sack of shit)')
+    logging.debug(message, 'requested hunger games, still generating (impatient little sack of shit)')
     await message.channel.send('Still generating, be patient.')
 
 
@@ -1145,7 +1145,7 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Send the message and log.
-    logging.info(message, 'canceled Hunger Games')
+    logging.debug(message, 'canceled Hunger Games')
     await messaging.send_text_message(message, 'Hunger Games canceled.')
 
     # Delete it.
@@ -1172,7 +1172,7 @@ async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Send the message and log.
-    logging.info(message, ' aborted cancel for Hunger Games')
+    logging.debug(message, ' aborted cancel for Hunger Games')
     await messaging.send_text_message(message, 'Cancel aborted.')
 
     # Abort the cancel.
@@ -1191,7 +1191,7 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     # Get all the player data.
     player_data = [(player.display_name,
                     temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
-                                                                (HG_ICON_SIZE, HG_ICON_SIZE)), 0)
+                                                                size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0)
                    for player in hg_dict['players']]
 
     # Generate the player statuses image.
@@ -1884,7 +1884,7 @@ async def generate_full_game(hg_dict, message):
     new_players = {}
     for player in hg_dict['players']:
         new_players[player.id] = temp_files.checkout_profile_picture_by_user(player, message, 'hunger_games_full',
-                                                                            (HG_ICON_SIZE, HG_ICON_SIZE))
+                                                                             size=(HG_ICON_SIZE, HG_ICON_SIZE))
     hg_dict['players'] = new_players
 
     # Updates hunger games dict.
@@ -1897,7 +1897,7 @@ async def generate_full_game(hg_dict, message):
     hg_dict['complete'] = False
 
     # Sends the first message and logs.
-    logging.info(message, 'generated complete hunger games instance')
+    logging.debug(message, 'generated complete hunger games instance')
     await messaging.send_image_based_embed(
         message,
         makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 0, hg_dict['phases'][0]['desc']),

@@ -50,7 +50,8 @@ async def confirm_reboot(bot, message):
         await messaging.send_text_message(message, f'Bot is estimated to be back up in approximately {(next_bot_start_time - current_time).seconds} seconds.')
 
         # Exit.
-        sys.exit(0)
+        from lib.util import watchdog
+        watchdog.stop_all_threads()
 
     # If the response was to abort, then abort.
     elif response.startswith('n'):
@@ -62,7 +63,7 @@ async def confirm_reboot(bot, message):
 
     # Invalid response.
     else:
-        logging.info(message, f'Invalid response to confirmation message ({response})')
+        logging.debug(message, f'Invalid response to confirmation message ({response})')
         await messaging.send_text_message(message, 'Invalid response. Confirm? (y/n)')
 
 

@@ -22,12 +22,12 @@ async def binary(bot, message, argument):
         # Convert the decimal number into a binary one.
         num = misc.convert_num_from_decimal(num, 2)
 
-        logging.info(message, f'requested binary conversion for {argument}, responded with 0b{num}')
+        logging.debug(message, f'requested binary conversion for {argument}, responded with 0b{num}')
         return await messaging.send_text_message(message, '0b' + str(num))
 
     # Something went wrong, log and send message.
     except (ValueError, AttributeError):
-        logging.info(message, f'requested binary conversion for {argument}, invalid')
+        logging.debug(message, f'requested binary conversion for {argument}, invalid')
         return await messaging.send_text_message(message, 'Invalid number.')
 
 

@@ -1,6 +1,6 @@
 aiohttp>=3.7.4.post0
 coverage>=6.2
-discord>=1.7.3
+git+https://github.com/Rapptz/discord.py
 python-dotenv
 wikipedia>=1.4.0
 iso3166>=2.0.0

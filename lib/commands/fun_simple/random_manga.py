@@ -24,7 +24,6 @@ PRELOADED_MANGA_URLS = {}
 PRELOADED_MANGA_FROM_USERS = []
 PRELOADED_DEFAULT_PAGES = []
 ALL_DEFAULT_PAGES_PRELOADED = False
-EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
 async def random_manga_master(bot, message, argument):
@@ -63,21 +62,21 @@ async def random_manga_custom_user(message, user):
             manga_id, manga_url = get_random_manga_from_user_ptr(user)
 
         # Log and send.
-        logging.info(message, f'requested random manga from user {user}, responded with MAL id {manga_id}')
+        logging.debug(message, f'requested random manga from user {user}, responded with MAL id {manga_id}')
         await messaging.send_text_message(message, manga_url)
 
     # On KeyError, invalid user.
     except KeyError:
 
         # Log and send.
-        logging.info(message, f'requested random manga from user {user}, invalid')
+        logging.debug(message, f'requested random manga from user {user}, invalid')
         await messaging.send_text_message(message, f"Invalid user '{user}'.")
 
     # On IndexError, user has NO ptr.
     except IndexError:
 
         # Log and send.
-        logging.info(message, f'requested random manga from user {user}, no ptr')
+        logging.debug(message, f'requested random manga from user {user}, no ptr')
         await messaging.send_text_message(message, 'That user either has no manga tagged as plan-to-watch, or the '
                                                    'MyAnimeList API had a bad day. Try again later.')
 
@@ -94,14 +93,14 @@ async def random_manga_default(message):
         manga_id, manga_url = await get_random_manga_from_default_user(message)
 
         # Log and send.
-        logging.info(message, f'requested random manga from default, responded with MAL id {manga_id}')
+        logging.debug(message, f'requested random manga from default, responded with MAL id {manga_id}')
         await messaging.send_text_message(message, manga_url)
 
     # On IndexError, MAL API had a bad day.
     except IndexError:
 
         # Log and send.
-        logging.info(message, f'requested random manga from default, MAL API error')
+        logging.debug(message, f'requested random manga from default, MAL API error')
         await messaging.send_text_message(message, 'MyAnimeList API had an error, try again later.')
 
 
@@ -232,7 +231,7 @@ def initialize():
     """
     # Log.
     import logging
-    logging.info('Initializing fun_simple.random_manga...')
+    logging.debug('Initializing fun_simple.random_manga...')
 
     # Global variable establishments.
     global DEFAULT_USER, DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS
@@ -252,7 +251,8 @@ def initialize():
 
 # Command values
 PUBLIC_COMMAND_DICT = {
-    'randommanga': random_manga_master
+    'randommanga': random_manga_master,
+    'randomanga': random_manga_master
 }
 HELP_DOCUMENTATION_LIST = [
     {

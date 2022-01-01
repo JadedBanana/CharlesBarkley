@@ -11,11 +11,32 @@ from lib import bot
 class TestBotSynchronous(TestCase):
 
 
+    @classmethod
+    def setUpClass(cls):
+        """
+        Set up class method.
+        Creates a client that is used in MANY places.
+        """
+        # Create a fake client with pre-set commands and user.
+        cls.client = mock.MagicMock(
+            public_command_dict={
+                'comm1': 'RESPONSE1',
+                'comm2': 'RESPONSE2',
+                'comm3': 'RESPONSE3',
+                'comm4': 'RESPONSE4',
+                'comm5': 'RESPONSE5',
+                'comm6': 'RESPONSE3'
+            },
+            user='me'
+        )
+
+
     @mock.patch('lib.util.environment.get')
     @mock.patch('lib.commands.load_all_commands')
+    @mock.patch('lib.bot.JadieClient.get_disabled_commands')
     @mock.patch('discord.Intents.all')
     @mock.patch('discord.Client.__init__')
-    def test_init(self, m_i, m_a, m_lc, m_eg):
+    def test_init(self, m_i, m_a, m_gdc, m_lc, m_eg):
         """lib.bot.JadieClient.__init__"""
         # Side effect method for environment.get
         environ_vars = [True, ['12', '31', '50']]
@@ -34,6 +55,7 @@ class TestBotSynchronous(TestCase):
         command_initialize_method_list = [mock.MagicMock(), mock.MagicMock()]
         m_lc.return_value = {'fuckyeah': 'bro'}, {'awwyeah': 'babey'}, ['awesome'], \
                             {'toggleignoredev': 'snart', 'help_init': help_init}, command_initialize_method_list
+        m_gdc.return_value = ['boo', 'bitch']
 
         # Run the method.
         client = JadieClient()
@@ -52,13 +74,189 @@ class TestBotSynchronous(TestCase):
         self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
         self.assertEqual(client.reactive_command_list, ['awesome'])
         self.assertEqual(client.toggle_ignore_developer, 'snart')
-        help_init.assert_called_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        help_init.assert_called_once_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
         for initialize_method in command_initialize_method_list:
             initialize_method.assert_called_once_with()
         self.assertFalse(client.ignore_developer)
         self.assertEqual(client.developer_ids, [12, 31, 50])
+        m_gdc.assert_called_once_with()
+        self.assertEqual(client.disabled_commands, ['boo', 'bitch'])
         m_a.assert_called()
         m_i.assert_called_with(client, intents='intentional')
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_none(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.none"""
+        # Set return values.
+        m_eg.return_value = []
+        m_gdcfmt.return_value = []
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(disabled_commands, [])
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_environment_get_fake(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.environment_get.fake"""
+        # Set return values.
+        m_eg.return_value = ['whatever', 'bitch', 'lasagna']
+        m_gdcfmt.return_value = []
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(disabled_commands, [])
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_environment_get_real(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.environment_get.real"""
+        # Set return values.
+        m_eg.return_value = ['comm2', 'comm5']
+        m_gdcfmt.return_value = []
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(len(disabled_commands), 2)
+        self.assertIn('RESPONSE2', disabled_commands)
+        self.assertIn('RESPONSE5', disabled_commands)
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_environment_get_duplicate(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.environment_get.duplicate"""
+        # Set return values.
+        m_eg.return_value = ['comm3', 'comm6']
+        m_gdcfmt.return_value = []
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(disabled_commands, ['RESPONSE3'])
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_database_get_fake(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.database_get.fake"""
+        # Set return values.
+        m_eg.return_value = []
+        m_gdcfmt.return_value = ['whatever', 'bitch', 'lasagna']
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(disabled_commands, [])
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_database_get_real(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.database_get.real"""
+        # Set return values.
+        m_eg.return_value = []
+        m_gdcfmt.return_value = ['comm2', 'comm5']
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(len(disabled_commands), 2)
+        self.assertIn('RESPONSE2', disabled_commands)
+        self.assertIn('RESPONSE5', disabled_commands)
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_database_get_duplicate(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.database_get.duplicate"""
+        # Set return values.
+        m_eg.return_value = []
+        m_gdcfmt.return_value = ['comm3', 'comm6']
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(disabled_commands, ['RESPONSE3'])
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_combined_no_repeat(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.combined.no_repeat"""
+        # Set return values.
+        m_eg.return_value = ['comm1', 'comm4']
+        m_gdcfmt.return_value = ['comm3', 'comm5']
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(len(disabled_commands), 4)
+        self.assertIn('RESPONSE1', disabled_commands)
+        self.assertIn('RESPONSE3', disabled_commands)
+        self.assertIn('RESPONSE4', disabled_commands)
+        self.assertIn('RESPONSE5', disabled_commands)
+
+
+    @mock.patch('logging.info')
+    @mock.patch('lib.util.environment.get')
+    @mock.patch('lib.util.database.get_disabled_commands_from_missing_tables')
+    def test_get_disabled_commands_combined_yes_repeat(self, m_gdcfmt, m_eg, m_i):
+        """lib.bot.JadieClient.get_disabled_commands.combined.yes_repeat"""
+        # Set return values.
+        m_eg.return_value = ['comm1', 'comm4', 'comm6']
+        m_gdcfmt.return_value = ['comm3', 'comm5']
+
+        # Run the method.
+        disabled_commands = JadieClient.get_disabled_commands(self.client)
+
+        # Run assertions.
+        m_eg.assert_called_once_with('DISABLED_COMMANDS')
+        m_gdcfmt.assert_called_once_with()
+        self.assertEqual(len(disabled_commands), 4)
+        self.assertIn('RESPONSE1', disabled_commands)
+        self.assertIn('RESPONSE3', disabled_commands)
+        self.assertIn('RESPONSE4', disabled_commands)
+        self.assertIn('RESPONSE5', disabled_commands)
 
 
     @mock.patch('logging.error')
@@ -68,14 +266,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = None
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -88,14 +283,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = 20
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -108,14 +300,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -128,14 +317,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -148,14 +334,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -168,14 +351,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -188,14 +368,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -208,14 +385,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content=None, channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -228,14 +402,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -248,14 +419,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -268,14 +436,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -288,14 +453,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -308,14 +470,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -328,14 +487,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author=None, content='alex cute', channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -348,14 +504,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -368,14 +521,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -388,14 +538,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -408,14 +555,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -428,14 +572,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -448,14 +589,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content=None, channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -468,14 +606,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -488,14 +623,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -508,14 +640,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -528,14 +657,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -548,14 +674,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -568,14 +691,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='me', content='alex cute', channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -588,14 +708,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -608,14 +725,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -628,14 +742,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -648,14 +759,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -668,14 +776,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -688,14 +793,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content=None, channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -708,14 +810,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel=None, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -728,14 +827,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel=None, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -748,14 +844,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel=25, guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertFalse(response)
@@ -768,14 +861,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel=25, guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertTrue(response)
@@ -788,14 +878,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel='other channel', guild=None)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertTrue(response)
@@ -808,14 +895,11 @@ class TestBotSynchronous(TestCase):
         discord.Message = mock.MagicMock
         discord.TextChannel = int
 
-        # Create the client object.
-        client = mock.MagicMock(user='me')
-
         # Create the message object.
         message = mock.MagicMock(author='user', content='alex cute', channel='other channel', guild=25)
 
         # Run the method.
-        response = JadieClient.message_object_has_required_attributes(client, message)
+        response = JadieClient.message_object_has_required_attributes(self.client, message)
 
         # Run assertions.
         self.assertTrue(response)

@@ -24,7 +24,6 @@ PRELOADED_ANIME_URLS = {}
 PRELOADED_ANIME_FROM_USERS = []
 PRELOADED_DEFAULT_PAGES = []
 ALL_DEFAULT_PAGES_PRELOADED = False
-EMBED_COLOR = (46 << 16) + (81 << 8) + 162
 
 
 async def random_anime_master(bot, message, argument):
@@ -63,21 +62,21 @@ async def random_anime_custom_user(message, user):
             anime_id, anime_url = get_random_anime_from_user_ptw(user)
 
         # Log and send.
-        logging.info(message, f'requested random anime from user {user}, responded with MAL id {anime_id}')
+        logging.debug(message, f'requested random anime from user {user}, responded with MAL id {anime_id}')
         await messaging.send_text_message(message, anime_url)
 
     # On KeyError, invalid user.
     except KeyError:
 
         # Log and send.
-        logging.info(message, f'requested random anime from user {user}, invalid')
+        logging.debug(message, f'requested random anime from user {user}, invalid')
         await messaging.send_text_message(message, f"Invalid user '{user}'.")
 
     # On IndexError, user has NO ptw.
     except IndexError:
 
         # Log and send.
-        logging.info(message, f'requested random anime from user {user}, no ptw')
+        logging.debug(message, f'requested random anime from user {user}, no ptw')
         await messaging.send_text_message(message, 'That user either has no anime tagged as plan-to-watch, or the '
                                                    'MyAnimeList API had a bad day. Try again later.')
 
@@ -94,14 +93,14 @@ async def random_anime_default(message):
         anime_id, anime_url = await get_random_anime_from_default_user(message)
 
         # Log and send.
-        logging.info(message, f'requested random anime from default, responded with MAL id {anime_id}')
+        logging.debug(message, f'requested random anime from default, responded with MAL id {anime_id}')
         await messaging.send_text_message(message, anime_url)
 
     # On IndexError, MAL API had a bad day.
     except IndexError:
 
         # Log and send.
-        logging.info(message, f'requested random anime from default, MAL API error')
+        logging.debug(message, f'requested random anime from default, MAL API error')
         await messaging.send_text_message(message, 'MyAnimeList API had an error, try again later.')
 
 
@@ -232,7 +231,7 @@ def initialize():
     """
     # Log.
     import logging
-    logging.info('Initializing fun_simple.random_anime...')
+    logging.debug('Initializing fun_simple.random_anime...')
 
     # Global variable establishments.
     global DEFAULT_USER, DEFAULT_PAGE_NUMBERS, DEFAULT_PAGE_WEIGHTS

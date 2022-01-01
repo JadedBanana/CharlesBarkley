@@ -30,7 +30,7 @@ async def send_log(bot, message, argument):
         target_log = logger.LOG_FILE
         # If there is no log file today, then we send an error message.
         if not target_log:
-            logging.info(message, 'Requested log file for today, currently not logging to file')
+            logging.debug(message, 'Requested log file for today, currently not logging to file')
             return await messaging.send_text_message(message, 'Not logging to file right now. '
                                                               'Try to pull a log file from the past.')
 
@@ -43,12 +43,12 @@ async def send_log(bot, message, argument):
     if os.path.isfile(target_log):
 
         # Log then send file.
-        logging.info(message, f'Ordered log file {target_log}, sending')
+        logging.debug(message, f'Ordered log file {target_log}, sending')
         await messaging.send_file(message, target_log)
 
     # If the log file doesn't exist, we tell the user that.
     else:
-        logging.info(message, f'Ordered log file, file {target_log} does not exist')
+        logging.debug(message, f'Ordered log file, file {target_log} does not exist')
         await message.channel.send(f'Log file {target_log} does not exist.')
 
 

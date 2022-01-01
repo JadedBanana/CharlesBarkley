@@ -47,12 +47,12 @@ async def copy_user(bot, message, argument):
 
     # On NoUserSpecifiedError, request they tag a user.
     except NoUserSpecifiedError:
-        logging.info(message, f"requested copy for user '{argument}', invalid")
+        logging.debug(message, f"requested copy for user '{argument}', invalid")
         return await messaging.send_text_message(message, 'Please mention a user to copy.')
 
     # On UnableToFindUserError, tell the user they couldn't find the desired one.
     except UnableToFindUserError:
-        logging.info(message, f"requested copy for user '{argument}', invalid")
+        logging.debug(message, f"requested copy for user '{argument}', invalid")
         return await messaging.send_text_message(message, f"Could not find user '{argument}'.")
 
     # On CannotAccessUserlistError, log an error and send an apology message.
@@ -66,7 +66,7 @@ async def copy_user(bot, message, argument):
 
     # Checks to make sure the mentioned user isn't the bot itself.
     if user == bot.user:
-        logging.info(message, 'requested copy for this bot')
+        logging.debug(message, 'requested copy for this bot')
         return await messaging.send_text_message(message, 'Ha, ha. Very funny. No.')
 
     # If the copy key isn't in the dict, add it.
@@ -77,9 +77,9 @@ async def copy_user(bot, message, argument):
     await messaging.send_text_message(message, f'Now copying user {user.display_name}')
     if user.id not in COPIED_USERS[copy_key]:
         COPIED_USERS[copy_key].append(user.id)
-        logging.info(message, 'requested copy for user ' + str(user) + ', now copying')
+        logging.debug(message, 'requested copy for user ' + str(user) + ', now copying')
     else:
-        logging.info(message, 'requested copy for user ' + str(user) + ', already copying')
+        logging.debug(message, 'requested copy for user ' + str(user) + ', already copying')
 
 
 async def stop_copying(bot, message, argument):
@@ -96,12 +96,12 @@ async def stop_copying(bot, message, argument):
 
     # If the thing exists in the dict, delete it.
     if copy_key in COPIED_USERS:
-        logging.info(message, f'requested to stop copying, {len(COPIED_USERS[copy_key])} users deleted from copied_users')
+        logging.debug(message, f'requested to stop copying, {len(COPIED_USERS[copy_key])} users deleted from copied_users')
         del COPIED_USERS[copy_key]
         await messaging.send_text_message(message, 'No longer copying people in this server.')
 
     else:
-        logging.info(message, 'requested to stop copying, already done')
+        logging.debug(message, 'requested to stop copying, already done')
         await messaging.send_text_message(message, "Wasn't copying anyone here to begin with, but ok.")
 
 

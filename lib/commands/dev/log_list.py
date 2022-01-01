@@ -25,11 +25,11 @@ async def log_list(bot, message, argument):
     # Check to make sure that the log folder exists.
     if not os.path.exists(log_folder):
         # If not, send an appropriate message back.
-        logging.info(message, "Ordered log list, but log folder doesn't exist")
+        logging.debug(message, "Ordered log list, but log folder doesn't exist")
         return await messaging.send_text_message(message, 'Log folder does not exist.')
 
     # Log the order.
-    logging.info(message, 'Ordered log list, sent.')
+    logging.debug(message, 'Ordered log list, sent.')
 
     # Gets the file list and file sizes
     log_files = sorted(os.listdir(log_folder))

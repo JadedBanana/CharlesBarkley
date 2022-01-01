@@ -31,7 +31,7 @@ async def random_wikipedia(bot, message, argument):
             pass
 
     # Log and send the message back.
-    logging.info(message, f'requested random wikipedia page, returned {wiki_page}')
+    logging.debug(message, f'requested random wikipedia page, returned {wiki_page}')
     await messaging.send_text_message(message, wiki_page.url)
 
 
