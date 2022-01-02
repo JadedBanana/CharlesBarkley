@@ -13,14 +13,17 @@ import sys
 # The dict is keyed by the table name in SQL, and the result is the attribute set in this module.
 EXPECTED_DATABASE_TABLES = {
     'reminders': 'REMINDER_TABLE',
+    'hg_phases': 'HG_PHASES_TABLE',
     'hg_actions': 'HG_ACTION_TABLE',
     'hg_action_wrappers': 'HG_ACTION_WRAPPER_TABLE',
-    'hg_phases': 'HG_PHASES_TABLE',
+    'hg_current_game_phases': 'HG_CURRENT_GAME_PHASES_TABLE',
+    'hg_current_game_actions': 'HG_CURRENT_GAME_ACTIONS_TABLE'
 }
 
 # List of commands that use specific database tables.
 COMMANDS_USING_DATABASE_TABLES = {
-    'hungergames': ('HG_ACTION_TABLE', 'HG_ACTION_WRAPPER_TABLE', 'HG_PHASES_TABLE'),
+    'hungergames': ('HG_PHASES_TABLE', 'HG_ACTION_TABLE', 'HG_ACTION_WRAPPER_TABLE', 'HG_CURRENT_GAME_PHASES_TABLE',
+                    'HG_CURRENT_GAME_ACTIONS_TABLE'),
     'remindme': ('REMINDER_TABLE',)
 }
 
