@@ -875,10 +875,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
         title (str) : The title of the embed, if any.
     """
     # Get all the player data.
-    player_data = [(player.display_name,
-                    temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
-                                                                size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0)
-                   for player in hg_dict['players']]
+    player_data = [(player.display_name, temp_files.checkout_profile_picture_by_user(
+        player, message, 'hg_pregame', size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0) for player in hg_dict['players']]
 
     # Generate the player statuses image.
     image = makeimage_player_statuses(player_data)
@@ -1217,7 +1215,7 @@ def makeimage_player_statuses(players, placement=0, kills=0):
                                    fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_ALIVE_COLOR, HG_STATUS_DEAD_COLOR,
                                                                            (player[2] - 1) / placement))
 
-            # Killcount
+            # Kill Count
             elif kills:
                 if isinstance(kills, int):
                     kill_str = f'{player[2]} {" Kill" if player[2] == 1 else " Kills"}'
@@ -1446,11 +1444,6 @@ async def generate_full_game(hg_dict, message):
 
     # Sends the first message and logs.
     logging.debug(message, 'generated complete hunger games instance')
-    await messaging.send_image_based_embed(
-        message,
-        makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 0, hg_dict['phases'][0]['desc']),
-        'The Bloodbath, Action 1', HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
-    )
 
 
 def generate_midgame(hg_dict):
@@ -1626,8 +1619,6 @@ def generate_actions_outer(hg_dict, phase, preset_players=None, force_one_action
         generate_actions_trigger(trigger_action_wrapper, hg_dict['statuses'], available_players, actions)
 
     # Iterates through all the actions, picking them at random for the remaining player_actions.
-    print(normal_actions),
-    print(phase.phase_id)
     while available_players:
         generate_actions_normal(normal_actions, available_players, actions)
 
@@ -1864,7 +1855,7 @@ def generate_player_status_phase(hg_dict, previous_time_best_place):
 
     # Generate the player status numbers.
     # For each index, 0 = alive, 1 = dead, 2 = newly dead.
-    player_statuses = [((2 if player['placement'] < previous_time_best_place else 1) if player['dead'] else 0)
+    player_statuses = [((1 if player['placement'] < previous_time_best_place else 2) if player['dead'] else 0)
                        for player in hg_dict['statuses']]
     new_deaths = len([num for num in player_statuses if num == 2])
 
