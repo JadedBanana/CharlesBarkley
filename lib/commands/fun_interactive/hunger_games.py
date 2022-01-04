@@ -946,8 +946,6 @@ async def send_midgame(message, hg_dict):
         actions = get_current_game_actions_by_current_game_phase_and_action_indexes(
             phase_object, action_min_index, action_max_index)
 
-        print(type(actions[0]))
-
         # Create the embed title.
         title = phase_object.title + \
                 (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
@@ -964,46 +962,71 @@ async def send_midgame(message, hg_dict):
     # Creates embed for win AND tie pages.
     elif current_phase[0] == 'win':
 
+        # Get the phase and the actions from the database.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+        actions = get_current_game_actions_by_current_game_phase_and_action_indexes(
+            phase_object, 0, 0)
+
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], 0, 0, current_phase['desc']),
-            current_phase['title'], HG_EMBED_COLOR, footer_str
+            makeimage_action(actions, hg_dict['players'], phase_object.description), phase_object.title,
+            HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for status pages.
     elif current_phase[0] == 'status':
 
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Get the new death count.
+        new_deaths = len([status for status in phase_object.player_statuses if status == 1])
+
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']]),
-            f'{current_phase["new"]} cannon shot{"" if current_phase["new"] == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
+            makeimage_player_statuses(phase_object.player_statuses, hg_dict['players']),
+            f'{new_deaths} cannon shot{"" if new_deaths == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
             footer_str
         )
 
     # Creates embed for placement pages.
     elif current_phase[0] == 'place':
 
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Reorganize the players to be in the player status order.
+        ordered_placements = sorted(zip(phase_object.player_statuses, hg_dict['players']), key=lambda pair: pair[0])
+        sorted_players = [player for place, player in ordered_placements]
+        sorted_placements = [place for place, player in ordered_placements]
+
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']],
-                                      placement=max([2] + [player_tuple[2] for player_tuple in current_phase['all']])),
+            makeimage_player_statuses(sorted_placements, sorted_players,
+                                      placement=max([1] + phase_object.player_statuses)),
             'Placements', HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for killcount pages.
     elif current_phase[0] == 'kills':
 
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Reorganize the players to be in the player status order.
+        ordered_kills = sorted(zip(phase_object.player_statuses, hg_dict['players']), key=lambda pair: pair[0])
+        ordered_kills.reverse()
+        sorted_players = [player for place, player in ordered_kills]
+        sorted_kills = [place for place, player in ordered_kills]
+
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']],
-                                      kills=max([1] + [player_tuple[2] for player_tuple in current_phase['all']])),
+            makeimage_player_statuses(sorted_kills, sorted_players,
+                                      kills=max([1] + phase_object.player_statuses)),
             'Kills', HG_EMBED_COLOR, footer_str
         )
 
@@ -1596,8 +1619,6 @@ def generate_actions_outer(hg_dict, phase, preset_players=None, force_one_action
     else:
         normal_actions = get_normal_actions_by_phase(phase)
         trigger_action_wrappers = get_trigger_actions_by_phase(phase)
-
-    print(phase.phase_id)
 
     # Third, make the actions list, which will store all the actions.
     actions = []
