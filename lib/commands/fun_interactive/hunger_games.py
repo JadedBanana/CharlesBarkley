@@ -250,16 +250,12 @@ async def hunger_games_detect_expiration(bot, message):
         if (now - hg_dict['updated']).seconds >= EXPIRE_SECONDS:
 
             # Delete it.
+            clear_current_game_from_database(hg_dict)
             del CURRENT_GAMES[hg_key]
 
             # Retire the existing players' profile pictures.
             if 'players' in hg_dict:
-                if isinstance(hg_dict['players'], dict):
-                    temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-                    temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
-                else:
-                    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
-                    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+                temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
 
             # Send a message quoting inactivity.
             logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
@@ -750,12 +746,12 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
         await messaging.send_text_message(message, 'Thanks for playing!')
 
         # Delete the game.
+        clear_current_game_from_database(hg_dict)
         del CURRENT_GAMES[hg_key]
 
         # Retire the existing players' profile pictures.
         if 'players' in hg_dict:
             temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
 
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
@@ -791,14 +787,20 @@ async def hunger_games_update_postgame_new_game(hg_key, hg_dict, response, messa
         response (str[]) : A list of strings representing the response.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
-    await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
+    # Start typing.
+    async with message.channel.typing():
 
-    # Reset all the post-generation crap in the dict.
-    hg_dict['generated'] = False
-    hg_dict['phases'] = None
-    hg_dict['complete'] = False
-    hg_dict['past_pregame'] = False
+        # Remove all the data from the database.
+        clear_current_game_from_database(hg_dict)
+
+        # Reset all the post-generation crap in the dict.
+        del hg_dict['generated']
+        del hg_dict['phases']
+        del hg_dict['complete']
+        hg_dict['past_pregame'] = False
+
+        # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
+        await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
 
 
 async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message):
@@ -812,20 +814,20 @@ async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message
         response (str[]) : A list of strings representing the response.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # Restore the player objects.
-    hg_dict['players'] = hg_dict['player_objects']
+    # Start typing.
+    async with message.channel.typing():
 
-    # Retire their profile pictures.
-    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+        # Remove all the data from the database.
+        clear_current_game_from_database(hg_dict)
 
-    # Reset all the post-generation crap in the dict.
-    hg_dict['generated'] = False
-    hg_dict['phases'] = None
-    hg_dict['complete'] = False
-    hg_dict['past_pregame'] = False
+        # Reset all the post-generation crap in the dict.
+        del hg_dict['generated']
+        del hg_dict['phases']
+        del hg_dict['complete']
+        hg_dict['past_pregame'] = False
 
-    # Send the new pregame embed.
-    await send_pregame(message, hg_dict)
+        # Send the new pregame embed.
+        await send_pregame(message, hg_dict)
 
 
 async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message):
@@ -843,16 +845,12 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
     await messaging.send_text_message(message, 'Hunger Games canceled.')
 
     # Delete it.
+    clear_current_game_from_database(hg_dict)
     del CURRENT_GAMES[hg_key]
 
     # Retire the existing players' profile pictures.
     if 'players' in hg_dict:
-        if isinstance(hg_dict['players'], dict):
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
-        else:
-            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
 
 
 async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
@@ -871,6 +869,32 @@ async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
 
     # Abort the cancel.
     hg_dict['confirm_cancel'] = False
+
+
+def clear_current_game_from_database(hg_dict):
+    """
+    Clears all the rows belonging to the given game from the database.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # If the dict doesn't have phases in it, return.
+    if 'phases' not in hg_dict:
+        return
+
+    # Iterate through the phases in the dict.
+    for phase in hg_dict['phases']:
+        current_game_phase = get_current_game_phase_by_id(phase[1])
+
+        # For every game action id in the current game phase, delete it.
+        if current_game_phase.game_action_ids:
+            for game_action_id in current_game_phase.game_action_ids:
+                database.delete_filtered(database.HG_CURRENT_GAME_ACTIONS_TABLE,
+                                         database.HG_CURRENT_GAME_ACTIONS_TABLE.game_action_id == game_action_id)
+
+        # Delete the phase.
+        database.delete_filtered(database.HG_CURRENT_GAME_PHASES_TABLE,
+                                 database.HG_CURRENT_GAME_PHASES_TABLE.game_phase_id == phase[1])
 
 
 async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
@@ -2052,10 +2076,11 @@ async def pregame_shuffle(message, player_count, hg_dict):
         player_count (int) : The amount of players to use.
         hg_dict (dict) : The full game dict.
     """
-    # Retire the existing players' profile pictures.
+    # Retire the existing players' profile pictures (but add a shuffle checkout that will be removed later to prevent
+    # from reloading repeat players).
     if 'players' in hg_dict:
+        temp_files.checkout_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_shuffle')
         temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
 
     # If the player count is more than the max or less than the minimum, set them to their capstone values.
     player_count = min(player_count, HG_MAX_GAMESIZE)
@@ -2085,8 +2110,9 @@ async def pregame_shuffle(message, player_count, hg_dict):
         hg_players.append(next_player)
         user_list.remove(next_player)
 
-    # Checkout file holdings for all the profile pictures.
+    # Checkout file holdings for all the profile pictures and retire the shuffle checkout.
     await temp_files.checkout_profile_picture_by_user_bulk_with_typing(hg_players, message, 'hg_filehold')
+    temp_files.retire_profile_picture_by_user_bulk(hg_players, message, 'hg_shuffle')
 
     # Set in players and bot bool.
     hg_dict['players'] = hg_players

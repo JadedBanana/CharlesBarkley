@@ -38,7 +38,7 @@ def get_all(table):
     Gets every row from the given table.
 
     Args:
-        database table : Which table to pull from.
+        table (database table) : Which table to pull from.
 
     Returns:
         SQLAlchemy.Query : The finalized query.
@@ -53,7 +53,7 @@ def get_filtered_by(table, **kwargs):
     Can only do equal signs, no > or <.
 
     Args:
-        database table : Which table to pull from.
+        table (database table) : Which table to pull from.
         **kwargs : All variables from which to filter_by.
                    Must refer to database columns equaling something else.
 
@@ -70,7 +70,7 @@ def get_filtered(table, *args):
     Can only do equal signs, no > or <.
 
     Args:
-        database table : Which table to pull from.
+        table (database table) : Which table to pull from.
         *args : All variables from which to filter by.
                 Must refer to database columns being less than or equal to or greater than something else.
 
@@ -120,6 +120,19 @@ def get_filtered_by_joined(base_table, *tables_and_ons, **kwargs):
     """
     # Simple return.
     return filter_by(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
+
+
+def delete_filtered(table, *args):
+    """
+    Deletes all the entries from a table where the attributes match.
+
+    Args:
+        table (database table) : Which table to delete from.
+        *args : All variables from which to filter by.
+    """
+    # Simple one-line execution plus the commit.
+    filter(SESSION.query(table), *args).delete()
+    SESSION.commit()
 
 
 def filter_by(base_query, **kwargs):
@@ -211,7 +224,6 @@ def commit_to_database(new_object):
     # Add and commit.
     SESSION.add(new_object)
     SESSION.commit()
-
 
 def initialize():
     """
