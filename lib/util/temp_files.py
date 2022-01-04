@@ -49,6 +49,31 @@ def initialize():
     clear_all_temporary_files()
 
 
+def get_profile_picture_by_user(user, size=None):
+    """
+    Gets a profile picture for one-time use.
+    TODO: overhaul this shit
+
+    Args:
+        user (discord.user.User) : The desired user.
+        size ((int, int)) : The size, represented by a 2-entry tuple of ints.
+                            Width first, then height.
+
+    Returns:
+        PIL.Image : The profile picture as an image, if return_image is True.
+    """
+    # Get the image.
+    image = ACTIVE_PROFILE_PICTURES[user.id][0].copy()
+
+    # If it should be resized, then resize it.
+    if size and size > (0, 0):
+        image = image.resize((size[0], size[1]),
+                             Image.NEAREST if image.width < size[0] or image.height < size[1] else Image.LANCZOS)
+
+    # And return the image.
+    return image
+
+
 def checkout_profile_picture_by_user(user, message, command_key, return_image=True, size=None):
     """
     Checks out a profile picture for temporary use.

@@ -688,8 +688,12 @@ async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
+    if not do_increment(hg_dict, action_count, do_previous=False):
+        return
+
+    # Send the midgame message.
     async with message.channel.typing():
-        await send_midgame(message, hg_dict, action_count, do_previous=False)
+        await send_midgame(message, hg_dict)
 
 
 async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, message):
@@ -720,8 +724,12 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
+    if not do_increment(hg_dict, action_count, do_previous=False):
+        return
+
+    # Send the midgame message.
     async with message.channel.typing():
-        await send_midgame(message, hg_dict, action_count, do_previous=True)
+        await send_midgame(message, hg_dict)
 
 
 async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message):
@@ -874,15 +882,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
         hg_dict (dict) : The full game dict.
         title (str) : The title of the embed, if any.
     """
-    # Get all the player data.
-    player_data = [(player.display_name, temp_files.checkout_profile_picture_by_user(
-        player, message, 'hg_pregame', size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0) for player in hg_dict['players']]
-
     # Generate the player statuses image.
-    image = makeimage_player_statuses(player_data)
-
-    # Retire profile pictures.
-    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_pregame')
+    image = makeimage_player_statuses([0 for player in hg_dict['players']], hg_dict['players'])
 
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
@@ -890,20 +891,14 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
                                                'Disallow' if hg_dict['uses_bots'] else 'Allow'))
 
 
-async def send_midgame(message, hg_dict, count, do_previous):
+async def send_midgame(message, hg_dict):
     """
     Sends the midgame message after incrementing the phase.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
         hg_dict (dict) : The full game dict.
-        count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
     """
-    # Performs the increment; if it wasn't done, then just return.
-    if not do_increment(hg_dict, count, do_previous):
-        return
-
     # Gets the new current phase.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
@@ -940,27 +935,34 @@ async def send_midgame(message, hg_dict, count, do_previous):
             footer_str = HG_MIDGAME_DESCRIPTION
 
     # Creates embed for act pages.
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
 
         # Get the values for the action indexes.
         action_min_index = hg_dict['action_min_index']
         action_max_index = hg_dict['action_max_index']
 
+        # Get the phase and the actions from the database.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+        actions = get_current_game_actions_by_current_game_phase_and_action_indexes(
+            phase_object, action_min_index, action_max_index)
+
+        print(type(actions[0]))
+
         # Create the embed title.
-        title = current_phase['title'] + (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
-                                          f', Actions {action_min_index + 1} - {action_max_index + 1}') + \
-                (f' / {len(current_phase["act"])}' if current_phase['done'] else '')
+        title = phase_object.title + \
+                (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
+                 f', Actions {action_min_index + 1} - {action_max_index + 1}') + \
+                (f' / {len(phase_object.game_action_ids)}' if phase_object.complete else '')
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, action_max_index,
-                             current_phase['desc'] if action_min_index == 0 else None),
+            makeimage_action(actions, hg_dict['players'], phase_object.description if action_min_index == 0 else None),
             title, HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for win AND tie pages.
-    elif current_phase['type'] in ['win', 'tie']:
+    elif current_phase[0] == 'win':
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
@@ -970,7 +972,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
         )
 
     # Creates embed for status pages.
-    elif current_phase['type'] == 'status':
+    elif current_phase[0] == 'status':
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
@@ -982,7 +984,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
         )
 
     # Creates embed for placement pages.
-    elif current_phase['type'] == 'place':
+    elif current_phase[0] == 'place':
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
@@ -994,7 +996,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
         )
 
     # Creates embed for killcount pages.
-    elif current_phase['type'] == 'kills':
+    elif current_phase[0] == 'kills':
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
@@ -1140,33 +1142,25 @@ def do_increment_act_check(hg_dict, count, do_previous):
     return True
         
 
-def makeimage_player_statuses(players, placement=0, kills=0):
+def makeimage_player_statuses(player_statuses, players, placement=False, kills=False):
     """
     Generates a player status image.
     This can also be used to make player placement images and kill count lists.
 
     Arguments:
-        players (str, PIL.Image, int)[] : The players, organized as a list of tuples.
-                                          The first entry should be the player's display name.
-                                          The second entry should be the player's icon.
-                                          The third entry should be one of three values if placement + kills are False:
-                                              0: Alive
-                                              1: Newly Dead
-                                              2: Dead
-                                         Otherwise, they should be the placement or the kill count of each player.
-        placement (int) : Whether or not the third value in players is player placements.
-                          Should be the lowest place when used.
-        kills (int) : Whether or not the third value in players is kills.
-                      Should be the most kills when used.
+        player_statuses (int[]) : The player statuses, with indexes matching the players list.
+        players (discord.User[]) : The player list.
+        placement (bool) : Whether the player_statuses values are player placements.
+        kills (int) : Whether the player_statuses values are kill counts.
     """
     # Splits all the players into their own rows.
     players_split = []
     current_split = []
-    for player in players:
+    for i in range(len(players)):
         if len(current_split) == HG_PLAYERSTATUS_WIDTHS[len(players)]:
             players_split.append(current_split)
             current_split = []
-        current_split.append(player)
+        current_split.append(i)
     players_split.append(current_split)
 
     # Gets the image width and height.
@@ -1174,8 +1168,8 @@ def makeimage_player_statuses(players, placement=0, kills=0):
     image_height = HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + HG_ICON_BUFFER * (len(players_split) + 1)
 
     # Creates all the images and drawers that will help us make the new image.
-    player_statuses = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(player_statuses)
+    player_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    player_drawer = ImageDraw.Draw(player_image)
     player_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
 
     # Sets the current y at the buffer between the top and the first icon.
@@ -1187,14 +1181,15 @@ def makeimage_player_statuses(players, placement=0, kills=0):
         current_x = int((image_width - (len(split) * HG_ICON_SIZE + (len(split) - 1) * HG_ICON_BUFFER)) / 2)
 
         # Then, iterate through each player in each row.
-        for player in split:
+        for i in split:
 
             # Gets pfp, pastes onto image.
-            makeimage_pfp(player[1].copy(), player_statuses, player_drawer, current_x, current_y,
-                          player[2] and not placement and not kills)
+            makeimage_pfp(temp_files.get_profile_picture_by_user(players[i], size=(HG_ICON_SIZE, HG_ICON_SIZE)),
+                          player_image, player_drawer, current_x, current_y,
+                          player_statuses[i] and not placement and not kills)
 
             # Writes name and status / placement.
-            player_name = player[0]
+            player_name = players[i].display_name
 
             # If the name is too long, we put a ... at the end (thx alex!!!!!)
             if player_font.getsize(player_name)[0] > HG_ICON_SIZE:
@@ -1209,35 +1204,28 @@ def makeimage_player_statuses(players, placement=0, kills=0):
 
             # Placement
             if placement:
-                place = f'{player[2]}{NTH_SUFFIXES[player[2] % 10]} Place'
+                place = f'{player_statuses[i]}{NTH_SUFFIXES[player_statuses[i] % 10]} Place'
                 player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2),
                                     current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), place, font=player_font,
                                    fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_ALIVE_COLOR, HG_STATUS_DEAD_COLOR,
-                                                                           (player[2] - 1) / placement))
+                                                                           (player_statuses[i] - 1) / placement))
 
             # Kill Count
             elif kills:
-                if isinstance(kills, int):
-                    kill_str = f'{player[2]} {" Kill" if player[2] == 1 else " Kills"}'
-                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
-                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
-                                                                                                 HG_STATUS_ALIVE_COLOR,
-                                                                                                 player[2] / kills))
-                else:
-                    kill_str = '0 Kills'
-                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
-                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
-                                                                                                 HG_STATUS_ALIVE_COLOR,
-                                                                                                 player[2] / kills))
+                kill_str = f'{player_statuses[i]} {" Kill" if player_statuses[i] == 1 else " Kills"}'
+                player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
+                                    current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
+                                   font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
+                                                                                             HG_STATUS_ALIVE_COLOR,
+                                                                                             player_statuses[i] / kills)
+                                   )
 
             # Status
             else:
-                status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
+                status = 'Alive' if not player_statuses[i] else ('Deceased' if player_statuses[i] - 1 else 'Newly Deceased')
                 player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(status)[0] / 2),
                                     current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), status, font=player_font,
-                                   fill=HG_STATUS_ALIVE_COLOR if not player[2] else HG_STATUS_DEAD_COLOR)
+                                   fill=HG_STATUS_ALIVE_COLOR if not player_statuses[i] else HG_STATUS_DEAD_COLOR)
 
             # Adds to current_x.
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
@@ -1245,39 +1233,39 @@ def makeimage_player_statuses(players, placement=0, kills=0):
         # Adds to current_y.
         current_y += HG_PLAYERSTATUS_ROWHEIGHT + HG_ICON_BUFFER
 
-    return player_statuses
+    return player_image
 
 
-def makeimage_action(player_images, actions, start, end, action_desc=None):
+def makeimage_action(actions, players, action_description=None):
     """
     Displays a variable number of actions at once.
 
-    player_images (dict) : A dict of player profile pictures, with the profile pictures keyed by player ids.
-    actions (dict[]) : A list of dicts detailing all the actions in this phase.
-    start (int) : What index to start at.
-    end (int) : What index to end at.
-    action_desc (str) : The action description, if any.
+    Arguments:
+        actions ((hg_actions database table)[]) : The actions to put onto the image.
+        players (discord.User[]) : The player list.
+        action_description (str) : The action description, if any.
     """
     # Makes the font and gets the action description width, if any.
     action_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
-    action_desc_width = action_font.getsize(action_desc)[0] if action_desc else 0
+    action_desc_width = action_font.getsize(action_description)[0] if action_description else 0
 
     # Gets the image height.
     # Also makes the full action text while we're at it.
-    image_height = HG_ACTION_ROWHEIGHT * (end - start + 1) + HG_ICON_BUFFER + (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
+    image_height = HG_ACTION_ROWHEIGHT * len(actions) + HG_ICON_BUFFER + \
+                   (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_description else -1)
     text_sizes = []
 
     # Get the image width.
     # The image width is diffcult to gather, because we have to test the widths of everything.
-    image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
+    image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_description else -1
 
-    # Iterate through each action in the range.
-    for ind in range(start, end + 1):
+    # Iterate through each action in the list.
+    for action in actions:
 
         # Tests for text boundaries
-        full_action_text = actions[ind]['act']
-        for ind2 in range(len(actions[ind]['players'])):
-            full_action_text = full_action_text.replace('{' + str(ind2) + '}', actions[ind]['players'][ind2][1])
+        full_action_text = action.text
+        for i in range(len(action.players)):
+            full_action_text = full_action_text.replace('{' + str(i) + '}', players[action.players[i]].display_name)
 
         # Calculates text widths and appends them to the text_sizes list.
         text_width = action_font.getsize(full_action_text)[0]
@@ -1285,7 +1273,7 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         text_sizes.append(text_width)
 
         # Tests for image boundaries
-        image_width = max(image_width, HG_ICON_SIZE * len(actions[ind]['players']) + HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
+        image_width = max(image_width, HG_ICON_SIZE * len(action.players) + HG_ICON_BUFFER * (len(action.players) + 1))
 
     # Creates all the images and drawers that will help us make the new image.
     action_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
@@ -1295,7 +1283,7 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
     current_y = HG_ICON_BUFFER
 
     # Draw the description, if any.
-    if action_desc:
+    if action_description:
 
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
@@ -1309,29 +1297,30 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         )
 
         # Draws the text and adds to the current y.
-        player_drawer.text((current_x, HG_ICON_BUFFER), action_desc, font=action_font, fill=HG_HEADER_TEXT_COLOR)
+        player_drawer.text((current_x, HG_ICON_BUFFER), action_description, font=action_font, fill=HG_HEADER_TEXT_COLOR)
         current_y += HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3
 
     # Num keeps track of the text sizes.
     num = 0
 
-    # Iterate through all the actions.
-    for ind in range(start, end + 1):
+    # Iterate through each action in the list.
+    for action in actions:
 
         # Set the current x.
-        current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * HG_ICON_SIZE) - \
-                    int((len(actions[ind]['players']) - 1) / 2 * HG_ICON_BUFFER)
+        current_x = int(image_width / 2) - int(len(action.players) / 2 * HG_ICON_SIZE) - \
+                    int((len(action.players) - 1) / 2 * HG_ICON_BUFFER)
 
         # Gets each player's pfp and pastes it onto the image.
-        for player in actions[ind]['players']:
-            makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y, player[2])
+        for i in action.players:
+            makeimage_pfp(temp_files.get_profile_picture_by_user(players[i], size=(HG_ICON_SIZE, HG_ICON_SIZE)),
+                                                                 action_image, player_drawer, current_x, current_y,
+                                                                 False)
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
         current_y += HG_ICON_SIZE + HG_TEXT_BUFFER
-        makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y,
-                              action_font)
+        makeimage_action_text(action, players, player_drawer, current_x, current_y, action_font)
 
         # Adds to the current_y and num.
         current_y += HG_FONT_SIZE + HG_ICON_BUFFER
@@ -1370,26 +1359,26 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
                  (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
 
 
-def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_font):
+def makeimage_action_text(action, players, drawer, txt_x, txt_y, action_font):
     """
     Draws the action text for an action.
 
     Arguments:
-        remaining_text (str) : The remaining text.
-        players (int, str, bool)[] : The player list from the action.
-                                     The first value should be the player id.
-                                     The second value of each tuple should be the display name for the user.
-                                     The third value should be whether or not to draw them dead.
+        action (hg_actions database table) : The action that should be put onto the image.
+        players (discord.User[]) : The player list.
         drawer (PIL.ImageDraw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
         txt_y (int) : The y position of where to draw the text.
         action_font (PIL.ImageFont) : The action font.
     """
+    # Create remaining_text
+    remaining_text = action.text
+
     while remaining_text:
         # Get the index of the NEXT {n}.
         next_bracket = len(remaining_text)
-        for ind in range(len(players)):
-            bracket_pos = remaining_text.find('{' + str(ind) + '}')
+        for i in range(len(action.players)):
+            bracket_pos = remaining_text.find('{' + str(i) + '}')
             if not bracket_pos + 1:
                 continue
             next_bracket = min(next_bracket, bracket_pos)
@@ -1401,9 +1390,10 @@ def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_
         # Draw the next player name.
         if next_bracket == len(remaining_text):
             break
-        ind = int(remaining_text[next_bracket + 1])
-        drawer.text((txt_x, txt_y), players[ind][1], font=action_font, fill=HG_ACTION_PLAYER_COLOR)
-        txt_x += action_font.getsize(players[ind][1])[0]
+        i = int(remaining_text[next_bracket + 1])
+        drawer.text((txt_x, txt_y), players[action.players[i]].display_name, font=action_font,
+                    fill=HG_ACTION_PLAYER_COLOR)
+        txt_x += action_font.getsize(players[action.players[i]].display_name)[0]
 
         # Trim remaining_text.
         remaining_text = remaining_text[next_bracket + 3:]
@@ -1444,6 +1434,7 @@ async def generate_full_game(hg_dict, message):
 
     # Sends the first message and logs.
     logging.debug(message, 'generated complete hunger games instance')
+    await send_midgame(message, hg_dict)
 
 
 def generate_midgame(hg_dict):
@@ -1539,7 +1530,7 @@ def generate_action_phase(hg_dict, phase, phase_format_number=None):
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title.format(phase_format_number) if phase_format_number else phase.title,
             description=phase.description, game_action_ids=action_ids
-        ).game_phase_id, len(action_ids))
+        ).game_phase_id)
     )
 
 
@@ -1559,12 +1550,7 @@ def generate_win_tie_phase(hg_dict):
     # Win dead...
     else:
         winners = [i for i in range(len(hg_dict['statuses'])) if hg_dict['statuses'][i]['placement'] == 1]
-        if len(winners) == 1:
-            phase = get_phase_by_category('win_dead')
-
-        # Tie.
-        else:
-            phase = get_phase_by_category('tie')
+        phase = get_phase_by_category('win_dead')
 
     # Generate the actions.
     actions = generate_actions_outer(hg_dict, phase, preset_players=winners, force_one_action=True)
@@ -1581,7 +1567,7 @@ def generate_win_tie_phase(hg_dict):
         ('win', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title, description=phase.description, game_action_ids=action_ids
-        ).game_phase_id, 1)
+        ).game_phase_id)
     )
 
 
@@ -1610,6 +1596,8 @@ def generate_actions_outer(hg_dict, phase, preset_players=None, force_one_action
     else:
         normal_actions = get_normal_actions_by_phase(phase)
         trigger_action_wrappers = get_trigger_actions_by_phase(phase)
+
+    print(phase.phase_id)
 
     # Third, make the actions list, which will store all the actions.
     actions = []
@@ -1864,7 +1852,7 @@ def generate_player_status_phase(hg_dict, previous_time_best_place):
         ('status', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title.format(new_deaths, 's' if new_deaths != 1 else ''), player_statuses=player_statuses
-        ).game_phase_id, 1)
+        ).game_phase_id)
     )
 
 
@@ -1906,7 +1894,7 @@ def generate_placement_kill_count_phase(hg_dict, do_placement):
         ('place' if do_placement else 'kills', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title, player_statuses=player_placements
-        ).game_phase_id, 1)
+        ).game_phase_id)
     )
 
 
@@ -1921,7 +1909,7 @@ def get_phase_by_category(phase_category):
         hg_phases database table : One phase.
     """
     # Simple return statement.
-    return random.choice([phase for phase in database.get_filtered(database.HG_PHASES_TABLE, category=phase_category)])
+    return random.choice([phase for phase in database.get_filtered_by(database.HG_PHASES_TABLE, category=phase_category)])
 
 
 def get_normal_actions_by_phase(phase, extra_players=None):
@@ -1935,11 +1923,11 @@ def get_normal_actions_by_phase(phase, extra_players=None):
         (hg_action_wrappers + hg_actions database table)[] : The normal action wrappers,
                                                              joined with the actions they're wrapping.
     """
-    # If extra_players was provided, then filter by it.
+    # If extra_players was provided, then filter_by by it.
     if isinstance(extra_players, int):
-        return [action for action in database.filter(
+        return [action for action in database.filter_by(
             database.join(
-                database.get_filtered(database.HG_ACTIONS_TABLE, extra_players=extra_players),
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, extra_players=extra_players),
                 (
                     database.HG_ACTION_WRAPPERS_TABLE,
                     database.HG_ACTION_WRAPPERS_TABLE.single_action_id == database.HG_ACTIONS_TABLE.action_id
@@ -1949,7 +1937,7 @@ def get_normal_actions_by_phase(phase, extra_players=None):
         )]
 
     # Otherwise, just do a simple return.
-    return [action for action in database.get_filtered_joined(
+    return [action for action in database.get_filtered_by_joined(
         database.HG_ACTIONS_TABLE,
         (
             database.HG_ACTION_WRAPPERS_TABLE,
@@ -1971,8 +1959,8 @@ def get_trigger_actions_by_phase(phase):
     """
     # First, get the trigger actions.
     trigger_action_wrappers = [action_wrapper for action_wrapper in
-                               database.get_filtered(database.HG_ACTION_WRAPPERS_TABLE, parent_phase_id=phase.phase_id,
-                                                     type='trigger')]
+                               database.get_filtered_by(database.HG_ACTION_WRAPPERS_TABLE,
+                                                        parent_phase_id=phase.phase_id, type='trigger')]
 
     # Next, iterate through the trigger actions and get each child action, if any.
     for action_wrapper in trigger_action_wrappers:
@@ -1980,19 +1968,58 @@ def get_trigger_actions_by_phase(phase):
         # Success actions
         if action_wrapper.success_action_ids:
             action_wrapper.success_actions = []
-            for action_query in [database.get_filtered(database.HG_ACTIONS_TABLE, action_id=success_action_id)
+            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
                                  for success_action_id in action_wrapper.success_action_ids]:
                 action_wrapper.success_actions += [action for action in action_query]
 
         # Failure actions
         if action_wrapper.failure_action_ids:
             action_wrapper.failure_actions = []
-            for action_query in [database.get_filtered(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
+            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
                                  for failure_action_id in action_wrapper.failure_action_ids]:
                 action_wrapper.failure_actions += [action for action in action_query]
 
     # Return.
     return trigger_action_wrappers
+
+
+def get_current_game_phase_by_id(game_phase_id):
+    """
+    Gets the current game phase that matches the given game_phase_id.
+
+    Arguments
+        game_phase_id (id) : The game phase id.
+
+    Returns:
+        hg_current_game_phases database table : One current game phase.
+    """
+    # Simple return statement.
+    return database.get_filtered_by(database.HG_CURRENT_GAME_PHASES_TABLE, game_phase_id=game_phase_id).first()
+
+
+def get_current_game_actions_by_current_game_phase_and_action_indexes(phase_object, action_min_index, action_max_index):
+    """
+    Gets the current game actions belonging to the given current game phase whose indexes are between the
+    action_min_index and action_max_index.
+
+    Arguments
+        game_phase_id (id) : The game phase id.
+
+    Returns:
+        hg_current_game_phases database table : One current game phase.
+    """
+    # First, get all the current game actions by the current game phase.
+    current_game_actions = [
+        database.get_filtered_by(database.HG_CURRENT_GAME_ACTIONS_TABLE, game_action_id=game_action_id).first()
+        for game_action_id in phase_object.game_action_ids[action_min_index:action_max_index + 1]]
+
+    # Next, get all the actions they reference and put the text on the respective current_game_actions.
+    for game_action in current_game_actions:
+        game_action.text = database.get_filtered_by(
+            database.HG_ACTIONS_TABLE, action_id=game_action.action_id).first().text
+
+    # Return.
+    return current_game_actions
 
 
 async def pregame_shuffle(message, player_count, hg_dict):

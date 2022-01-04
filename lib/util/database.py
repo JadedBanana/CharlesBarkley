@@ -47,26 +47,43 @@ def get_all(table):
     return SESSION.query(table)
 
 
-def get_filtered(table, **kwargs):
+def get_filtered_by(table, **kwargs):
     """
     Gets a filtered set of rows from the given table according to the kwargs.
+    Can only do equal signs, no > or <.
 
     Args:
         database table : Which table to pull from.
-        **kwargs : All variables from which to filter.
+        **kwargs : All variables from which to filter_by.
                    Must refer to database columns equaling something else.
 
     Returns:
         SQLAlchemy.Query : The finalized query.
     """
     # Simple execution.
-    return filter(SESSION.query(table), **kwargs)
+    return filter_by(SESSION.query(table), **kwargs)
+
+
+def get_filtered(table, *args):
+    """
+    Gets a filtered set of rows from the given table according to the args.
+    Can only do equal signs, no > or <.
+
+    Args:
+        database table : Which table to pull from.
+        *args : All variables from which to filter by.
+                Must refer to database columns being less than or equal to or greater than something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple execution.
+    return filter(SESSION.query(table), *args)
 
 
 def get_all_joined(base_table, *tables_and_ons):
     """
-    Gets a filtered set of rows from the given base_table, combined with the rest of the tables referenced above,
-    according to the provided kwargs.
+    Gets every row from the given base_table, combined with the rest of the tables referenced above.
 
     Args:
         base_table (database table) : The starting table to pull from.
@@ -84,64 +101,35 @@ def get_all_joined(base_table, *tables_and_ons):
     return base_query
 
 
-def get_filtered_joined(base_table, *tables_and_ons, **kwargs):
+def get_filtered_by_joined(base_table, *tables_and_ons, **kwargs):
     """
-    Gets every row from the given base_table, combined with the rest of the tables referenced above.
+    Gets a filtered set of rows from the given base_table, combined with the rest of the tables referenced above,
+    according to the provided kwargs.
+    Can only do equal signs, no > or <.
 
     Args:
         base_table (database table) : The starting table to pull from.
         *tables_and_ons (database table, database column equality)[] : Tuples whose first item is the table to pull
                                                                        from, and whose second item is the equality on
                                                                        which to base the inner join.
-        **kwargs : All variables from which to filter.
+        **kwargs : All variables from which to filter_by.
                    Must refer to database columns equaling something else.
 
     Returns:
         SQLAlchemy.Query : The finalized query.
     """
     # Simple return.
-    return filter(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
-
-    # Create the query step-by-step, starting with the base table.
-    base_query = SESSION.query(base_table)
-
-    # Iterate through all tables_and_ons and add them slowly.
-    for table_and_on in tables_and_ons:
-        base_query = base_query.join(table_and_on[0], table_and_on[1])
-
-    # Filter.
-    base_query = base_query.filter_by(**kwargs)
-
-    # Return.
-    return base_query
+    return filter_by(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
 
 
-def get_filtered_joined(base_table, *tables_and_ons, **kwargs):
-    """
-    Gets every row from the given base_table, combined with the rest of the tables referenced above.
-
-    Args:
-        base_table (database table) : The starting table to pull from.
-        *tables_and_ons (database table, database column equality)[] : Tuples whose first item is the table to pull
-                                                                       from, and whose second item is the equality on
-                                                                       which to base the inner join.
-        **kwargs : All variables from which to filter.
-                   Must refer to database columns equaling something else.
-
-    Returns:
-        SQLAlchemy.Query : The finalized query.
-    """
-    # Simple return.
-    return filter(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
-
-
-def filter(base_query, **kwargs):
+def filter_by(base_query, **kwargs):
     """
     Filters the given query according to the kwargs.
+    Can only do equal signs, no > or <.
 
     Args:
         base_query (SQLAlchemy.Query) : The starting query to add onto.
-        **kwargs : All variables from which to filter.
+        **kwargs : All variables from which to filter by.
                    Must refer to database columns equaling something else.
 
     Returns:
@@ -149,6 +137,23 @@ def filter(base_query, **kwargs):
     """
     # Simple return.
     return base_query.filter_by(**kwargs)
+
+
+def filter(base_query, *args):
+    """
+    Filters the given query according to the args.
+    Can only do > or < signs, no equalities.
+
+    Args:
+        base_query (SQLAlchemy.Query) : The starting query to add onto.
+        *args : All variables from which to filter by.
+                Must refer to database columns being less than or equal to or greater than something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple return.
+    return base_query.filter(*args)
 
 
 def join(base_query, *tables_and_ons):
