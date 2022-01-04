@@ -1576,7 +1576,8 @@ def generate_action_phase(hg_dict, phase, phase_format_number=None):
         ('act', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title.format(phase_format_number) if phase_format_number else phase.title,
-            description=phase.description, game_action_ids=action_ids
+            description=phase.description.format(phase_format_number) if phase_format_number else phase.description,
+            game_action_ids=action_ids
         ).game_phase_id, len(action_ids))
     )
 
@@ -1591,7 +1592,7 @@ def generate_win_tie_phase(hg_dict):
     # First, detect the type of phase and get it.
     # Win alive...
     winners = [i for i in range(len(hg_dict['statuses'])) if not hg_dict['statuses'][i]['dead']]
-    if any(winners):
+    if winners:
         phase = get_phase_by_category('win_alive')
 
     # Win dead...
