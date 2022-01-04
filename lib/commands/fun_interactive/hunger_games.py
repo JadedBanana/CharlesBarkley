@@ -724,7 +724,7 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
-    if not do_increment(hg_dict, action_count, do_previous=False):
+    if not do_increment(hg_dict, action_count, do_previous=True):
         return
 
     # Send the midgame message.
@@ -911,7 +911,7 @@ async def send_midgame(message, hg_dict):
             footer_str = HG_POSTGAME_BEGINNING_DESCRIPTION
 
         # At the end, then we can't go forward.
-        elif current_phase['type'] == 'kills':
+        elif current_phase[0] == 'kills':
             footer_str = HG_FINALE_DESCRIPTION
 
         # Anywhere else, have both.
@@ -926,7 +926,7 @@ async def send_midgame(message, hg_dict):
             footer_str = HG_BEGINNING_DESCRIPTION
 
         # At the end, then we can't go forward.
-        elif current_phase['type'] in ['win', 'tie']:
+        elif current_phase[0] in ['win', 'tie']:
             footer_str = HG_THE_END_DESCRIPTION
             hg_dict['complete'] = True
 
@@ -1009,7 +1009,7 @@ async def send_midgame(message, hg_dict):
 
     # If there's an unexpected phase type, raise an exception.
     else:
-        raise InvalidHungerGamesPhaseError(current_phase['type'])
+        raise InvalidHungerGamesPhaseError(current_phase[0])
 
 
 def do_increment(hg_dict, count, do_previous):
@@ -1028,11 +1028,11 @@ def do_increment(hg_dict, count, do_previous):
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
     # If the current phase is an act, then its increment changes based on the indexes.
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
         return do_increment_act(hg_dict, count, do_previous)
 
     # Otherwise, increment for other normal types of pages.
-    return do_increment_non_act(hg_dict, count, do_previous, current_phase['type'])
+    return do_increment_non_act(hg_dict, count, do_previous, current_phase[0])
 
 
 def do_increment_act(hg_dict, count, do_previous):
@@ -1070,14 +1070,14 @@ def do_increment_act(hg_dict, count, do_previous):
 
     # If we're going forwards and the previous action was the end of the phase,
     # then add 1 to the current_phase and return True.
-    if hg_dict['action_max_index'] == len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1:
+    if hg_dict['action_max_index'] == hg_dict['phases'][hg_dict['current_phase']][2] - 1:
         hg_dict['current_phase'] += 1
         return do_increment_act_check(hg_dict, count, do_previous)
 
     # Otherwise, increment the action indexes and return True.
     hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
     hg_dict['action_max_index'] = min(hg_dict['action_max_index'] + count,
-                                      len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
+                                      hg_dict['phases'][hg_dict['current_phase']][2] - 1)
     return True
 
 
@@ -1088,11 +1088,11 @@ def do_increment_non_act(hg_dict, count, do_previous, phase_type):
     Arguments:
         hg_dict (dict) : The full game dict.
         count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
+        do_previous (bool) : Whether to go backwards.
         phase_type (str) : The current phase's type.
 
     Returns:
-        bool : Whether or not the hg_dict was incremented.
+        bool : Whether the hg_dict was incremented.
     """
     # If we went backwards, then just subtract 1 from the current phase.
     if do_previous:
@@ -1125,18 +1125,18 @@ def do_increment_act_check(hg_dict, count, do_previous):
     """
     # Detect if the NEW current phase is an act.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
 
         # If so, then set the action indexes depending on whether or not we're going backwards.
         # Backwards gets put at the end.
         if do_previous:
-            hg_dict['action_max_index'] = len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1
+            hg_dict['action_max_index'] = current_phase[2] - 1
             hg_dict['action_min_index'] = max(hg_dict['action_max_index'] - count + 1, 0)
 
         # Forwards gets put at the front.
         else:
             hg_dict['action_min_index'] = 0
-            hg_dict['action_max_index'] = min(count - 1, len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
+            hg_dict['action_max_index'] = min(count - 1, current_phase[2] - 1)
 
     # Return True.
     return True
@@ -1530,7 +1530,7 @@ def generate_action_phase(hg_dict, phase, phase_format_number=None):
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title.format(phase_format_number) if phase_format_number else phase.title,
             description=phase.description, game_action_ids=action_ids
-        ).game_phase_id)
+        ).game_phase_id, len(action_ids))
     )
 
 
@@ -1567,7 +1567,7 @@ def generate_win_tie_phase(hg_dict):
         ('win', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title, description=phase.description, game_action_ids=action_ids
-        ).game_phase_id)
+        ).game_phase_id, 1)
     )
 
 
@@ -1852,7 +1852,7 @@ def generate_player_status_phase(hg_dict, previous_time_best_place):
         ('status', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title.format(new_deaths, 's' if new_deaths != 1 else ''), player_statuses=player_statuses
-        ).game_phase_id)
+        ).game_phase_id, 1)
     )
 
 
@@ -1894,7 +1894,7 @@ def generate_placement_kill_count_phase(hg_dict, do_placement):
         ('place' if do_placement else 'kills', database.insert_into_database(
             database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
             title=phase.title, player_statuses=player_placements
-        ).game_phase_id)
+        ).game_phase_id, 1)
     )
 
 
