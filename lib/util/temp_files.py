@@ -246,15 +246,15 @@ def clear_profile_pictures_not_in_use():
 
         # Look for instances of images not being in the ACTIVE_PROFILE_PICTURES.
         if int(profile_image[:-len(PFP_FILETYPE)]) not in ACTIVE_PROFILE_PICTURES:
-            logging.info(f'Tempfile management removing profile picture for '
-                         f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            logging.debug(f'Tempfile management removing profile picture for '
+                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
             os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
             continue
 
         # Look for instances of images in the ACTIVE_PROFILE_PICTURES not having any active users.
         if not ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])][1]:
-            logging.info(f'Tempfile management removing profile picture for '
-                         f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            logging.debug(f'Tempfile management removing profile picture for '
+                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
             del ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])]
             os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
 
@@ -267,7 +267,7 @@ def load_profile_picture(user):
         user (discord.user.User) : The desired profile picture's user.
     """
     # Log that we're downloading it.
-    logging.info(f'Tempfile management downloading profile picture for user id {user.id}')
+    logging.debug(f'Tempfile management downloading profile picture for user id {user.id}')
 
     # Gets the user's avatar URL.
     pfp_url = user.avatar
