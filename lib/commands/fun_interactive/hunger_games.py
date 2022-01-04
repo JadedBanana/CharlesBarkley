@@ -652,7 +652,7 @@ async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
                 await hunger_games_update_postgame_replay(hg_key, hg_dict, response, message)
 
     # If the game isn't finished generating yet.
-    elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
+    elif any([response[0] == value for value in HG_MIDGAME_BE_PATIENT_TERMS]):
         await hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message)
 
 
@@ -787,20 +787,17 @@ async def hunger_games_update_postgame_new_game(hg_key, hg_dict, response, messa
         response (str[]) : A list of strings representing the response.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # Start typing.
-    async with message.channel.typing():
+    # Remove all the data from the database.
+    clear_current_game_from_database(hg_dict)
 
-        # Remove all the data from the database.
-        clear_current_game_from_database(hg_dict)
+    # Reset all the post-generation crap in the dict.
+    del hg_dict['generated']
+    del hg_dict['phases']
+    del hg_dict['complete']
+    hg_dict['past_pregame'] = False
 
-        # Reset all the post-generation crap in the dict.
-        del hg_dict['generated']
-        del hg_dict['phases']
-        del hg_dict['complete']
-        hg_dict['past_pregame'] = False
-
-        # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
-        await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
+    # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
+    await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
 
 
 async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message):
@@ -1639,8 +1636,8 @@ def generate_actions_outer(hg_dict, phase, preset_players=None, force_one_action
 
     # Second, get all the actions w/action wrappers for the given phase.
     if force_one_action:
-        normal_actions = get_normal_actions_by_phase(phase)
-        trigger_action_wrappers = get_trigger_actions_by_phase(phase)
+        normal_actions = get_normal_actions_by_phase(phase, extra_players=len(available_players) - 1)
+        trigger_action_wrappers = get_trigger_actions_by_phase(phase, extra_players=len(available_players) - 1)
     else:
         normal_actions = get_normal_actions_by_phase(phase)
         trigger_action_wrappers = get_trigger_actions_by_phase(phase)
@@ -1676,12 +1673,12 @@ def generate_actions_trigger(trigger_action_wrapper, hg_statuses, available_play
     """
     # First, check and make sure that there are enough players available for this trigger to happen,
     # for both success and fail.
-    if (trigger_action_wrapper.success_action_ids and
+    if (trigger_action_wrapper.success_action_ids and (not trigger_action_wrapper.success_actions or
         len(available_players) < min(action.extra_players + 1
-                                     for action in trigger_action_wrapper.success_actions)) or \
-        (trigger_action_wrapper.failure_action_ids and
+                                     for action in trigger_action_wrapper.success_actions))) or \
+        (trigger_action_wrapper.failure_action_ids and (not trigger_action_wrapper.failure_actions or
          len(available_players) < min(action.extra_players + 1
-                                      for action in trigger_action_wrapper.failure_actions)):
+                                      for action in trigger_action_wrapper.failure_actions))):
         return
 
     # Next, establish variables for the for loop.
@@ -1993,7 +1990,7 @@ def get_normal_actions_by_phase(phase, extra_players=None):
     )]
 
 
-def get_trigger_actions_by_phase(phase):
+def get_trigger_actions_by_phase(phase, extra_players=None):
     """
     Gets all trigger action wrappers, with their success and fail actions slapped on as attributes.
 
@@ -2003,7 +2000,7 @@ def get_trigger_actions_by_phase(phase):
     Returns:
         (hg_action_wrappers database table)[] : The normal action wrappers, joined with the actions they're wrapping.
     """
-    # First, get the trigger actions.
+    # First, get the trigger action wrappers.
     trigger_action_wrappers = [action_wrapper for action_wrapper in
                                database.get_filtered_by(database.HG_ACTION_WRAPPERS_TABLE,
                                                         parent_phase_id=phase.phase_id, type='trigger')]
@@ -2014,7 +2011,13 @@ def get_trigger_actions_by_phase(phase):
         # Success actions
         if action_wrapper.success_action_ids:
             action_wrapper.success_actions = []
+
+            # If extra_players is set, filter by that too. Otherwise, just grab normally.
             for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
+                                 for success_action_id in action_wrapper.success_action_ids] \
+                    if isinstance(extra_players, int) else \
+                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
+                                                          extra_players=extra_players)
                                  for success_action_id in action_wrapper.success_action_ids]:
                 action_wrapper.success_actions += [action for action in action_query]
 
@@ -2022,6 +2025,10 @@ def get_trigger_actions_by_phase(phase):
         if action_wrapper.failure_action_ids:
             action_wrapper.failure_actions = []
             for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
+                                 for failure_action_id in action_wrapper.failure_action_ids] \
+                    if isinstance(extra_players, int) else \
+                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
+                                                          extra_players=extra_players)
                                  for failure_action_id in action_wrapper.failure_action_ids]:
                 action_wrapper.failure_actions += [action for action in action_query]
 
