@@ -88,7 +88,7 @@ class JadieClient(discord.Client):
         logging.info(f'Command(s) '
                      f'{", ".join(repr(command_method) for command_method in disabled_command_list_by_database)} '
                      f'disabled by lack of database tables.' if disabled_command_list_by_database else
-                     'No commands disabled by lack of databasr tables.')
+                     'No commands disabled by lack of database tables.')
 
         # Return the two combined.
         return list(set(disabled_command_list_by_database + disabled_command_list_by_dotenv))
