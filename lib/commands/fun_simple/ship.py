@@ -86,10 +86,10 @@ async def ship(bot, message, argument):
         logging.debug(message, f'requested ship, shipped {partner_1} and {partner_2}')
 
         # Gets the PFP for partner 1 and 2.
-        partner_1_img = await temp_files.checkout_profile_picture_by_user_with_typing(
-            partner_1, message, 'ship', size=(ICON_SIZE, ICON_SIZE))
-        partner_2_img = await temp_files.checkout_profile_picture_by_user_with_typing(
-            partner_2, message, 'ship', size=(ICON_SIZE, ICON_SIZE))
+        partner_1_img = await temp_files.get_profile_picture_by_user_with_typing(
+            partner_1, message, size=(ICON_SIZE, ICON_SIZE))
+        partner_2_img = await temp_files.get_profile_picture_by_user_with_typing(
+            partner_2, message, size=(ICON_SIZE, ICON_SIZE))
 
         # Gets the image for the heart (aww!)
         heart_img = assets.open_image(HEART_IMG)
@@ -114,10 +114,6 @@ async def ship(bot, message, argument):
         partner_2_img.close()
         heart_img.close()
         together_canvas.close()
-
-        # Retire the profile pictures.
-        temp_files.retire_profile_picture_by_user(partner_1, message, 'ship')
-        temp_files.retire_profile_picture_by_user(partner_2, message, 'ship')
 
     # On CannotAccessUserlistError, log an error and send an apology message.
     except CannotAccessUserlistError:

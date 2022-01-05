@@ -13,14 +13,22 @@ import sys
 # The dict is keyed by the table name in SQL, and the result is the attribute set in this module.
 EXPECTED_DATABASE_TABLES = {
     'reminders': 'REMINDER_TABLE',
-    'hg_actions': 'HG_ACTION_TABLE',
-    'hg_action_wrappers': 'HG_ACTION_WRAPPER_TABLE',
     'hg_phases': 'HG_PHASES_TABLE',
+    'hg_actions': 'HG_ACTIONS_TABLE',
+    'hg_action_wrappers': 'HG_ACTION_WRAPPERS_TABLE',
+    'hg_current_game_phases': 'HG_CURRENT_GAME_PHASES_TABLE',
+    'hg_current_game_actions': 'HG_CURRENT_GAME_ACTIONS_TABLE'
 }
+
+# List of database tables that should be emptied on startup (if set in .env file).
+TABLES_TO_CLEAR_ON_INITIALIZE = [
+    'HG_CURRENT_GAME_PHASES_TABLE', 'HG_CURRENT_GAME_ACTIONS_TABLE'
+]
 
 # List of commands that use specific database tables.
 COMMANDS_USING_DATABASE_TABLES = {
-    'hungergames': ('HG_ACTION_TABLE', 'HG_ACTION_WRAPPER_TABLE', 'HG_PHASES_TABLE'),
+    'hungergames': ('HG_PHASES_TABLE', 'HG_ACTIONS_TABLE', 'HG_ACTION_WRAPPERS_TABLE', 'HG_CURRENT_GAME_PHASES_TABLE',
+                    'HG_CURRENT_GAME_ACTIONS_TABLE'),
     'remindme': ('REMINDER_TABLE',)
 }
 
@@ -28,6 +36,211 @@ COMMANDS_USING_DATABASE_TABLES = {
 BASE = None
 ENGINE = None
 SESSION = None
+
+
+def get_all(table):
+    """
+    Gets every row from the given table.
+
+    Args:
+        table (database table) : Which table to pull from.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple execution.
+    return SESSION.query(table)
+
+
+def get_filtered_by(table, **kwargs):
+    """
+    Gets a filtered set of rows from the given table according to the kwargs.
+    Can only do equal signs, no > or <.
+
+    Args:
+        table (database table) : Which table to pull from.
+        **kwargs : All variables from which to filter_by.
+                   Must refer to database columns equaling something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple execution.
+    return filter_by(SESSION.query(table), **kwargs)
+
+
+def get_filtered(table, *args):
+    """
+    Gets a filtered set of rows from the given table according to the args.
+    Can only do equal signs, no > or <.
+
+    Args:
+        table (database table) : Which table to pull from.
+        *args : All variables from which to filter by.
+                Must refer to database columns being less than or equal to or greater than something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple execution.
+    return filter(SESSION.query(table), *args)
+
+
+def get_all_joined(base_table, *tables_and_ons):
+    """
+    Gets every row from the given base_table, combined with the rest of the tables referenced above.
+
+    Args:
+        base_table (database table) : The starting table to pull from.
+        *tables_and_ons (database table, database column equality)[] : Tuples whose first item is the table to pull
+                                                                       from, and whose second item is the equality on
+                                                                       which to base the inner join.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Create the query step-by-step, starting with the base table.
+    base_query = join(SESSION.query(base_table), tables_and_ons)
+
+    # Return.
+    return base_query
+
+
+def get_filtered_by_joined(base_table, *tables_and_ons, **kwargs):
+    """
+    Gets a filtered set of rows from the given base_table, combined with the rest of the tables referenced above,
+    according to the provided kwargs.
+    Can only do equal signs, no > or <.
+
+    Args:
+        base_table (database table) : The starting table to pull from.
+        *tables_and_ons (database table, database column equality)[] : Tuples whose first item is the table to pull
+                                                                       from, and whose second item is the equality on
+                                                                       which to base the inner join.
+        **kwargs : All variables from which to filter_by.
+                   Must refer to database columns equaling something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple return.
+    return filter_by(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
+
+
+def delete_all(table):
+    """
+    Deletes all the entries from a table.
+
+    Args:
+        table (database table) : Which table to delete from.
+    """
+    # Simple one-line execution plus the commit.
+    SESSION.query(table).delete()
+    SESSION.commit()
+
+
+def delete_filtered(table, *args):
+    """
+    Deletes all the entries from a table where the attributes match.
+
+    Args:
+        table (database table) : Which table to delete from.
+        *args : All variables from which to filter by.
+    """
+    # Simple one-line execution plus the commit.
+    filter(SESSION.query(table), *args).delete()
+    SESSION.commit()
+
+
+def filter_by(base_query, **kwargs):
+    """
+    Filters the given query according to the kwargs.
+    Can only do equal signs, no > or <.
+
+    Args:
+        base_query (SQLAlchemy.Query) : The starting query to add onto.
+        **kwargs : All variables from which to filter by.
+                   Must refer to database columns equaling something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple return.
+    return base_query.filter_by(**kwargs)
+
+
+def filter(base_query, *args):
+    """
+    Filters the given query according to the args.
+    Can only do > or < signs, no equalities.
+
+    Args:
+        base_query (SQLAlchemy.Query) : The starting query to add onto.
+        *args : All variables from which to filter by.
+                Must refer to database columns being less than or equal to or greater than something else.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Simple return.
+    return base_query.filter(*args)
+
+
+def join(base_query, *tables_and_ons):
+    """
+    Joins the given tables onto the base_query according to the ON statements.
+
+    Args:
+        base_query (SQLAlchemy.Query) : The starting query to add onto.
+        *tables_and_ons (database table, database column equality)[] : Tuples whose first item is the table to pull
+                                                                       from, and whose second item is the equality on
+                                                                       which to base the inner join.
+
+    Returns:
+        SQLAlchemy.Query : The finalized query.
+    """
+    # Create new_query from base_query.
+    new_query = base_query
+
+    # Iterate through all tables_and_ons and add them slowly.
+    for table_and_on in tables_and_ons:
+        new_query = new_query.join(table_and_on[0], table_and_on[1])
+
+    # Return.
+    return new_query
+
+
+def insert_into_database(table, **kwargs):
+    """
+    Creates and inserts a new object into the database.
+
+    Args:
+        table (database table) : The starting table to instantiate the object from.
+        **kwargs : All the constructor arguments.
+
+    Returns:
+        new_object (database table object) : The object that was inserted.
+    """
+    # Create the object.
+    table_object = table(**kwargs)
+
+    # Commit.
+    commit_to_database(table_object)
+
+    # Return.
+    return table_object
+
+
+def commit_to_database(new_object):
+    """
+    Commits a new object to the database.
+
+    Arguments:
+        new_object (database table object) : The object to insert into the database.
+    """
+    # Add and commit.
+    SESSION.add(new_object)
+    SESSION.commit()
 
 
 def initialize():
@@ -59,7 +272,6 @@ def initialize():
         import traceback
         logging.error(traceback.format_exc().replace('\n\n', '\n').strip('\n'))
 
-
         # If we are supposed to exit, exit.
         if environment.get('EXIT_ON_DATABASE_FAILURE'):
             sys.exit(-1)
@@ -81,6 +293,12 @@ def initialize():
         # If so, set it as the attribute here.
         if hasattr(BASE.classes, database_table):
             setattr(this_module, module_table, getattr(BASE.classes, database_table))
+
+            # Next, see if we should delete from this table and do so if we should.
+            if environment.get('CLEAR_TEMPORARY_DATABASE_TABLES_ON_STARTUP') and \
+                    module_table in TABLES_TO_CLEAR_ON_INITIALIZE:
+                logging.debug(f'Deleting all rows from database table {database_table}.')
+                delete_all(getattr(this_module, module_table))
 
         # Database table does not exist, log warning.
         else:

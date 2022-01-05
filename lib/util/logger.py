@@ -31,7 +31,9 @@ LOG_LEVEL_OVERRIDES = {
     'discord': logging.WARNING,
     'urllib3.connectionpool': logging.WARNING,
     'PIL.image': logging.WARNING,
-    'asyncio': logging.WARNING
+    'asyncio': logging.WARNING,
+    'requests': logging.WARNING,
+    'PIL': logging.WARNING
 }
 
 

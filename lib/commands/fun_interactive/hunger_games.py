@@ -3,8 +3,9 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
-from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, UnableToFindUserError
-from lib.util import arguments, assets, discord_info, environment, messaging, misc, parsing, temp_files
+from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
+    UnableToFindUserError
+from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, temp_files
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
 
@@ -88,15 +89,10 @@ HG_MIDGAME_PREVIOUS_TERMS = ['p', 'prev', 'previous']
 HG_POSTGAME_REPLAY_TERMS = ['r', 'replay']
 
 # Winner / Ties
-HG_WINNER_TITLE = 'The Winner'
-HG_TIE_TITLE = 'The Winners'
-HG_WINNER_EVENT = 'The winner is {0}!'
-HG_WINNER_DEAD_EVENT = 'The winner is {0}! However, they died too, so it\'s sort of a hollow victory.'
-HG_TIE_EVENT = "Since they died at the same time, it's a tie between "
 HG_COMPLETE_PHASE_TYPES = ['win', 'tie']
 
 # Item List
-# # =================DEBUG==================
+# # =================SPECIAL==================
 # # 0: nothing
 # # 3000: 1 - 3 random items
 # # 4000: 1 weapon, 1 food item, 1 health item
@@ -138,319 +134,9 @@ HG_FOOD_ITEMS = [101, 102, 103, 104]
 HG_HEALTH_ITEMS = [201, 202, 203]
 HG_ALL_ITEMS = HG_WEAPON_ITEMS + HG_FOOD_ITEMS + HG_HEALTH_ITEMS
 
-# Actions
-HG_BLOODBATH_ACTIONS = [
-    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
-    {'players': 0, 'act': '{0} runs away from the Cornucopia.'},
-    {'players': 0, 'act': '{0} grabs a sword.', 'give': [2]},
-    {'players': 0, 'act': '{0} takes a spear from the Cornucopia.', 'give': [3]},
-    {'players': 0, 'act': '{0} finds a bag full of explosives.', 'give': [4]},
-    {'players': 0, 'act': '{0} grabs a backpack and retreats.', 'give': [4000]},
-    {'players': 0, 'act': '{0} takes only a pair of scissors.', 'give': [14]},
-    {'players': 0, 'act': '{0} takes a handful of throwing knives.', 'give': [5]},
-    {'players': 0, 'act': '{0} accidentally steps on a landmine and explodes.', 'kill': [0]},
-    {'players': 0, 'act': '{0} grabs a bottle of alcohol and a rag.', 'give': [11]},
-    {'players': 0, 'act': '{0} grabs a first aid kit and runs away.', 'give': [203]},
-    {'players': 0, 'act': '{0} grabs a bow and makes a getaway.', 'give': [12]},
-    {'players': 0, 'act': '{0} stubs their toe on a grenade. It explodes, killing them.', 'kill': [0]},
-    {'players': 0, 'act': '{0} escapes with a lighter and some rope.', 'give': [8]},
-    {'players': 1, 'act': '{0} rips a mace out of {1}\'s hands.', 'give': [1, 0]},
-    {'players': 1, 'act': '{0} throws a knife into {1}\'s head.', 'kill': [1]},
-    {'players': 1, 'act': '{0} strangles {1} after engaging in a fist fight.', 'kill': [1], 'credit': [0]},
-    {'players': 1, 'act': '{0} stabs {1} with a tree branch.', 'kill': [1], 'credit': [0]},
-    {'players': 1, 'act': '{0} breaks {1}\'s nose for a basket of bread.', 'hurt': [1], 'credit': [0]},
-    {'players': 2, 'act': '{0}, {1}, and {2} work together to get as many supplies as possible.',
-     'give': [3000, 3000, 3000]},
-    {'players': 2, 'act': '{0} and {1} work together to drown {2}.', 'kill': [2], 'credit': [0, 1]},
-    {'players': 2, 'act': '{0}, {1}, and {2} get into a fight. {1} triumphantly kills them both.', 'kill': [0, 2],
-     'credit': [1]}
-]
-HG_NORMAL_DAY_ACTIONS = {
-    'trigger': [
-        {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
-                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out '
-                                                                        'of the bushes, ambushing {1} and killing '
-                                                                        'them.', 'kill': [1], 'give': [-302, 0]}],
-         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.',
-                   'kill': [0]}]},
-        {'needs': 304, 'chance': 0.75, 'success': [{'players': 1, 'act': '{0} is attacked by {1}, but {0} has the high '
-                                                                         'ground, so they manage to defeat {1}.',
-                                                    'give': [-304, 0], 'kill': [1],
-                                                    'credit': [0]}], 'fail': [{'players': 0, 'give': [-304]}]},
-        {'needs': 1, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their mace to beat {1} to death.',
-                                                 'kill': [1], 'credit': [0]}]},
-        {'needs': 101, 'chance': 0.1, 'success': [{'players': 0, 'act': '{0} pours some water on their head.',
-                                                   'give': [-101]}]},
-        {'needs': 2, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} cuts down {1} with their sword.',
-                                                 'kill': [1], 'credit': [0]},
-                                                {'players': 1, 'act': '{0} attempts to swing their sword at {1}, '
-                                                                      'but {1} is able to disarm them and use it '
-                                                                      'against them.', 'kill': [0], 'give': [-2, 2]}]},
-        {'needs': 3, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} accidentally impales themselves with a '
-                                                                      'spear.', 'kill': [0]},
-                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1],
-                                                 'credit': [0],
-                                                 'give': [-3, 0]},
-                                                {'players': 1, 'act': '{0} impales {1} with a spear.', 'kill': [1],
-                                                 'credit': [0],
-                                                 'give': [-3, 0]}]},
-        {'needs': 4, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} creates a landmine from their explosives. '
-                                                                      'An hour later, {1} steps on it and explodes.',
-                                                 'kill': [1], 'credit': [0],
-                                                 'give': [-4, 0]}, {'players': 0, 'act': '{0} creates a landmine from '
-                                                                                         'their explosives.'},
-                                                {'players': 0, 'act': '{0} attempts to create a landmine from their '
-                                                                      'explosives, '
-                                                                      'but blows themselves up in the process.',
-                                                 'kill': [0]}]},
-        {'needs': 5, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} lands a throwing knife right in the middle '
-                                                                      'of {1}\'s chest.',
-                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
-                                                {'players': 1, 'act': "{0} lands a throwing knife directly into {1}'s "
-                                                                      "forehead.",
-                                                 'kill': [1], 'give': [-5, 0], 'credit': [0]},
-                                                {'players': 1, 'act': '{0} throws a throwing knife through {1}\'s arm. '
-                                                                      '{1} rips it out and throws it back at {0}, '
-                                                                      'killing them.', 'kill': [0], 'credit': [1],
-                                                 'give': [-5, 0], 'hurt': [1]}]},
-        {'needs': 6, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} brutally executes {1} with a hatchet.',
-                                                 'kill': [1],
-                                                 'credit': [0]}]},
-        {'needs': 7, 'chance': 0.2, 'success': [{'players': 1, 'act': '{0} uses their slingshot to shoot {1} out of a '
-                                                                      'tree, killing them.',
-                                                 'kill': [1], 'credit': [0]}]},
-        {'needs': 8, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} creates a net from their rope, which they '
-                                                                      'use to catch food.',
-                                                 'give': [8888]}]},
-        {'needs': 11, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} spots {1} from a distance and throws their '
-                                                                       'molotov cocktail. It burns {1} alive.',
-                                                  'give': [-11, 0]},
-                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their '
-                                                                       'molotov cocktail. '
-                                                                       'It burns {1} alive.', 'give': [-11, 0]},
-                                                 {'players': 1, 'act': '{0} spots {1} from a distance and throws their '
-                                                                       'molotov cocktail. They forgot to light it, '
-                                                                       'though, so it just smashes against their back.',
-                                                  'give': [-11, 0], 'hurt': [1]}]},
-        {'needs': 12, 'chance': 0.7, 'success': [{'players': 0, 'act': '{0} practices their archery.'}], 'fail': [
-            {'players': 1, 'act': '{0} successfully shoots an arrow into {1}\'s head.', 'kill': [1], 'credit': [0]},
-            {'players': 1, 'act': '{0} shoots an arrow at {1}, but misses, giving away their position. They drop the '
-                                  'bow and run.', 'give': [-12, 0]}]},
-        {'needs': 13, 'chance': 0.3, 'success': [{'players': 1, 'act': '{0} poisons {1}\'s drink. They drink it and '
-                                                                       'die.', 'give': [-13, 0],
-                                                  'credit': [0]}]},
-        {'needs': 301, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, '
-                                                                        'and {4}.', 'give': [9999, 0, 0, 0, 0]},
-                                                  {'players': 0, 'act': '{0} defends their stronghold.'}]},
-        {'needs': 303, 'chance': 0.9, 'success': [{'players': 4, 'act': '{0} has their camp raided by {1}, {2}, {3}, '
-                                                                        'and {4}.', 'give': [9999, 0, 0, 0, 0]},
-                                                  {'players': 0, 'act': '{0} defends their stronghold.'}]},
-        {'needs': 103, 'chance': 0.1, 'success': [{'players': 2, 'act': '{0} successfully uses food as a motive to '
-                                                                        'coerce {1} into killing {2}.',
-                                                   'kill': [2], 'credit': [1], 'give': [-103, 103, 0]}]},
-        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1,
-                                                   'act': '{1} falls into {0}\'s spike trap while wandering through '
-                                                          'the forest.', 'give': [-305]}]},
-        {'needs': 306, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} really wishes they had their clothes '
-                                                                        'right now.'},
-                                                  {'players': 0, 'act': '{0} is still naked.'},
-                                                  {'players': 0, 'act': '{0} struts around confidently with their bare '
-                                                                        'ass out.'},
-                                                  {'players': 0, 'act': '{0} receives fresh clothes from a sponsor. '
-                                                                        'They are eternally grateful.', 'give': [-306]},
-                                                  {'players': 1, 'act': '{1} comes across {0} walking around naked. '
-                                                                        'They get super creeped out.'},
-                                                  {'players': 1, 'act': '{1} comes across {0} walking around naked. '
-                                                                        'They find it hilarious.'},
-                                                  {'players': 2, 'act': '{1} comes across {0} walking around naked. '
-                                                                        'They laugh so hard that it alerts {2} to '
-                                                                        'their position, who then comes and kills them '
-                                                                        'both.', 'kill': [0, 1], 'credit': [2, 2]}]}
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} receives clean water from an unknown sponsor.', 'give': [101]},
-        {'players': 0, 'act': '{0} receives medical supplies from an unknown sponsor.', 'give': [201]},
-        {'players': 0, 'act': '{0} constructs a shack.', 'give': [301]},
-        {'players': 0, 'act': '{0} discovers a river.', 'give': [102]},
-        {'players': 0, 'act': '{0} travels to higher ground.', 'give': [304]},
-        {'players': 0, 'act': '{0} tries to sleep through the day.'},
-        {'players': 0, 'act': '{0} discovers a cave.', 'give': [303]},
-        {'players': 0, 'act': '{0} finds a hatchet embedded into a tree.', 'give': [6]},
-        {'players': 0, 'act': '{0} camouflages themselves in the bushes.', 'give': [302]},
-        {'players': 0, 'act': '{0} dies of dysentery.', 'kill': [0]},
-        {'players': 0, 'act': '{0} cries to themselves.'},
-        {'players': 0, 'act': '{0} wanders around aimlessly.'},
-        {'players': 0, 'act': '{0} makes a slingshot.', 'give': [7]},
-        {'players': 0, 'act': '{0} eats some berries.'},
-        {'players': 0, 'act': '{0} makes a wooden spear.', 'give': [3]},
-        {'players': 0, 'act': '{0} picks flowers.'},
-        {'players': 0, 'act': '{0} is stung by bees.', 'hurt': [0]},
-        {'players': 0, 'act': '{0} is pricked by thorns while picking berries.', 'hurt': [0]},
-        {'players': 0, 'act': '{0} finds some rope.', 'give': [8]},
-        {'players': 0, 'act': '{0} receives a bottle of poison from an unknown sponsor.', 'give': [13]},
-        {'players': 0, 'act': '{0} eats some poisonous berries by accident.', 'kill': [0]},
-        {'players': 1, 'act': '{0} uses a rock to break {1}\'s arm.', 'hurt': [1]},
-        {'players': 1, 'act': '{0} and {1} split up to look for resources.'},
-        {'players': 1, 'act': '{0} sprains their ankle while running away from {1}.', 'hurt': [0]},
-        {'players': 1, 'act': '{0} and {1} work together for the day.'},
-        {'players': 1, 'act': '{0} tracks down and kills {1}.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} defeats {1} in a fight, but spares their life.', 'hurt': [1]},
-        {'players': 1, 'act': '{0} begs for {1} to kill them. They refuse, keeping {0} alive.'},
-        {'players': 1, 'act': '{0} pushes {1} off a cliff.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} engage in a fist fight, but accidentally fall off a cliff together.',
-         'kill': [0, 1]},
-        {'players': 1, 'act': '{0} attempts to climb a tree, but falls on {1}, killing them both.', 'kill': [0, 1],
-         'credit': [0]},
-        {'players': 1, 'act': '{0} takes a minute to wash themselves off in a river. {1} steals their clothes.',
-         'give': [306, 201]},
-        {'players': 2, 'act': '{0} pushes a boulder down a hill, which flattens both {1} and {2}.', 'kill': [1, 2],
-         'credit': [0, 0]},
-        {'players': 2, 'act': '{0} overhears {1} and {2} talking in the distance.'},
-        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {2}.', 'kill': [2], 'credit': [1]},
-        {'players': 3, 'act': '{0} forces {1} to kill either {2} or {3}. They choose {3}.', 'kill': [3], 'credit': [1]}
-    ]
-}
-HG_NORMAL_NIGHT_ACTIONS = {
-    'trigger': [
-        {'needs': 9, 'chance': 0.2, 'success': [{'players': 0, 'act': '{0} uses their shovel to create a spike trap in '
-                                                                      'the forest.', 'give': [305]}]},
-        {'needs': 302, 'chance': 0.8, 'success': [{'players': 0, 'act': '{0} continues to hide in the bushes.'},
-                                                  {'players': 1, 'act': '{0} waits until the perfect moment to pop out '
-                                                                        'of the bushes, ambushing {1} and killing '
-                                                                        'them.', 'kill': [1], 'credit': [0],
-                                                   'give': [-302, 0]}],
-         'fail': [{'players': 1, 'act': '{0} is discovered by {1}, who immediately bashes in their skull with a rock.',
-                   'kill': [0], 'credit': [1]}]},
-        {'wounded': True, 'needs': 203, 'chance': 1, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
-                                                                  'heal': [0], 'give': [-203]}]},
-        {'wounded': True, 'needs': 201, 'chance': 0.9, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
-                                                                    'heal': [0], 'give': [-201]}]},
-        {'wounded': True, 'needs': 202, 'chance': 0.75, 'success': [{'players': 0, 'act': '{0} tends to their wounds.',
-                                                                     'heal': [0], 'give': [-202]}]},
-        {'wounded': True, 'chance': 0.6, 'success': [{'players': 0, 'act': '{0} tends to their wounds.', 'heal': [0],
-                                                      'give': [-202]}],
-         'fail': [{'players': 0, 'act': '{0} dies from their wounds.', 'kill': [0]}]},
-        {'needs': 303, 'chance': 0.2, 'success': [
-            {'players': 1, 'act': '{0} has their cave discovered by {1}, who pushes them onto a stalagmite, impaling '
-                                  'them.', 'kill': [0], 'credit': [1]},
-            {'players': 1, 'act': '{0}\'s stronghold is discovered by {1}, who then strangles {0}.', 'kill': [0],
-             'credit': [1]}],
-         'fail': [{'players': 0, 'act': '{0} sleeps peacefully in their cave for the night.', 'give': [-303]}]},
-        {'needs': 9, 'chance': 0.1, 'success': [{'players': 1, 'act': '{0} uses their shovel to bury {1} alive.',
-                                                 'kill': [1], 'credit': [0]}]},
-        {'needs': 14, 'chance': 0.3, 'success': [
-            {'players': 1, 'act': '{0} stabs a hole right through {1}\'s throat using their scissors.', 'kill': [1],
-             'credit': [0]}]},
-        {'needs': 104, 'chance': 1, 'success': [{'players': 0, 'act': '{0} cooks their meat over the fire.',
-                                                 'give': [-104]}]},
-        {'needs': 305, 'chance': 0.2, 'success': [{'players': 1, 'act': '{1} falls into {0}\'s spike trap while '
-                                                                        'wandering through the forest.',
-                                                   'give': [-305]}]}
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} passes out from exhaustion.'},
-        {'players': 0, 'act': '{0} screams for help.'},
-        {'players': 0, 'act': '{0} questions their sanity.'},
-        {'players': 0, 'act': '{0} stays awake all night.'},
-        {'players': 0, 'act': '{0} thinks about winning.'},
-        {'players': 0, 'act': '{0} dies from hypothermia.', 'kill': [0]},
-        {'players': 0, 'act': '{0} prays to every god they can think of.'},
-        {'players': 0, 'act': '{0} cannot handle the circumstances and commits suicide.', 'kill': [0]},
-        {'players': 0, 'act': '{0} cries themselves to sleep.'},
-        {'players': 0, 'act': '{0} thinks about home.'},
-        {'players': 0, 'act': '{0} loses sight of where they are.'},
-        {'players': 0, 'act': '{0} receives fresh food from an unknown sponsor.', 'give': [103]},
-        {'players': 0, 'act': '{0} receives explosives from an unknown sponsor.', 'give': [4]},
-        {'players': 1, 'act': '{0} convinces {1} to snuggle.'},
-        {'players': 1, 'act': '{0} and {1} hold hands.'},
-        {'players': 1, 'act': '{0} pushes {1} into their own fire, burning them alive.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} talk about their place in the universe.'},
-        {'players': 1, 'act': '{0} and {1} make up stories to entertain themselves.'},
-        {'players': 2, 'act': '{0} and {1} team up to ambush {2}.', 'kill': [2], 'credit': [0, 1]},
-        {'players': 3, 'act': '{0} fends {1}, {2}, and {3} away from their fire.'},
-        {'players': 5, 'act': '{0}, {1}, and {2} unsuccessfully ambush {3}, {4}, and {5}, who kill them instead.',
-         'kill': [0, 1, 2], 'credit': [3, 4, 5, 3, 4, 5, 3, 4, 5]},
-        {'players': 5, 'act': '{0}, {1}, and {2} successfully ambush {3}, {4}, and {5}.', 'kill': [3, 4, 5],
-         'credit': [0, 1, 2, 0, 1, 2, 0, 1, 2]}
-    ]
-}
-HG_RESTOCK_EVENT = {
-    'trigger': [
-
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} decides not to go to the feast.'},
-        {'players': 0, 'act': '{0} grabs a bundle of dry clothes and runs.'},
-        {'players': 1, 'act': '{0} destroys {1}\'s memoirs out of spite.'},
-        {'players': 0, 'act': '{0} steps on a landmine near the Cornucopia.', 'kill': [0]},
-        {'players': 1, 'act': '{0} and {1} fight over raw meat, but {1} gives up and flees.', 'give': [104, 0]}
-    ]
-}
-HG_FIRE_EVENT = {
-    'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
-                                                                     'into the fire.', 'kill': [1], 'credit': [0]}]}
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': 'A fireball strikes {0}, killing them.', 'kill': [0]},
-        {'players': 0, 'act': '{0} is singed by the flames, but survives.', 'hurt': [0]},
-        {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
-        {'players': 1, 'act': '{0} pushes {1} into a river, sacrificing themselves.', 'kill': [0]},
-        {'players': 1, 'act': '{0} falls to the ground, but kicks {1} hard enough to push them into the fire.',
-         'kill': [0, 1], 'credit': [0]},
-        {'players': 1, 'act': '{0} kills {1} in order to utilize a body of water safely.', 'kill': [1], 'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} fail to find a safe spot and suffocate.', 'kill': [0, 1]}
-    ]
-}
-HG_FLOOD_EVENT = {
-    'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
-                                                                     'into the water.', 'kill': [1], 'credit': [0]}]}
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} falls into the water, but miraculously survives.'},
-        {'players': 0, 'act': '{0} is swept away by the flood.', 'kill': [0]},
-        {'players': 0, 'act': '{0} climbs up a tree, but the waters snap the tree in half, taking the whole thing out.',
-         'kill': [0]},
-        {'players': 1, 'act': '{0} helps {1} get to higher ground.'},
-        {'players': 1, 'act': '{0} pushes {1} into the water.', 'kill': [1], 'credit': [0]},
-        {'players': 2, 'act': '{0} throws {1} and {2} to safety, sacrificing themselves.', 'kill': [0]},
-    ]
-}
-HG_TORNADO_EVENT = {
-    'trigger': [
-        {'needs': 10, 'chance': 1, 'success': [{'players': 1, 'act': '{0} uses their net to capture {1} and toss them '
-                                                                     'into the storm.'}]}
-    ],
-    'normal': [
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} survives.'},
-        {'players': 0, 'act': '{0} is carried away by the storm.', 'kill': [0]},
-        {'players': 1, 'act': '{0} lets {1} into their shelter.'},
-        {'players': 1, 'act': '{0} kicks {1} away, letting them be sucked up by the tornado.', 'kill': [1],
-         'credit': [0]},
-        {'players': 1, 'act': '{0} and {1} run away from the storm together, but as {1} is carried away, they grab '
-                              '{0}, leading them both to their deaths.', 'kill': [0, 1], 'credit': [1]},
-        {'players': 1, 'act': '{0} can\'t handle the circumstances and offers themselves to the storm.', 'kill': [0]},
-    ]
-}
+# Other Generation Stuff
 HG_EVENT_DEFAULT_CHANCE = 0.2
-HG_EVENTS = [
-    (HG_FLOOD_EVENT, 'The Flood', 'A vicious flood suddenly appears out of nowhere and sweeps through the Arena.'),
-    (HG_FIRE_EVENT, 'The Fire', 'A sudden bolt of lightning sparks a fire, which explodes into a massive Arena-wide '
-                                'forest fire.'),
-    (HG_TORNADO_EVENT, 'The Tornado', 'Winds in the Arena pick up and a tornado begins to tear its way through the '
-                                      'Arena.'),
-    (HG_RESTOCK_EVENT, 'The Replenishing', 'The Cornucopia is restocked with food, weapons, and medical supplies.')
-]
+HG_EVENT_DAYNIGHT_MINIMUM = 4
 
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
@@ -564,16 +250,12 @@ async def hunger_games_detect_expiration(bot, message):
         if (now - hg_dict['updated']).seconds >= EXPIRE_SECONDS:
 
             # Delete it.
+            clear_current_game_from_database(hg_dict)
             del CURRENT_GAMES[hg_key]
 
             # Retire the existing players' profile pictures.
             if 'players' in hg_dict:
-                if isinstance(hg_dict['players'], dict):
-                    temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-                    temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
-                else:
-                    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
-                    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+                temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
             # Send a message quoting inactivity.
             logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
@@ -970,7 +652,7 @@ async def hunger_games_update_midgame(hg_key, hg_dict, response, message):
                 await hunger_games_update_postgame_replay(hg_key, hg_dict, response, message)
 
     # If the game isn't finished generating yet.
-    elif any([response.startswith(pre) for pre in HG_MIDGAME_BE_PATIENT_TERMS]):
+    elif any([response[0] == value for value in HG_MIDGAME_BE_PATIENT_TERMS]):
         await hunger_games_update_midgame_still_generating(hg_key, hg_dict, response, message)
 
 
@@ -1002,8 +684,12 @@ async def hunger_games_update_midgame_next(hg_key, hg_dict, response, message):
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
+    if not do_increment(hg_dict, action_count, do_previous=False):
+        return
+
+    # Send the midgame message.
     async with message.channel.typing():
-        await send_midgame(message, hg_dict, action_count, do_previous=False)
+        await send_midgame(message, hg_dict)
 
 
 async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, message):
@@ -1034,8 +720,12 @@ async def hunger_games_update_midgame_previous(hg_key, hg_dict, response, messag
         await hunger_games_update_cancel_abort(hg_key, hg_dict, response, message)
 
     # Perform the midgame incrementing.
+    if not do_increment(hg_dict, action_count, do_previous=True):
+        return
+
+    # Send the midgame message.
     async with message.channel.typing():
-        await send_midgame(message, hg_dict, action_count, do_previous=True)
+        await send_midgame(message, hg_dict)
 
 
 async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message):
@@ -1056,12 +746,12 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
         await messaging.send_text_message(message, 'Thanks for playing!')
 
         # Delete the game.
+        clear_current_game_from_database(hg_dict)
         del CURRENT_GAMES[hg_key]
 
         # Retire the existing players' profile pictures.
         if 'players' in hg_dict:
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
@@ -1097,14 +787,17 @@ async def hunger_games_update_postgame_new_game(hg_key, hg_dict, response, messa
         response (str[]) : A list of strings representing the response.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
-    await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
+    # Remove all the data from the database.
+    clear_current_game_from_database(hg_dict)
 
     # Reset all the post-generation crap in the dict.
-    hg_dict['generated'] = False
-    hg_dict['phases'] = None
-    hg_dict['complete'] = False
+    del hg_dict['generated']
+    del hg_dict['phases']
+    del hg_dict['complete']
     hg_dict['past_pregame'] = False
+
+    # This reuses all the code from hunger_games_update_pregame_shuffle, so call that.
+    await hunger_games_update_pregame_shuffle(hg_key, hg_dict, response, message)
 
 
 async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message):
@@ -1118,20 +811,20 @@ async def hunger_games_update_postgame_replay(hg_key, hg_dict, response, message
         response (str[]) : A list of strings representing the response.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # Restore the player objects.
-    hg_dict['players'] = hg_dict['player_objects']
+    # Start typing.
+    async with message.channel.typing():
 
-    # Retire their profile pictures.
-    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+        # Remove all the data from the database.
+        clear_current_game_from_database(hg_dict)
 
-    # Reset all the post-generation crap in the dict.
-    hg_dict['generated'] = False
-    hg_dict['phases'] = None
-    hg_dict['complete'] = False
-    hg_dict['past_pregame'] = False
+        # Reset all the post-generation crap in the dict.
+        del hg_dict['generated']
+        del hg_dict['phases']
+        del hg_dict['complete']
+        hg_dict['past_pregame'] = False
 
-    # Send the new pregame embed.
-    await send_pregame(message, hg_dict)
+        # Send the new pregame embed.
+        await send_pregame(message, hg_dict)
 
 
 async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message):
@@ -1149,16 +842,12 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
     await messaging.send_text_message(message, 'Hunger Games canceled.')
 
     # Delete it.
+    clear_current_game_from_database(hg_dict)
     del CURRENT_GAMES[hg_key]
 
     # Retire the existing players' profile pictures.
     if 'players' in hg_dict:
-        if isinstance(hg_dict['players'], dict):
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
-        else:
-            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
-            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hunger_games_full')
+        temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
 
 async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
@@ -1179,6 +868,32 @@ async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
     hg_dict['confirm_cancel'] = False
 
 
+def clear_current_game_from_database(hg_dict):
+    """
+    Clears all the rows belonging to the given game from the database.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # If the dict doesn't have phases in it, return.
+    if 'phases' not in hg_dict:
+        return
+
+    # Iterate through the phases in the dict.
+    for phase in hg_dict['phases']:
+        current_game_phase = get_current_game_phase_by_id(phase[1])
+
+        # For every game action id in the current game phase, delete it.
+        if current_game_phase.game_action_ids:
+            for game_action_id in current_game_phase.game_action_ids:
+                database.delete_filtered(database.HG_CURRENT_GAME_ACTIONS_TABLE,
+                                         database.HG_CURRENT_GAME_ACTIONS_TABLE.game_action_id == game_action_id)
+
+        # Delete the phase.
+        database.delete_filtered(database.HG_CURRENT_GAME_PHASES_TABLE,
+                                 database.HG_CURRENT_GAME_PHASES_TABLE.game_phase_id == phase[1])
+
+
 async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     """
     Sends the pregame roster thing.
@@ -1188,17 +903,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
         hg_dict (dict) : The full game dict.
         title (str) : The title of the embed, if any.
     """
-    # Get all the player data.
-    player_data = [(player.display_name,
-                    temp_files.checkout_profile_picture_by_user(player, message, 'hg_pregame',
-                                                                size=(HG_ICON_SIZE, HG_ICON_SIZE)), 0)
-                   for player in hg_dict['players']]
-
     # Generate the player statuses image.
-    image = makeimage_player_statuses(player_data)
-
-    # Retire profile pictures.
-    temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_pregame')
+    image = makeimage_player_statuses([0 for player in hg_dict['players']], hg_dict['players'])
 
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
@@ -1206,20 +912,14 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
                                                'Disallow' if hg_dict['uses_bots'] else 'Allow'))
 
 
-async def send_midgame(message, hg_dict, count, do_previous):
+async def send_midgame(message, hg_dict):
     """
     Sends the midgame message after incrementing the phase.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
         hg_dict (dict) : The full game dict.
-        count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
     """
-    # Performs the increment; if it wasn't done, then just return.
-    if not do_increment(hg_dict, count, do_previous):
-        return
-
     # Gets the new current phase.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
@@ -1232,7 +932,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
             footer_str = HG_POSTGAME_BEGINNING_DESCRIPTION
 
         # At the end, then we can't go forward.
-        elif current_phase['type'] == 'kills':
+        elif current_phase[0] == 'kills':
             footer_str = HG_FINALE_DESCRIPTION
 
         # Anywhere else, have both.
@@ -1247,7 +947,7 @@ async def send_midgame(message, hg_dict, count, do_previous):
             footer_str = HG_BEGINNING_DESCRIPTION
 
         # At the end, then we can't go forward.
-        elif current_phase['type'] in ['win', 'tie']:
+        elif current_phase[0] in ['win', 'tie']:
             footer_str = HG_THE_END_DESCRIPTION
             hg_dict['complete'] = True
 
@@ -1256,74 +956,104 @@ async def send_midgame(message, hg_dict, count, do_previous):
             footer_str = HG_MIDGAME_DESCRIPTION
 
     # Creates embed for act pages.
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
 
         # Get the values for the action indexes.
         action_min_index = hg_dict['action_min_index']
         action_max_index = hg_dict['action_max_index']
 
+        # Get the phase and the actions from the database.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+        actions = get_current_game_actions_by_current_game_phase_and_action_indexes(
+            phase_object, action_min_index, action_max_index)
+
         # Create the embed title.
-        title = current_phase['title'] + (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
-                                          f', Actions {action_min_index + 1} - {action_max_index + 1}') + \
-                (f' / {len(current_phase["act"])}' if current_phase['done'] else '')
+        title = phase_object.title + \
+                (f', Action {action_min_index + 1}' if action_min_index == action_max_index else
+                 f', Actions {action_min_index + 1} - {action_max_index + 1}') + \
+                (f' / {len(phase_object.game_action_ids)}' if phase_object.complete else '')
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], action_min_index, action_max_index,
-                             current_phase['desc'] if action_min_index == 0 else None),
+            makeimage_action(actions, hg_dict['players'], phase_object.description if action_min_index == 0 else None),
             title, HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for win AND tie pages.
-    elif current_phase['type'] in ['win', 'tie']:
+    elif current_phase[0] == 'win':
+
+        # Get the phase and the actions from the database.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+        actions = get_current_game_actions_by_current_game_phase_and_action_indexes(
+            phase_object, 0, 0)
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_action(hg_dict['players'], current_phase['act'], 0, 0, current_phase['desc']),
-            current_phase['title'], HG_EMBED_COLOR, footer_str
+            makeimage_action(actions, hg_dict['players'], phase_object.description), phase_object.title,
+            HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for status pages.
-    elif current_phase['type'] == 'status':
+    elif current_phase[0] == 'status':
+
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Get the new death count.
+        new_deaths = len([status for status in phase_object.player_statuses if status == 1])
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']]),
-            f'{current_phase["new"]} cannon shot{"" if current_phase["new"] == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
+            makeimage_player_statuses(phase_object.player_statuses, hg_dict['players']),
+            f'{new_deaths} cannon shot{"" if new_deaths == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
             footer_str
         )
 
     # Creates embed for placement pages.
-    elif current_phase['type'] == 'place':
+    elif current_phase[0] == 'place':
+
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Reorganize the players to be in the player status order.
+        ordered_placements = sorted(zip(phase_object.player_statuses, hg_dict['players']), key=lambda pair: pair[0])
+        sorted_players = [player for place, player in ordered_placements]
+        sorted_placements = [place for place, player in ordered_placements]
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']],
-                                      placement=max([2] + [player_tuple[2] for player_tuple in current_phase['all']])),
+            makeimage_player_statuses(sorted_placements, sorted_players,
+                                      placement=max([1] + phase_object.player_statuses)),
             'Placements', HG_EMBED_COLOR, footer_str
         )
 
     # Creates embed for killcount pages.
-    elif current_phase['type'] == 'kills':
+    elif current_phase[0] == 'kills':
+
+        # Get the phase.
+        phase_object = get_current_game_phase_by_id(current_phase[1])
+
+        # Reorganize the players to be in the player status order.
+        ordered_kills = sorted(zip(phase_object.player_statuses, hg_dict['players']), key=lambda pair: pair[0])
+        ordered_kills.reverse()
+        sorted_players = [player for place, player in ordered_kills]
+        sorted_kills = [place for place, player in ordered_kills]
 
         # Create and send the embed.
         await messaging.send_image_based_embed(
             message,
-            makeimage_player_statuses([(player_tuple[0], hg_dict['players'][player_tuple[1]], player_tuple[2])
-                                       for player_tuple in current_phase['all']],
-                                      kills=max([1] + [player_tuple[2] for player_tuple in current_phase['all']])),
+            makeimage_player_statuses(sorted_kills, sorted_players,
+                                      kills=max([1] + phase_object.player_statuses)),
             'Kills', HG_EMBED_COLOR, footer_str
         )
 
     # If there's an unexpected phase type, raise an exception.
     else:
-        raise InvalidHungerGamesPhaseError(current_phase['type'])
+        raise InvalidHungerGamesPhaseError(current_phase[0])
 
 
 def do_increment(hg_dict, count, do_previous):
@@ -1342,11 +1072,11 @@ def do_increment(hg_dict, count, do_previous):
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
 
     # If the current phase is an act, then its increment changes based on the indexes.
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
         return do_increment_act(hg_dict, count, do_previous)
 
     # Otherwise, increment for other normal types of pages.
-    return do_increment_non_act(hg_dict, count, do_previous, current_phase['type'])
+    return do_increment_non_act(hg_dict, count, do_previous, current_phase[0])
 
 
 def do_increment_act(hg_dict, count, do_previous):
@@ -1384,14 +1114,14 @@ def do_increment_act(hg_dict, count, do_previous):
 
     # If we're going forwards and the previous action was the end of the phase,
     # then add 1 to the current_phase and return True.
-    if hg_dict['action_max_index'] == len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1:
+    if hg_dict['action_max_index'] == hg_dict['phases'][hg_dict['current_phase']][2] - 1:
         hg_dict['current_phase'] += 1
         return do_increment_act_check(hg_dict, count, do_previous)
 
     # Otherwise, increment the action indexes and return True.
     hg_dict['action_min_index'] = hg_dict['action_max_index'] + 1
     hg_dict['action_max_index'] = min(hg_dict['action_max_index'] + count,
-                                      len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
+                                      hg_dict['phases'][hg_dict['current_phase']][2] - 1)
     return True
 
 
@@ -1402,11 +1132,11 @@ def do_increment_non_act(hg_dict, count, do_previous, phase_type):
     Arguments:
         hg_dict (dict) : The full game dict.
         count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
+        do_previous (bool) : Whether to go backwards.
         phase_type (str) : The current phase's type.
 
     Returns:
-        bool : Whether or not the hg_dict was incremented.
+        bool : Whether the hg_dict was incremented.
     """
     # If we went backwards, then just subtract 1 from the current phase.
     if do_previous:
@@ -1439,50 +1169,42 @@ def do_increment_act_check(hg_dict, count, do_previous):
     """
     # Detect if the NEW current phase is an act.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
-    if current_phase['type'] == 'act':
+    if current_phase[0] == 'act':
 
         # If so, then set the action indexes depending on whether or not we're going backwards.
         # Backwards gets put at the end.
         if do_previous:
-            hg_dict['action_max_index'] = len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1
+            hg_dict['action_max_index'] = current_phase[2] - 1
             hg_dict['action_min_index'] = max(hg_dict['action_max_index'] - count + 1, 0)
 
         # Forwards gets put at the front.
         else:
             hg_dict['action_min_index'] = 0
-            hg_dict['action_max_index'] = min(count - 1, len(hg_dict['phases'][hg_dict['current_phase']]['act']) - 1)
+            hg_dict['action_max_index'] = min(count - 1, current_phase[2] - 1)
 
     # Return True.
     return True
         
 
-def makeimage_player_statuses(players, placement=0, kills=0):
+def makeimage_player_statuses(player_statuses, players, placement=False, kills=False):
     """
     Generates a player status image.
     This can also be used to make player placement images and kill count lists.
 
     Arguments:
-        players (str, PIL.Image, int)[] : The players, organized as a list of tuples.
-                                          The first entry should be the player's display name.
-                                          The second entry should be the player's icon.
-                                          The third entry should be one of three values if placement + kills are False:
-                                              0: Alive
-                                              1: Newly Dead
-                                              2: Dead
-                                         Otherwise, they should be the placement or the kill count of each player.
-        placement (int) : Whether or not the third value in players is player placements.
-                          Should be the lowest place when used.
-        kills (int) : Whether or not the third value in players is kills.
-                      Should be the most kills when used.
+        player_statuses (int[]) : The player statuses, with indexes matching the players list.
+        players (discord.User[]) : The player list.
+        placement (bool) : Whether the player_statuses values are player placements.
+        kills (int) : Whether the player_statuses values are kill counts.
     """
     # Splits all the players into their own rows.
     players_split = []
     current_split = []
-    for player in players:
+    for i in range(len(players)):
         if len(current_split) == HG_PLAYERSTATUS_WIDTHS[len(players)]:
             players_split.append(current_split)
             current_split = []
-        current_split.append(player)
+        current_split.append(i)
     players_split.append(current_split)
 
     # Gets the image width and height.
@@ -1490,8 +1212,8 @@ def makeimage_player_statuses(players, placement=0, kills=0):
     image_height = HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + HG_ICON_BUFFER * (len(players_split) + 1)
 
     # Creates all the images and drawers that will help us make the new image.
-    player_statuses = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
-    player_drawer = ImageDraw.Draw(player_statuses)
+    player_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    player_drawer = ImageDraw.Draw(player_image)
     player_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
 
     # Sets the current y at the buffer between the top and the first icon.
@@ -1503,14 +1225,14 @@ def makeimage_player_statuses(players, placement=0, kills=0):
         current_x = int((image_width - (len(split) * HG_ICON_SIZE + (len(split) - 1) * HG_ICON_BUFFER)) / 2)
 
         # Then, iterate through each player in each row.
-        for player in split:
+        for i in split:
 
             # Gets pfp, pastes onto image.
-            makeimage_pfp(player[1].copy(), player_statuses, player_drawer, current_x, current_y,
-                          player[2] and not placement and not kills)
+            makeimage_pfp(players[i], player_image, player_drawer, current_x, current_y,
+                          player_statuses[i] and not placement and not kills)
 
             # Writes name and status / placement.
-            player_name = player[0]
+            player_name = players[i].display_name
 
             # If the name is too long, we put a ... at the end (thx alex!!!!!)
             if player_font.getsize(player_name)[0] > HG_ICON_SIZE:
@@ -1525,35 +1247,28 @@ def makeimage_player_statuses(players, placement=0, kills=0):
 
             # Placement
             if placement:
-                place = f'{player[2]}{NTH_SUFFIXES[player[2] % 10]} Place'
+                place = f'{player_statuses[i]}{NTH_SUFFIXES[player_statuses[i] % 10]} Place'
                 player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(place)[0] / 2),
                                     current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), place, font=player_font,
                                    fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_ALIVE_COLOR, HG_STATUS_DEAD_COLOR,
-                                                                           (player[2] - 1) / placement))
+                                                                           (player_statuses[i] - 1) / placement))
 
-            # Killcount
+            # Kill Count
             elif kills:
-                if isinstance(kills, int):
-                    kill_str = f'{player[2]} {" Kill" if player[2] == 1 else " Kills"}'
-                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
-                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
-                                                                                                 HG_STATUS_ALIVE_COLOR,
-                                                                                                 player[2] / kills))
-                else:
-                    kill_str = '0 Kills'
-                    player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
-                                        current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
-                                       font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
-                                                                                                 HG_STATUS_ALIVE_COLOR,
-                                                                                                 player[2] / kills))
+                kill_str = f'{player_statuses[i]} {" Kill" if player_statuses[i] == 1 else " Kills"}'
+                player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(kill_str)[0] / 2),
+                                    current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), kill_str,
+                                   font=player_font, fill=misc.find_color_tuple_midpoint_hsv(HG_STATUS_DEAD_COLOR,
+                                                                                             HG_STATUS_ALIVE_COLOR,
+                                                                                             player_statuses[i] / kills)
+                                   )
 
             # Status
             else:
-                status = 'Alive' if not player[2] else ('Deceased' if player[2] - 1 else 'Newly Deceased')
+                status = 'Alive' if not player_statuses[i] else ('Deceased' if player_statuses[i] - 1 else 'Newly Deceased')
                 player_drawer.text((current_x + int(HG_ICON_SIZE / 2 - player_font.getsize(status)[0] / 2),
                                     current_y + HG_ICON_SIZE + HG_FONT_SIZE + HG_TEXT_BUFFER), status, font=player_font,
-                                   fill=HG_STATUS_ALIVE_COLOR if not player[2] else HG_STATUS_DEAD_COLOR)
+                                   fill=HG_STATUS_ALIVE_COLOR if not player_statuses[i] else HG_STATUS_DEAD_COLOR)
 
             # Adds to current_x.
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
@@ -1561,39 +1276,39 @@ def makeimage_player_statuses(players, placement=0, kills=0):
         # Adds to current_y.
         current_y += HG_PLAYERSTATUS_ROWHEIGHT + HG_ICON_BUFFER
 
-    return player_statuses
+    return player_image
 
 
-def makeimage_action(player_images, actions, start, end, action_desc=None):
+def makeimage_action(actions, players, action_description=None):
     """
     Displays a variable number of actions at once.
 
-    player_images (dict) : A dict of player profile pictures, with the profile pictures keyed by player ids.
-    actions (dict[]) : A list of dicts detailing all the actions in this phase.
-    start (int) : What index to start at.
-    end (int) : What index to end at.
-    action_desc (str) : The action description, if any.
+    Arguments:
+        actions ((hg_actions database table)[]) : The actions to put onto the image.
+        players (discord.User[]) : The player list.
+        action_description (str) : The action description, if any.
     """
     # Makes the font and gets the action description width, if any.
     action_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
-    action_desc_width = action_font.getsize(action_desc)[0] if action_desc else 0
+    action_desc_width = action_font.getsize(action_description)[0] if action_description else 0
 
     # Gets the image height.
     # Also makes the full action text while we're at it.
-    image_height = HG_ACTION_ROWHEIGHT * (end - start + 1) + HG_ICON_BUFFER + (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_desc else -1)
+    image_height = HG_ACTION_ROWHEIGHT * len(actions) + HG_ICON_BUFFER + \
+                   (HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3 if action_description else -1)
     text_sizes = []
 
     # Get the image width.
     # The image width is diffcult to gather, because we have to test the widths of everything.
-    image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_desc else -1
+    image_width = action_desc_width + HG_ICON_BUFFER * 2 + HG_HEADER_BORDER_BUFFER * 2 if action_description else -1
 
-    # Iterate through each action in the range.
-    for ind in range(start, end + 1):
+    # Iterate through each action in the list.
+    for action in actions:
 
         # Tests for text boundaries
-        full_action_text = actions[ind]['act']
-        for ind2 in range(len(actions[ind]['players'])):
-            full_action_text = full_action_text.replace('{' + str(ind2) + '}', actions[ind]['players'][ind2][1])
+        full_action_text = action.text
+        for i in range(len(action.players)):
+            full_action_text = full_action_text.replace('{' + str(i) + '}', players[action.players[i]].display_name)
 
         # Calculates text widths and appends them to the text_sizes list.
         text_width = action_font.getsize(full_action_text)[0]
@@ -1601,7 +1316,7 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         text_sizes.append(text_width)
 
         # Tests for image boundaries
-        image_width = max(image_width, HG_ICON_SIZE * len(actions[ind]['players']) + HG_ICON_BUFFER * (len(actions[ind]['players']) + 1))
+        image_width = max(image_width, HG_ICON_SIZE * len(action.players) + HG_ICON_BUFFER * (len(action.players) + 1))
 
     # Creates all the images and drawers that will help us make the new image.
     action_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
@@ -1611,7 +1326,7 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
     current_y = HG_ICON_BUFFER
 
     # Draw the description, if any.
-    if action_desc:
+    if action_description:
 
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
@@ -1625,29 +1340,28 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
         )
 
         # Draws the text and adds to the current y.
-        player_drawer.text((current_x, HG_ICON_BUFFER), action_desc, font=action_font, fill=HG_HEADER_TEXT_COLOR)
+        player_drawer.text((current_x, HG_ICON_BUFFER), action_description, font=action_font, fill=HG_HEADER_TEXT_COLOR)
         current_y += HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER * 3
 
     # Num keeps track of the text sizes.
     num = 0
 
-    # Iterate through all the actions.
-    for ind in range(start, end + 1):
+    # Iterate through each action in the list.
+    for action in actions:
 
         # Set the current x.
-        current_x = int(image_width / 2) - int(len(actions[ind]['players']) / 2 * HG_ICON_SIZE) - \
-                    int((len(actions[ind]['players']) - 1) / 2 * HG_ICON_BUFFER)
+        current_x = int(image_width / 2) - int(len(action.players) / 2 * HG_ICON_SIZE) - \
+                    int((len(action.players) - 1) / 2 * HG_ICON_BUFFER)
 
         # Gets each player's pfp and pastes it onto the image.
-        for player in actions[ind]['players']:
-            makeimage_pfp(player_images[player[0]], action_image, player_drawer, current_x, current_y, player[2])
+        for i in action.players:
+            makeimage_pfp(players[i], action_image, player_drawer, current_x, current_y, False)
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
         # Draws each part of the text.
         current_x = int((image_width - text_sizes[num]) / 2)
         current_y += HG_ICON_SIZE + HG_TEXT_BUFFER
-        makeimage_action_text(actions[ind]['act'], actions[ind]['players'], player_drawer, current_x, current_y,
-                              action_font)
+        makeimage_action_text(action, players, player_drawer, current_x, current_y, action_font)
 
         # Adds to the current_y and num.
         current_y += HG_FONT_SIZE + HG_ICON_BUFFER
@@ -1656,12 +1370,12 @@ def makeimage_action(player_images, actions, start, end, action_desc=None):
     return action_image
 
 
-def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
+def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
     """
     Draws a player's pfp at the given x and y.
 
     Arguments:
-        player_pfp (PIL.Image) : The loaded profile picture.
+        user (discord.user.User) : The desired user.
         image (PIL.Image) : The base image.
         drawer (PIL.ImageDraw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
@@ -1669,6 +1383,9 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
         dead (bool) : Whether or not this player is dead.
                       If they are dead, then their icon will be in grayscale and slightly darkened.
     """
+    # Get the player_pfp.
+    player_pfp = temp_files.get_profile_picture_by_user(player, size=(HG_ICON_SIZE, HG_ICON_SIZE))
+
     # If player dead, recolor to black and white.
     if dead:
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
@@ -1686,26 +1403,26 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
                  (pfp_x - 1, pfp_y - 1)], width=1, fill=0)
 
 
-def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_font):
+def makeimage_action_text(action, players, drawer, txt_x, txt_y, action_font):
     """
     Draws the action text for an action.
 
     Arguments:
-        remaining_text (str) : The remaining text.
-        players (int, str, bool)[] : The player list from the action.
-                                     The first value should be the player id.
-                                     The second value of each tuple should be the display name for the user.
-                                     The third value should be whether or not to draw them dead.
+        action (hg_actions database table) : The action that should be put onto the image.
+        players (discord.User[]) : The player list.
         drawer (PIL.ImageDraw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
         txt_y (int) : The y position of where to draw the text.
         action_font (PIL.ImageFont) : The action font.
     """
+    # Create remaining_text
+    remaining_text = action.text
+
     while remaining_text:
         # Get the index of the NEXT {n}.
         next_bracket = len(remaining_text)
-        for ind in range(len(players)):
-            bracket_pos = remaining_text.find('{' + str(ind) + '}')
+        for i in range(len(action.players)):
+            bracket_pos = remaining_text.find('{' + str(i) + '}')
             if not bracket_pos + 1:
                 continue
             next_bracket = min(next_bracket, bracket_pos)
@@ -1717,9 +1434,10 @@ def makeimage_action_text(remaining_text, players, drawer, txt_x, txt_y, action_
         # Draw the next player name.
         if next_bracket == len(remaining_text):
             break
-        ind = int(remaining_text[next_bracket + 1])
-        drawer.text((txt_x, txt_y), players[ind][1], font=action_font, fill=HG_ACTION_PLAYER_COLOR)
-        txt_x += action_font.getsize(players[ind][1])[0]
+        i = int(remaining_text[next_bracket + 1])
+        drawer.text((txt_x, txt_y), players[action.players[i]].display_name, font=action_font,
+                    fill=HG_ACTION_PLAYER_COLOR)
+        txt_x += action_font.getsize(players[action.players[i]].display_name)[0]
 
         # Trim remaining_text.
         remaining_text = remaining_text[next_bracket + 3:]
@@ -1734,257 +1452,233 @@ async def generate_full_game(hg_dict, message):
         hg_dict (dict) : The full game dict.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
-    # Create player statuses dict in the hg_dict.
-    statuses = {}
+    # Create the player statuses dict in the hg_dict.
+    statuses = []
     for player in hg_dict['players']:
-        statuses[player.id] = {'name': player.display_name, 'dead': False, 'hurt': False, 'inv': [], 'kills': 0}
+        statuses.append({'dead': False, 'placement': HG_MAX_GAMESIZE + 1, 'hurt': False, 'inv': [], 'kills': 0})
     hg_dict['statuses'] = statuses
 
     # Makes the phases.
     hg_dict['phases'] = []
 
-    # First, we generate the bloodbath.
-    generate_bloodbath(hg_dict)
+    # Make the midgame parts (up to the final action (victory / tie)).
+    generate_midgame(hg_dict)
 
-    # Loop variables.
-    # day_night keeps track of what number day / night it was.
-    day_night = 1
-    # Self-explanatory.
-    turns_since_event = 0
-    dead_last_loop = []
+    # Make the final action (victory / tie).
+    generate_win_tie_phase(hg_dict)
 
-    # Then we cycle through stuff until one person survives or EVERYONE is dead.
-    while True:
-
-        # Test for dead people at the start of the loop.
-        tie, continue_game = generate_detect_dead(hg_dict)
-        if not continue_game:
-            break
-
-        # Test for event.
-        # Events can only occur at day/night 4. The chances of an event slowly increase over time.
-        # If an event occurs, normal day/night actions are not taken.
-        if day_night >= 4 and turns_since_event > 1 \
-                and random.random() < 1 - (1 - HG_EVENT_DEFAULT_CHANCE)**turns_since_event:
-            # Choose random event and generate the actions.
-            the_event = random.choice(HG_EVENTS)
-            generate_actions_outer(hg_dict, the_event[0], the_event[1], the_event[2])
-            # Reset turns_since_event.
-            turns_since_event = 0
-
-        # Otherwise, do normal day and night events.
-        else:
-            # Day.
-            generate_actions_outer(hg_dict, HG_NORMAL_DAY_ACTIONS, 'Day {}'.format(day_night))
-
-            # Test for dead people.
-            tie, continue_game = generate_detect_dead(hg_dict)
-            if not continue_game:
-                break
-
-            # Night.
-            generate_actions_outer(hg_dict, HG_NORMAL_NIGHT_ACTIONS, 'Night {}'.format(day_night))
-            day_night += 1
-
-        # Test for dead people.
-        tie, continue_game = generate_detect_dead(hg_dict)
-        if not continue_game:
-            break
-
-        # Add a new player status page.
-        player_statuses = []
-        new_deaths = 0
-
-        # Iterate through all the players.
-        for player in hg_dict['statuses']:
-            player_statuses.append((hg_dict['statuses'][player]['name'], player,
-                                    (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
-
-            # Adds to dead_last_loop if they're dead THIS loop.
-            if player not in dead_last_loop and hg_dict['statuses'][player]['dead']:
-                dead_last_loop.append(player)
-                new_deaths += 1
-
-        # Add the player status dict to the phases.
-        hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
-
-        # Increase chances of encountering disaster next time.
-        if day_night >= 4:
-            turns_since_event += 1
-
-    # Now that the loop is broken, display cannon shots and declare winner.
-    # First, make a new player status page.
-    player_statuses = []
-    new_deaths = 0
-
-    # Iterate through all the players.
-    for player in hg_dict['statuses']:
-        player_statuses.append((hg_dict['statuses'][player]['name'], player,
-                                (2 if player in dead_last_loop else 1) if hg_dict['statuses'][player]['dead'] else 0))
-
-    # Add the player status dict to the phases.
-    hg_dict['phases'].append({'type': 'status', 'all': player_statuses, 'new': new_deaths})
-
-    # If there's a tie, run this part.
-    if tie:
-
-        # Determine who tied
-        tiees = []
-        # Get the maximum death number for placement purposes.
-        max_deathnum = -1
-
-        # Get the max death num.
-        for player in hg_dict['statuses']:
-            max_deathnum = max(max_deathnum, hg_dict['statuses'][player]['dead_num'])
-
-        # For each player, if their death num equals the max, then append that to the tiees.
-        for player in hg_dict['statuses']:
-            if max_deathnum == hg_dict['statuses'][player]['dead_num']:
-                tiees.append(player)
-
-        # Add tie phase to phases ONLY if there's more than one.
-        if len(tiees) > 1:
-            hg_dict['phases'].append({'type': 'tie', 'act': [
-                {'players': [(tie_player, hg_dict['statuses'][tie_player]['name'], True) for tie_player in tiees],
-                 'act': HG_TIE_EVENT + '{0}' + ', '.join(['{' + str(i) + '}' for i in range(1, len(tiees) - 1)]) +
-                        ', and {' + str(len(tiees) - 1) + '}!'}], 'title': HG_TIE_TITLE, 'desc': HG_TIE_TITLE})
-
-        # Otherwise, it's a victory, but dead.
-        else:
-            hg_dict['phases'].append({'type': 'win', 'act': [{'players': [(tiees[0], hg_dict['statuses'][tiees[0]]['name'], True)],
-                                                              'act': HG_WINNER_DEAD_EVENT}],
-                                      'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
-
-    # Not a tie, run this next part.
-    else:
-
-        # Determine winner by who doesn't have a death number.
-        winner = None
-        for player in hg_dict['statuses']:
-            if 'dead_num' not in hg_dict['statuses'][player]:
-                winner = player
-                break
-
-        # Add win phase to phases
-        hg_dict['phases'].append({'type': 'win',
-                                  'act': [{'players': [(winner, hg_dict['statuses'][winner]['name'], False)],
-                                           'act': HG_WINNER_EVENT}],
-                                  'title': HG_WINNER_TITLE, 'desc': HG_WINNER_TITLE})
-
-    # Makes the placement screen.
-    generate_placement_screen(hg_dict)
-
-    # Makes the kill count screen.
-    generate_kill_count_screen(hg_dict)
-
-    # Copy over the existing playerlist to a backup.
-    hg_dict['player_objects'] = hg_dict['players']
-
-    # Re-do the playerlist in the hg_dict.
-    new_players = {}
-    for player in hg_dict['players']:
-        new_players[player.id] = temp_files.checkout_profile_picture_by_user(player, message, 'hunger_games_full',
-                                                                             size=(HG_ICON_SIZE, HG_ICON_SIZE))
-    hg_dict['players'] = new_players
+    # Makes the placement and kill count phases.
+    generate_placement_kill_count_phase(hg_dict, do_placement=True)
+    generate_placement_kill_count_phase(hg_dict, do_placement=False)
 
     # Updates hunger games dict.
+    hg_dict.update(current_phase=0, action_min_index=0, action_max_index=0, confirm_cancel=False, generated=True,
+                   complete=False)
     del hg_dict['statuses']
-    hg_dict['current_phase'] = 0
-    hg_dict['action_min_index'] = 0
-    hg_dict['action_max_index'] = 0
-    hg_dict['confirm_cancel'] = False
-    hg_dict['generated'] = True
-    hg_dict['complete'] = False
 
     # Sends the first message and logs.
     logging.debug(message, 'generated complete hunger games instance')
-    await messaging.send_image_based_embed(
-        message,
-        makeimage_action(hg_dict['players'], hg_dict['phases'][0]['act'], 0, 0, hg_dict['phases'][0]['desc']),
-        'The Bloodbath, Action 1', HG_EMBED_COLOR, HG_BEGINNING_DESCRIPTION
+    await send_midgame(message, hg_dict)
+
+
+def generate_midgame(hg_dict):
+    """
+    Generates the midgame part of the hg_dict.
+    This includes all actions and player status screens, as well as the final victory / tie screen.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+    """
+    # First, generate the bloodbath.
+    generate_action_phase(hg_dict, get_phase_by_category('bloodbath'))
+
+    # Next, start keeping track of what the best placement is for eah loop.
+    previous_loop_best_place = HG_MAX_GAMESIZE + 1
+
+    # Enter loop as long as the game isn't over.
+    if not generate_game_over(hg_dict):
+
+        # Keep variables to keep track of day/night and turns since last event.
+        day_night = 1
+        turns_since_event = 0
+
+        # Enter loop.
+        while True:
+
+            # If we should perform an event this turn (random chance that gets more likely as the game goes on),
+            # then do an event.
+            if day_night >= HG_EVENT_DAYNIGHT_MINIMUM and \
+                    random.random() < 1 - (1 - HG_EVENT_DEFAULT_CHANCE) ** turns_since_event:
+
+                # Choose random event and generate the actions.
+                generate_action_phase(hg_dict, get_phase_by_category('event'))
+
+                # Reset turns_since_event.
+                turns_since_event = 0
+
+            # Otherwise, perform normal day/night actions.
+            else:
+
+                # Day.
+                generate_action_phase(hg_dict, get_phase_by_category('day'), day_night)
+
+                # Detect if the game is over...
+                if generate_game_over(hg_dict):
+                    break
+
+                # Night.
+                generate_action_phase(hg_dict, get_phase_by_category('night'), day_night)
+
+                # Increment the day/night and turns_since_event.
+                day_night += 1
+                turns_since_event += 1
+
+            # Detect if the game is over...
+            if generate_game_over(hg_dict):
+                break
+
+            # Add a new player status phase and update previous_loop_best_place.
+            generate_player_status_phase(hg_dict, previous_loop_best_place)
+            previous_loop_best_place = min([player['placement'] for player in hg_dict['statuses']])
+
+    # Add a new player status phase.
+    generate_player_status_phase(hg_dict, previous_loop_best_place)
+
+
+def generate_action_phase(hg_dict, phase, phase_format_number=None):
+    """
+    Generates a single action phase.
+
+    Arguments:
+        hg_dict (dict) : The full game dict.
+        phase (hg_phases database table) : The parent phase to base this phase off of.
+        phase_format_number (int) : The number to use to format the phase title + description, if any.
+    """
+    # Generate the actions
+    actions = generate_actions_outer(hg_dict, phase)
+
+    # Generate the new statuses for each player.
+    for action_entry in actions:
+        generate_action_statuses(hg_dict['statuses'], action_entry[0], action_entry[1])
+
+    # Insert the new actions into the database.
+    action_ids = [
+        database.insert_into_database(
+            database.HG_CURRENT_GAME_ACTIONS_TABLE, action_id=action_entry[0].action_id,
+            players=action_entry[1]
+        ).game_action_id for action_entry in actions]
+
+    # Insert the new phase into the database.
+    hg_dict['phases'].append(
+        ('act', database.insert_into_database(
+            database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
+            title=phase.title.format(phase_format_number) if phase_format_number else phase.title,
+            description=phase.description.format(phase_format_number) if phase_format_number else phase.description,
+            game_action_ids=action_ids
+        ).game_phase_id, len(action_ids))
     )
 
 
-def generate_bloodbath(hg_dict):
+def generate_win_tie_phase(hg_dict):
     """
-    Generates all the actions for each player in the bloodbath.
-    This is just like any other list of actions, but they're a lot more simplified because there are no trigger ones*.
+    Generates a win/tie phase, depending on how the 'status' part of the hg_dict is.
 
     Arguments:
         hg_dict (dict) : The full game dict.
     """
-    # Player_actions stores the user id of everyone who hasn't had an action yet.
-    available_players = [uid for uid in hg_dict['statuses']]
-    # Actions stores all the actions.
-    actions = []
+    # First, detect the type of phase and get it.
+    # Win alive...
+    winners = [i for i in range(len(hg_dict['statuses'])) if not hg_dict['statuses'][i]['dead']]
+    if winners:
+        phase = get_phase_by_category('win_alive')
 
-    # Iterates through all the actions, picking them at random for the player_actions.
-    while available_players:
-        generate_actions_normal(hg_dict, HG_BLOODBATH_ACTIONS, available_players, actions)
+    # Win dead...
+    else:
+        winners = [i for i in range(len(hg_dict['statuses'])) if hg_dict['statuses'][i]['placement'] == 1]
+        phase = get_phase_by_category('win_dead')
 
-        # Generate statuses
-        generate_statuses(hg_dict['statuses'], actions[-1])
+    # Generate the actions.
+    actions = generate_actions_outer(hg_dict, phase, preset_players=winners, force_one_action=True)
 
-    # Adds to the phases.
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': 'The Bloodbath',
-                              'desc': 'As the tributes stand upon their podiums, the horn sounds.', 'done': False})
+    # Insert the new actions into the database.
+    action_ids = [
+        database.insert_into_database(
+            database.HG_CURRENT_GAME_ACTIONS_TABLE, action_id=action_entry[0].action_id,
+            players=action_entry[1]
+        ).game_action_id for action_entry in actions]
+
+    # Insert the new phase into the database.
+    hg_dict['phases'].append(
+        ('win', database.insert_into_database(
+            database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
+            title=phase.title, description=phase.description, game_action_ids=action_ids
+        ).game_phase_id, 1)
+    )
 
 
-def generate_actions_outer(hg_dict, action_dict, title, desc=None):
+def generate_actions_outer(hg_dict, phase, preset_players=None, force_one_action=False):
     """
-    Generates all the actions for each player in the a normal action round.
+    Generates all the actions according to the given phase and slots them into the actions list.
 
     Arguments:
         hg_dict (dict) : The full game dict.
-        action_dict (dict) : The action dict (dict of trigger actions and normal actions).
-        title (str) : The action title.
-        desc (str) : The action description, if any.
-    """
-    # Player_actions stores the user id of everyone who hasn't had an action yet.
-    # Unlike in generate_bloodbath, this version excludes people who are dead.
-    available_players = []
-    for uid in hg_dict['statuses']:
-        if not hg_dict['statuses'][uid]['dead']:
-            available_players.append(uid)
-    random.shuffle(available_players)
+        phase (hg_phases database table) : The parent phase to base this phase off of.
+        preset_players (int[]) : The pre-set list of players for this action, if any.
+        force_one_action (bool) : Whether to force all players into one action. False by default.
 
-    # Actions stores all the actions.
+    Returns:
+        (hg_actions database table, int[])[] : A list of each action, along with which player indexes involve the
+                                               action.
+    """
+    # First, make a list of all the available players' indexes.
+    available_players = preset_players if preset_players else \
+        [i for i in range(len(hg_dict['statuses'])) if not hg_dict['statuses'][i]['dead']]
+
+    # Second, get all the actions w/action wrappers for the given phase.
+    if force_one_action:
+        normal_actions = get_normal_actions_by_phase(phase, extra_players=len(available_players) - 1)
+        trigger_action_wrappers = get_trigger_actions_by_phase(phase, extra_players=len(available_players) - 1)
+    else:
+        normal_actions = get_normal_actions_by_phase(phase)
+        trigger_action_wrappers = get_trigger_actions_by_phase(phase)
+
+    # Third, make the actions list, which will store all the actions.
     actions = []
 
     # Iterates through all the trigger actions, picking them for all the players that are valid.
-    for trigger in action_dict['trigger']:
-        generate_actions_trigger(hg_dict, trigger, available_players, actions)
+    for trigger_action_wrapper in trigger_action_wrappers:
+        generate_actions_trigger(trigger_action_wrapper, hg_dict['statuses'], available_players, actions)
 
     # Iterates through all the actions, picking them at random for the remaining player_actions.
     while available_players:
-        generate_actions_normal(hg_dict, action_dict['normal'], available_players, actions)
+        generate_actions_normal(normal_actions, available_players, actions)
 
-    # Shuffles the actions and generates statuses.
+    # Randomize the order of the actions.
     random.shuffle(actions)
-    for curr_action in actions:
-        generate_statuses(hg_dict['statuses'], curr_action)
 
-    # Adds to the phases.
-    if not desc:
-        desc = title
-    hg_dict['phases'].append({'type': 'act', 'act': actions, 'title': title, 'desc': desc, 'done': False})
+    # Return.
+    return actions
 
 
-def generate_actions_trigger(hg_dict, trigger, available_players, actions):
+def generate_actions_trigger(trigger_action_wrapper, hg_statuses, available_players, actions):
     """
-    Generates all the actions for each player in the a normal action round.
+    Generates one trigger action. Or not. It depends.
 
     Arguments:
-        hg_dict (dict) : The full game dict.
-        trigger (dict) : The trigger, complete with actions and conditions.
-                         Must have a 'chance' attribute.
+        trigger_action_wrapper (hg_action_wrappers database table) : The list of normal actions to choose from.
+        hg_statuses (dict[]) : The statuses of every player in the game.
         available_players (int[]) : The list of player id's that have yet to be given actions.
-        actions (list) : The final list of actions that the picked action will be added to.
+        actions ((hg_actions database table, int[])[]) : The final list of actions that the picked action will be
+                                                         added to.
     """
     # First, check and make sure that there are enough players available for this trigger to happen,
     # for both success and fail.
-    if ('success' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['success']])) or \
-            ('fail' in trigger and len(available_players) < min([act['players'] + 1 for act in trigger['fail']])):
+    if (trigger_action_wrapper.success_action_ids and (not trigger_action_wrapper.success_actions or
+        len(available_players) < min(action.extra_players + 1
+                                     for action in trigger_action_wrapper.success_actions))) or \
+        (trigger_action_wrapper.failure_action_ids and (not trigger_action_wrapper.failure_actions or
+         len(available_players) < min(action.extra_players + 1
+                                      for action in trigger_action_wrapper.failure_actions))):
         return
 
     # Next, establish variables for the for loop.
@@ -1994,142 +1688,149 @@ def generate_actions_trigger(hg_dict, trigger, available_players, actions):
     for player in available_players:
 
         # Check the player's inventory, if there are inventory requirements.
-        if 'needs' in trigger:
-            if trigger['needs'] not in hg_dict['statuses'][player]['inv']:
+        if trigger_action_wrapper.trigger_item:
+            if trigger_action_wrapper.trigger_item not in hg_statuses[player]['inv']:
                 continue
 
         # Check if player needs to be wounded.
-        if 'wounded' in trigger:
-            if not hg_dict['statuses'][player]['hurt']:
+        if trigger_action_wrapper.trigger_hurt:
+            if not hg_statuses[player]['hurt']:
                 continue
 
-        # Get whether or not the trigger succeeded.
-        success = random.random() <= trigger['chance']
+        # Get whether the trigger succeeded or not.
+        success = random.random() <= trigger_action_wrapper.trigger_chance \
+            if trigger_action_wrapper.trigger_chance else True
 
-        # Establish the current action, should force at least one loop of the while loop.
-        curr_action = {'players': len(available_players) + 1}
+        # First, set a variable keeping track of the extra players and set it to the max. Forces at least one loop.
+        extra_players = HG_MAX_GAMESIZE
+        curr_action = None
 
         # If succeeded and there are success actions, then pick one until there's one with a suitable amount of players.
-        if success and 'success' in trigger:
-            while curr_action['players'] > len(available_players):
-                curr_action = random.choice(trigger['success'])
+        if success and trigger_action_wrapper.success_action_ids:
+            while extra_players > len(available_players):
+                curr_action = random.choice(trigger_action_wrapper.success_actions)
+                extra_players = curr_action.extra_players
 
         # If failed and there are failure actions, then pick one until there's one with a suitable amount of players.
-        if not success and 'fail' in trigger:
-            while curr_action['players'] > len(available_players):
-                curr_action = random.choice(trigger['fail'])
+        if not success and trigger_action_wrapper.failure_action_ids:
+            while extra_players > len(available_players):
+                curr_action = random.choice(trigger_action_wrapper.failure_actions)
+                extra_players = curr_action.extra_players
 
         # If a new curr_action was found, then add it to the list.
-        if 'act' in curr_action:
-            chosen_actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False)],
-                                   'act': curr_action['act'], 'full': curr_action})
+        if curr_action:
+            chosen_actions.append((curr_action, [player]))
 
     # Remove all the players with triggers from the available_players.
-    for player in [action['players'][0][0] for action in chosen_actions]:
+    for player in [action[1][0] for action in chosen_actions]:
         available_players.remove(player)
+
+    # Shuffle the chosen_actions.
+    random.shuffle(chosen_actions)
 
     # For every chosen action, perform one last check.
     for action in chosen_actions:
 
         # Check and make sure that there's enough players to perform the action.
         # If there isn't, put this player back into the available_players list and continue.
-        if len(available_players) < action['full']['players']:
-            available_players.append(action['players'][0])
+        if len(available_players) < action[0].extra_players:
+            available_players.append(chosen_actions[1][0])
             continue
 
         # Create list of added players.
         added_players = []
 
-        # Otherwise, gather more necessary players.
-        for i in range(action['full']['players']):
+        # Gather more necessary players, if any.
+        for i in range(action[0].extra_players):
             added_players.append(random.choice(available_players))
             available_players.remove(added_players[-1])
 
         # Add the added players to the action.
         for player in added_players:
-            action['players'].append((player, hg_dict['statuses'][player]['name'], False))
+            action[1].append(player)
 
-        # Append the action to actions.
+        # Append the action to the actions.
         actions.append(action)
 
 
-def generate_actions_normal(hg_dict, normal_actions, available_players, actions):
+def generate_actions_normal(normal_actions, available_players, actions):
     """
-    Generates all the actions for each player in the a normal action round.
+    Generates one normal action.
 
     Arguments:
-        hg_dict (dict) : The full game dict.
-        normal_actions (list) : The list of normal actions to choose from.
+        normal_actions ((hg_action_wrappers + hg_actions database table)[]) : The list of normal actions to choose from.
         available_players (int[]) : The list of player id's that have yet to be given actions.
-        actions (list) : The final list of actions that the picked action will be added to.
+        actions ((hg_actions database table, int[])[]) : The final list of actions that the picked action will be
+                                                         added to.
     """
-    # Creates necessary prerequisites for do while loop.
-    # Create a current action with a length of player actions so that the while loop will trigger.
-    curr_action = {'players': len(available_players)}
+    # First, set a variable keeping track of the extra players and set it to the max.
+    extra_players = HG_MAX_GAMESIZE
 
     # Take a player out and use it as the base player.
     chosen_players = [random.choice(available_players)]
     available_players.remove(chosen_players[0])
 
     # While loop, finds a good action.
-    while curr_action['players'] > len(available_players):
+    while extra_players > len(available_players):
         curr_action = random.choice(normal_actions)
+        extra_players = curr_action.extra_players
 
     # Adds more players to current action, if necessary.
-    for i in range(curr_action['players']):
+    for i in range(extra_players):
         chosen_players.append(random.choice(available_players))
         available_players.remove(chosen_players[-1])
 
     # Add the actions to the list.
-    actions.append({'players': [(player, hg_dict['statuses'][player]['name'], False) for player in chosen_players],
-                    'act': curr_action['act'], 'full': curr_action})
+    actions.append((curr_action, chosen_players))
 
 
-def generate_statuses(hg_statuses, action):
+def generate_action_statuses(hg_statuses, action, players):
     """
     Updates the statuses of players post-action in the hg_dict.
 
     Arguments:
-        hg_statuses (dict) : The statuses of every player in the game.
-        action (dict) : The action that needs to trigger this status check.
+        hg_statuses (dict[]) : The statuses of every player in the game.
+        action (hg_actions database table) : The action that needs to trigger this status check.
+        players (int[]) : The indexes of all the players in this action.
     """
     # First, we handle deaths.
-    if 'kill' in action['full']:
-        # Mark player as dead.
-        for ind in action['full']['kill']:
-            hg_statuses[action['players'][ind][0]]['dead'] = True
-        # Mark player's place in the game.
-        for ind in action['full']['kill']:
-            hg_statuses[action['players'][ind][0]]['dead_num'] = \
-                [hg_statuses[player]['dead'] for player in hg_statuses].count(True) - 1
+    if action.kill:
+        # Get the placement for this player(s).
+        this_place = len(hg_statuses) - len([player for player in hg_statuses if player['dead']]) - len(action.kill) + 1
+        # Iterate through the kills and update statuses accordingly.
+        for kill_index in action.kill:
+            hg_statuses[players[kill_index]]['dead'] = True
+            hg_statuses[players[kill_index]]['placement'] = this_place
 
     # Next, injuries.
-    if 'hurt' in action['full']:
-        for ind in action['full']['hurt']:
-            hg_statuses[action['players'][ind][0]]['hurt'] = True
+    if action.hurt:
+        for hurt_index in action.hurt:
+            hg_statuses[players[hurt_index]]['hurt'] = True
 
     # Kill credit.
-    if 'credit' in action['full']:
-        for ind in action['full']['credit']:
-            hg_statuses[action['players'][ind][0]]['kills'] += 1
+    if action.credit:
+        for credit_index in action.credit:
+            hg_statuses[players[credit_index]]['kills'] += 1
 
     # Healing.
-    if 'heal' in action['full']:
-        for ind in action['full']['heal']:
-            hg_statuses[action['players'][ind][0]]['hurt'] = False
+    if action.heal:
+        for heal_index in action.heal:
+            hg_statuses[players[heal_index]]['hurt'] = False
 
     # Items.
-    if 'give' in action['full']:
-        for ind in range(len(action['full']['give'])):
+    if action.give:
+
+        # Iterate through item indexes.
+        for i in range(len(action.give)):
 
             # Item 0 (nothing).
-            if action['full']['give'][ind] == 0:
+            if action.give[i] == 0:
                 continue
 
             # Negative item (remove their thing).
-            elif action['full']['give'][ind] < 0:
+            elif action.give[i] < 0:
                 try:
-                    hg_statuses[action['players'][ind][0]]['inv'].remove(-action['full']['give'][ind])
+                    hg_statuses[players[i]]['inv'].remove(-action.give[i])
                 except ValueError:
                     pass
 
@@ -2138,134 +1839,240 @@ def generate_statuses(hg_statuses, action):
 
                 # Special items
                 # 3000, 1 - 3 random items
-                if action['full']['give'][ind] == 3000:
-                    for i in range(random.randint(1, 3)):
-                        hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_ALL_ITEMS))
+                if action.give[i] == 3000:
+                    for j in range(random.randint(1, 3)):
+                        hg_statuses[players[i]]['inv'].append(random.choice(HG_ALL_ITEMS))
 
                 # 4000, one of each item type
-                elif action['full']['give'][ind] == 4000:
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_WEAPON_ITEMS))
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_HEALTH_ITEMS))
-                    hg_statuses[action['players'][ind][0]]['inv'].append(random.choice(HG_FOOD_ITEMS))
+                elif action.give[i] == 4000:
+                    hg_statuses[players[i]]['inv'].append(random.choice(HG_WEAPON_ITEMS))
+                    hg_statuses[players[i]]['inv'].append(random.choice(HG_HEALTH_ITEMS))
+                    hg_statuses[players[i]]['inv'].append(random.choice(HG_FOOD_ITEMS))
 
                 # 8888, take away rope, give food
-                elif action['full']['give'][ind] == 8888:
-                    hg_statuses[action['players'][ind][0]]['inv'].remove(8)
-                    hg_statuses[action['players'][ind][0]]['inv'].append(10)
-                    hg_statuses[action['players'][ind][0]]['inv'].append(104)
+                elif action.give[i] == 8888:
+                    hg_statuses[players[i]]['inv'].remove(8)
+                    hg_statuses[players[i]]['inv'].append(10)
+                    hg_statuses[players[i]]['inv'].append(104)
 
                 # 9999, take away everything and give it to everyone else
-                elif action['full']['give'][ind] == 9999:
+                elif action.give[i] == 9999:
                     # Iterate through and give it to other folks one at a time.
                     ind2 = 0
-                    for item in hg_statuses[action['players'][ind][0]]['inv']:
-                        hg_statuses[action['players'][ind][0]]['inv'].remove(item)
-                        if ind2 % len(action['players']) == ind:
+                    for item in hg_statuses[players[i]]['inv']:
+                        hg_statuses[players[i]]['inv'].remove(item)
+                        if ind2 % action.extra_players + 1 == i:
                             ind2 += 1
-                        hg_statuses[action['players'][ind2][0]]['inv'].append(item)
+                        hg_statuses[players[i]]['inv'].append(item)
                         ind2 += 1
 
                 # Any other item, just give it to them normally.
                 else:
-                    hg_statuses[action['players'][ind][0]]['inv'].append(action['full']['give'][ind])
-
-    # Delete the 'full' tag on the action.
-    del action['full']
+                    hg_statuses[players[i]]['inv'].append(action.give[i])
 
 
-def generate_detect_dead(hg_dict):
+def generate_player_status_phase(hg_dict, previous_time_best_place):
     """
-    Test for dead people.
+    Generates the entire player status phase.
+
+    Args:
+        hg_dict (dict) : The full game dict.
+        previous_time_best_place (int) : The best place last time.
+                                         Any players who place higher than this number will be 'newly dead' as opposed
+                                         to just dead.
     """
-    everyone_dead = True
-    two_alive = False
-    for player in hg_dict['statuses']:
-        if not hg_dict['statuses'][player]['dead']:
-            if not everyone_dead:
-                two_alive = True
-                break
-            else:
-                everyone_dead = False
-    return everyone_dead, two_alive
+    # Get the phase.
+    phase = get_phase_by_category('status')
+
+    # Generate the player status numbers.
+    # For each index, 0 = alive, 1 = dead, 2 = newly dead.
+    player_statuses = [((1 if player['placement'] < previous_time_best_place else 2) if player['dead'] else 0)
+                       for player in hg_dict['statuses']]
+    new_deaths = len([num for num in player_statuses if num == 1])
+
+    # Insert the new phase into the database.
+    hg_dict['phases'].append(
+        ('status', database.insert_into_database(
+            database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
+            title=phase.title.format(new_deaths, 's' if new_deaths != 1 else ''), player_statuses=player_statuses
+        ).game_phase_id, 1)
+    )
 
 
-def generate_placement_screen(hg_dict):
+def generate_game_over(hg_dict):
     """
-    Generates the placement screen.
+    Detects whether the game is over or not.
 
     Arguments:
         hg_dict (dict) : The full game dict.
+
+    Returns:
+        bool : Whether the game is over or not.
     """
-    # First, makes a list of placements.
-    pre_placement_players = [k for k in hg_dict['statuses']]
-    placements = []
-
-    # While not everyone has been placed, iterate through the loop.
-    while pre_placement_players:
-
-        # The min_placement keeps track of the minimum placement.
-        min_placement = len(hg_dict['statuses'])
-        current_placement_players = []
-
-        # Iterate through the players.
-        # Get the minimum placement and the players in that placement.
-        for player in pre_placement_players:
-            if 'dead_num' in hg_dict['statuses'][player]:
-                if min_placement > hg_dict['statuses'][player]['dead_num']:
-                    current_placement_players = [player]
-                    min_placement = hg_dict['statuses'][player]['dead_num']
-                elif min_placement == hg_dict['statuses'][player]['dead_num']:
-                    current_placement_players.append(player)
-
-        # If there is no change in min_placement, then the victor is found.
-        if min_placement == len(hg_dict['statuses']):
-            current_placement_players = pre_placement_players
-            min_placement -= 1
-
-        # Adds player to the dict.
-        for player in current_placement_players:
-            placements.append((hg_dict['statuses'][player]['name'], player, len(hg_dict['statuses']) - min_placement))
-            pre_placement_players.remove(player)
-
-    # Reverses placements list to sort from first to last and adds the placement to the phases.
-    placements.reverse()
-    hg_dict['phases'].append({'type': 'place', 'all': placements, 'max': max([place[2] for place in placements]) - 1})
+    return len([player for player in hg_dict['statuses'] if not player['dead']]) < 2
 
 
-def generate_kill_count_screen(hg_dict):
+def generate_placement_kill_count_phase(hg_dict, do_placement):
     """
-    Generates the kill count screen.
+    Generates the entire placement / kill count phase.
 
-    Arguments:
+    Args:
         hg_dict (dict) : The full game dict.
+        do_placement (bool) : Whether to do placement or kill count.
     """
-    # First, makes a list of placements.
-    pre_placement_players = [k for k in hg_dict['statuses']]
-    kill_placements = []
+    # Get the phase.
+    phase = get_phase_by_category('placement' if do_placement else 'kills')
 
-    # While not everyone has been placed, iterate through the loop.
-    while pre_placement_players:
+    # Simply grab the player placements.
+    player_placements = [player['placement' if do_placement else 'kills'] for player in hg_dict['statuses']]
 
-        # The max_placement keeps track of the maximum placement.
-        max_placement = 0
-        current_placement_players = []
+    # If we're doing placements and we have any that's greater than the max_gamesize, then set that to 1.
+    if do_placement:
+        for i in range(len(player_placements)):
+            if player_placements[i] > HG_MAX_GAMESIZE:
+                player_placements[i] = 1
 
-        # Iterate through the players.
-        # Get the maximum placement and the players in that placement.
-        for player in pre_placement_players:
-            if max_placement < hg_dict['statuses'][player]['kills']:
-                current_placement_players = [player]
-                max_placement = hg_dict['statuses'][player]['kills']
-            elif max_placement == hg_dict['statuses'][player]['kills']:
-                current_placement_players.append(player)
+    # Insert the new phase into the database.
+    hg_dict['phases'].append(
+        ('place' if do_placement else 'kills', database.insert_into_database(
+            database.HG_CURRENT_GAME_PHASES_TABLE, type=phase.type,
+            title=phase.title, player_statuses=player_placements
+        ).game_phase_id, 1)
+    )
 
-        # Adds player to the dict.
-        for player in current_placement_players:
-            kill_placements.append((hg_dict['statuses'][player]['name'], player, max_placement))
-            pre_placement_players.remove(player)
 
-    # Reverses placements list to sort from first to last and makes it a phase
-    hg_dict['phases'].append({'type': 'kills', 'all': kill_placements, 'max': max([place[2] for place in kill_placements])})
+def get_phase_by_category(phase_category):
+    """
+    Gets a random phase that matches by category.
+
+    Arguments
+        phase_category (str) : The phase category to search by.
+
+    Returns:
+        hg_phases database table : One phase.
+    """
+    # Simple return statement.
+    return random.choice([phase for phase in database.get_filtered_by(database.HG_PHASES_TABLE, category=phase_category)])
+
+
+def get_normal_actions_by_phase(phase, extra_players=None):
+    """
+    Gets all the normal actions, combined with their action wrappers, that belong to the parent phase.
+
+    Arguments
+        phase (hg_phases database table) : The parent phase.
+
+    Returns:
+        (hg_action_wrappers + hg_actions database table)[] : The normal action wrappers,
+                                                             joined with the actions they're wrapping.
+    """
+    # If extra_players was provided, then filter_by by it.
+    if isinstance(extra_players, int):
+        return [action for action in database.filter_by(
+            database.join(
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, extra_players=extra_players),
+                (
+                    database.HG_ACTION_WRAPPERS_TABLE,
+                    database.HG_ACTION_WRAPPERS_TABLE.single_action_id == database.HG_ACTIONS_TABLE.action_id
+                )
+            ),
+            parent_phase_id=phase.phase_id
+        )]
+
+    # Otherwise, just do a simple return.
+    return [action for action in database.get_filtered_by_joined(
+        database.HG_ACTIONS_TABLE,
+        (
+            database.HG_ACTION_WRAPPERS_TABLE,
+            database.HG_ACTION_WRAPPERS_TABLE.single_action_id == database.HG_ACTIONS_TABLE.action_id
+        ),
+        parent_phase_id=phase.phase_id
+    )]
+
+
+def get_trigger_actions_by_phase(phase, extra_players=None):
+    """
+    Gets all trigger action wrappers, with their success and fail actions slapped on as attributes.
+
+    Arguments
+        phase (hg_phases database table) : The parent phase.
+
+    Returns:
+        (hg_action_wrappers database table)[] : The normal action wrappers, joined with the actions they're wrapping.
+    """
+    # First, get the trigger action wrappers.
+    trigger_action_wrappers = [action_wrapper for action_wrapper in
+                               database.get_filtered_by(database.HG_ACTION_WRAPPERS_TABLE,
+                                                        parent_phase_id=phase.phase_id, type='trigger')]
+
+    # Next, iterate through the trigger actions and get each child action, if any.
+    for action_wrapper in trigger_action_wrappers:
+
+        # Success actions
+        if action_wrapper.success_action_ids:
+            action_wrapper.success_actions = []
+
+            # If extra_players is set, filter by that too. Otherwise, just grab normally.
+            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
+                                 for success_action_id in action_wrapper.success_action_ids] \
+                    if isinstance(extra_players, int) else \
+                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
+                                                          extra_players=extra_players)
+                                 for success_action_id in action_wrapper.success_action_ids]:
+                action_wrapper.success_actions += [action for action in action_query]
+
+        # Failure actions
+        if action_wrapper.failure_action_ids:
+            action_wrapper.failure_actions = []
+            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
+                                 for failure_action_id in action_wrapper.failure_action_ids] \
+                    if isinstance(extra_players, int) else \
+                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
+                                                          extra_players=extra_players)
+                                 for failure_action_id in action_wrapper.failure_action_ids]:
+                action_wrapper.failure_actions += [action for action in action_query]
+
+    # Return.
+    return trigger_action_wrappers
+
+
+def get_current_game_phase_by_id(game_phase_id):
+    """
+    Gets the current game phase that matches the given game_phase_id.
+
+    Arguments
+        game_phase_id (id) : The game phase id.
+
+    Returns:
+        hg_current_game_phases database table : One current game phase.
+    """
+    # Simple return statement.
+    return database.get_filtered_by(database.HG_CURRENT_GAME_PHASES_TABLE, game_phase_id=game_phase_id).first()
+
+
+def get_current_game_actions_by_current_game_phase_and_action_indexes(phase_object, action_min_index, action_max_index):
+    """
+    Gets the current game actions belonging to the given current game phase whose indexes are between the
+    action_min_index and action_max_index.
+
+    Arguments
+        game_phase_id (id) : The game phase id.
+
+    Returns:
+        hg_current_game_phases database table : One current game phase.
+    """
+    # First, get all the current game actions by the current game phase.
+    current_game_actions = [
+        database.get_filtered_by(database.HG_CURRENT_GAME_ACTIONS_TABLE, game_action_id=game_action_id).first()
+        for game_action_id in phase_object.game_action_ids[action_min_index:action_max_index + 1]]
+
+    # Next, get all the actions they reference and put the text on the respective current_game_actions.
+    for game_action in current_game_actions:
+        game_action.text = database.get_filtered_by(
+            database.HG_ACTIONS_TABLE, action_id=game_action.action_id).first().text
+
+    # Return.
+    return current_game_actions
 
 
 async def pregame_shuffle(message, player_count, hg_dict):
@@ -2277,10 +2084,11 @@ async def pregame_shuffle(message, player_count, hg_dict):
         player_count (int) : The amount of players to use.
         hg_dict (dict) : The full game dict.
     """
-    # Retire the existing players' profile pictures.
+    # Retire the existing players' profile pictures (but add a shuffle checkout that will be removed later to prevent
+    # from reloading repeat players).
     if 'players' in hg_dict:
-        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
-        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hunger_games_full')
+        temp_files.checkout_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_shuffle')
+        temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
     # If the player count is more than the max or less than the minimum, set them to their capstone values.
     player_count = min(player_count, HG_MAX_GAMESIZE)
@@ -2310,8 +2118,9 @@ async def pregame_shuffle(message, player_count, hg_dict):
         hg_players.append(next_player)
         user_list.remove(next_player)
 
-    # Checkout file holdings for all the profile pictures.
+    # Checkout file holdings for all the profile pictures and retire the shuffle checkout.
     await temp_files.checkout_profile_picture_by_user_bulk_with_typing(hg_players, message, 'hg_filehold')
+    temp_files.retire_profile_picture_by_user_bulk(hg_players, message, 'hg_shuffle')
 
     # Set in players and bot bool.
     hg_dict['players'] = hg_players
