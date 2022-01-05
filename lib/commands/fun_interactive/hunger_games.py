@@ -6,6 +6,7 @@ Essentially a BrantSteele simulator simulator.
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
 from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, temp_files
+from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
 
@@ -163,6 +164,11 @@ async def hunger_games_start(bot, message, argument):
     # If a game is already in progress, we forward this message to the update function.
     if hg_key in CURRENT_GAMES:
         return await hunger_games_update(bot, message)
+
+    # If a different game is in progress, send a message saying you can only have one game at a time.
+    elif game_manager.channel_in_game(hg_key):
+        logging.debug(message, 'requested hunger games, but other game active')
+        return await game_manager.send_game_in_progress_message(message)
 
     # Otherwise, we instantiate a game.
     # Gets argument for how many users to start hg with.
@@ -2133,7 +2139,15 @@ async def pregame_shuffle(message, player_count, hg_dict):
 def initialize():
     """
     Initializes the command.
+    In this case, uses environment variables to set default values.
     """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_interactive.hunger_games...')
+
+    # Add this game's game dict to the game dicts from fun_interactive.
+    game_manager.GAME_DICTS.append(CURRENT_GAMES)
+
     # Sets some global variables using environment.get
     global EXPIRE_SECONDS
     EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
