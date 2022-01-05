@@ -1,14 +1,13 @@
 aiohttp>=3.7.4.post0
 coverage>=6.2
 git+https://github.com/Rapptz/discord.py
-python-dotenv
-wikipedia>=1.4.0
 iso3166>=2.0.0
-requests>=2.0.0
 Pillow>=8.0.0
+psycopg2
 python-dateutil>=2.5.0
 python-dotenv
 pytz
+requests>=2.0.0
 sqlalchemy>=1.4
 unittest-xml-reporting>=3.0.0
-psycopg2
+wikipedia>=1.4.0
