@@ -71,6 +71,9 @@ Here is an explanation for every `.env` variable:
 - **DISABLE_COMMANDS_WITH_MISSING_DATABASE_TABLES**: Whether to disable commands
   by default if they are missing tables in the database or the database cannot
   be reached.
+- **CLEAR_TEMPORARY_DATABASE_TABLES_ON_STARTUP**: Whether to clear all the rows
+  from database tables that store exclusively *temporary* data. This includes
+  the `hg_current_game_phases` and `hg_current_game_actions` tables.
 - **YOUTUBE_API_KEY**: The YouTube API Key. See 
   [this page](https://developers.google.com/youtube/v3) for more information.
 - **WEATHER_API_KEY**: The OpenWeatherMap API Key. See 'Current Weather Data'

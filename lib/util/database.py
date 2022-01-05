@@ -20,6 +20,11 @@ EXPECTED_DATABASE_TABLES = {
     'hg_current_game_actions': 'HG_CURRENT_GAME_ACTIONS_TABLE'
 }
 
+# List of database tables that should be emptied on startup (if set in .env file).
+TABLES_TO_CLEAR_ON_INITIALIZE = [
+    'HG_CURRENT_GAME_PHASES_TABLE', 'HG_CURRENT_GAME_ACTIONS_TABLE'
+]
+
 # List of commands that use specific database tables.
 COMMANDS_USING_DATABASE_TABLES = {
     'hungergames': ('HG_PHASES_TABLE', 'HG_ACTIONS_TABLE', 'HG_ACTION_WRAPPERS_TABLE', 'HG_CURRENT_GAME_PHASES_TABLE',
@@ -120,6 +125,18 @@ def get_filtered_by_joined(base_table, *tables_and_ons, **kwargs):
     """
     # Simple return.
     return filter_by(join(SESSION.query(base_table), *tables_and_ons), **kwargs)
+
+
+def delete_all(table):
+    """
+    Deletes all the entries from a table.
+
+    Args:
+        table (database table) : Which table to delete from.
+    """
+    # Simple one-line execution plus the commit.
+    SESSION.query(table).delete()
+    SESSION.commit()
 
 
 def delete_filtered(table, *args):
@@ -225,6 +242,7 @@ def commit_to_database(new_object):
     SESSION.add(new_object)
     SESSION.commit()
 
+
 def initialize():
     """
     Initializes the database and pulls all the required tables.
@@ -275,6 +293,12 @@ def initialize():
         # If so, set it as the attribute here.
         if hasattr(BASE.classes, database_table):
             setattr(this_module, module_table, getattr(BASE.classes, database_table))
+
+            # Next, see if we should delete from this table and do so if we should.
+            if environment.get('CLEAR_TEMPORARY_DATABASE_TABLES_ON_STARTUP') and \
+                    module_table in TABLES_TO_CLEAR_ON_INITIALIZE:
+                logging.debug(f'Deleting all rows from database table {database_table}.')
+                delete_all(getattr(this_module, module_table))
 
         # Database table does not exist, log warning.
         else:
