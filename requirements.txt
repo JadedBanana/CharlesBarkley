@@ -11,3 +11,4 @@ python-dotenv
 pytz
 sqlalchemy>=1.4
 unittest-xml-reporting>=3.0.0
+psycopg2
