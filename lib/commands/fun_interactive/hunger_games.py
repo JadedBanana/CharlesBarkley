@@ -1228,8 +1228,7 @@ def makeimage_player_statuses(player_statuses, players, placement=False, kills=F
         for i in split:
 
             # Gets pfp, pastes onto image.
-            makeimage_pfp(temp_files.get_profile_picture_by_user(players[i], size=(HG_ICON_SIZE, HG_ICON_SIZE)),
-                          player_image, player_drawer, current_x, current_y,
+            makeimage_pfp(players[i], player_image, player_drawer, current_x, current_y,
                           player_statuses[i] and not placement and not kills)
 
             # Writes name and status / placement.
@@ -1356,9 +1355,7 @@ def makeimage_action(actions, players, action_description=None):
 
         # Gets each player's pfp and pastes it onto the image.
         for i in action.players:
-            makeimage_pfp(temp_files.get_profile_picture_by_user(players[i], size=(HG_ICON_SIZE, HG_ICON_SIZE)),
-                                                                 action_image, player_drawer, current_x, current_y,
-                                                                 False)
+            makeimage_pfp(players[i], action_image, player_drawer, current_x, current_y, False)
             current_x += HG_ICON_SIZE + HG_ICON_BUFFER
 
         # Draws each part of the text.
@@ -1373,12 +1370,12 @@ def makeimage_action(actions, players, action_description=None):
     return action_image
 
 
-def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
+def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
     """
     Draws a player's pfp at the given x and y.
 
     Arguments:
-        player_pfp (PIL.Image) : The loaded profile picture.
+        user (discord.user.User) : The desired user.
         image (PIL.Image) : The base image.
         drawer (PIL.ImageDraw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
@@ -1386,6 +1383,9 @@ def makeimage_pfp(player_pfp, image, drawer, pfp_x, pfp_y, dead=False):
         dead (bool) : Whether or not this player is dead.
                       If they are dead, then their icon will be in grayscale and slightly darkened.
     """
+    # Get the player_pfp.
+    player_pfp = temp_files.get_profile_picture_by_user(player, size=(HG_ICON_SIZE, HG_ICON_SIZE))
+
     # If player dead, recolor to black and white.
     if dead:
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
