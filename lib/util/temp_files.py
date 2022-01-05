@@ -216,7 +216,8 @@ def retire_profile_picture_by_user(user, message, command_key):
                             Should be a wholly unique key for each command.
     """
     # If the user ID is in the dict, then clear the usage key.
-    if user.id in ACTIVE_PROFILE_PICTURES:
+    if user.id in ACTIVE_PROFILE_PICTURES and \
+            command_key + str(message.channel.id) in ACTIVE_PROFILE_PICTURES[user.id][1]:
         ACTIVE_PROFILE_PICTURES[user.id][1].remove(command_key + str(message.channel.id))
 
 
