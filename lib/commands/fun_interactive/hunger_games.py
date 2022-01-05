@@ -1888,7 +1888,7 @@ def generate_player_status_phase(hg_dict, previous_time_best_place):
     # For each index, 0 = alive, 1 = dead, 2 = newly dead.
     player_statuses = [((1 if player['placement'] < previous_time_best_place else 2) if player['dead'] else 0)
                        for player in hg_dict['statuses']]
-    new_deaths = len([num for num in player_statuses if num == 2])
+    new_deaths = len([num for num in player_statuses if num == 1])
 
     # Insert the new phase into the database.
     hg_dict['phases'].append(
