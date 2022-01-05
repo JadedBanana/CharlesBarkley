@@ -52,7 +52,6 @@ def initialize():
 def get_profile_picture_by_user(user, size=None):
     """
     Gets a profile picture for one-time use.
-    TODO: overhaul this shit
 
     Args:
         user (discord.user.User) : The desired user.
@@ -63,7 +62,14 @@ def get_profile_picture_by_user(user, size=None):
         PIL.Image : The profile picture as an image, if return_image is True.
     """
     # Get the image.
-    image = ACTIVE_PROFILE_PICTURES[user.id][0].copy()
+    # If the user is in the ACTIVE_PROFILE_PICTURES dict, then use that.
+    if user.id in ACTIVE_PROFILE_PICTURES:
+        image = Image.open(ACTIVE_PROFILE_PICTURES[user.id][0])
+
+    # Otherwise, download it.
+    else:
+        image_locale = download_profile_picture(user)
+        image = Image.open(image_locale)
 
     # If it should be resized, then resize it.
     if size and size > (0, 0):
@@ -74,9 +80,31 @@ def get_profile_picture_by_user(user, size=None):
     return image
 
 
-def checkout_profile_picture_by_user(user, message, command_key, return_image=True, size=None):
+async def get_profile_picture_by_user_with_typing(user, message, size=None):
     """
-    Checks out a profile picture for temporary use.
+    Gets a profile picture for one-time use.
+
+    Args:
+        user (discord.user.User) : The desired user.
+        message (discord.message.Message) : The discord message object that triggered the command.
+        size ((int, int)) : The size, represented by a 2-entry tuple of ints.
+                            Width first, then height.
+
+    Returns:
+        PIL.Image : The profile picture as an image, if return_image is True.
+    """
+    # If the user isn't downloaded yet, then run the get_profile_picture_by_user method with typing.
+    if user not in ACTIVE_PROFILE_PICTURES:
+        async with message.channel.typing():
+            return get_profile_picture_by_user(user, size=size)
+
+    # Otherwise, don't type.
+    return get_profile_picture_by_user(user, size=size)
+
+
+def checkout_profile_picture_by_user(user, message, command_key, return_image=False, size=None):
+    """
+    Checks out a profile picture for long-term use.
     Will download the profile picture if it doesn't yet exist in the files.
 
     Args:
@@ -84,36 +112,31 @@ def checkout_profile_picture_by_user(user, message, command_key, return_image=Tr
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
-        return_image (bool) : Whether or not to return the image. Defaults to True.
+        return_image (bool) : Whether to return the image. Defaults to False.
         size ((int, int)) : The size, represented by a 2-entry tuple of ints.
                             Width first, then height.
 
     Returns:
         PIL.Image : The profile picture as an image, if return_image is True.
     """
-    # First, see if the user's profile picture is already in the dict. If it isn't, then download it.
+    # First, see if the user's profile picture is already in the dict. If it isn't, then download it and slot it into
+    # the dict.
     if user.id not in ACTIVE_PROFILE_PICTURES:
-        load_profile_picture(user)
+        image_locale = download_profile_picture(user)
+        ACTIVE_PROFILE_PICTURES[user.id] = (image_locale, [command_key + str(message.channel.id)])
 
-    # Then, modify the user profile picture data.
-    ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
+    # Otherwise, just put this command key in the dict.
+    else:
+        ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
 
-    # Then if told to do so, get the image.
+    # Then, if told to do so, get the image.
     if return_image:
-        image = ACTIVE_PROFILE_PICTURES[user.id][0].copy()
-
-        # If it should be resized, then resize it.
-        if size and size > (0, 0):
-            image = image.resize((size[0], size[1]),
-                                 Image.NEAREST if image.width < size[0] or image.height < size[1] else Image.LANCZOS)
-
-        # And return the image.
-        return image
+        return get_profile_picture_by_user(user, size=size)
 
 
-async def checkout_profile_picture_by_user_with_typing(user, message, command_key, return_image=True, size=None):
+async def checkout_profile_picture_by_user_with_typing(user, message, command_key, return_image=False, size=None):
     """
-    Checks out a profile picture for temporary use.
+    Checks out a profile picture for long-term use.
     Will download the profile picture if it doesn't yet exist in the files.
     Will type in the discord channel if it has to download anything.
 
@@ -122,7 +145,7 @@ async def checkout_profile_picture_by_user_with_typing(user, message, command_ke
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
-        return_image (bool) : Whether or not to return the image. Defaults to True.
+        return_image (bool) : Whether to return the image. Defaults to False.
         size ((int, int)) : The size, represented by a 2-entry tuple of ints.
                             Width first, then height.
 
@@ -130,15 +153,15 @@ async def checkout_profile_picture_by_user_with_typing(user, message, command_ke
         PIL.Image : The profile picture as an image, if return_image is True.
     """
     # If the user isn't downloaded yet, then run the checkout_profile_picture_by_user method with typing.
-    if user not in ACTIVE_PROFILE_PICTURES:
+    if user.id not in ACTIVE_PROFILE_PICTURES:
         async with message.channel.typing():
-            return checkout_profile_picture_by_user(user, message, command_key, return_image, size)
+            return checkout_profile_picture_by_user(user, message, command_key, return_image=return_image, size=size)
 
     # Otherwise, don't type.
-    return checkout_profile_picture_by_user(user, message, command_key, return_image, size)
+    return checkout_profile_picture_by_user(user, message, command_key, return_image=return_image, size=size)
 
 
-def checkout_profile_picture_by_user_bulk(users, message, command_key):
+def checkout_profile_picture_by_user_bulk(users, message, command_key, return_image=False, size=None):
     """
     Checks out a profile picture for temporary use.
     Will download the profile picture if it doesn't yet exist in the files.
@@ -148,19 +171,16 @@ def checkout_profile_picture_by_user_bulk(users, message, command_key):
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
+        return_image (bool) : Whether to return the image. Defaults to False.
+        size ((int, int)) : The size, represented by a 2-entry tuple of ints.
+                            Width first, then height.
     """
-    # Iterate through users.
-    for user in users:
-
-        # First, see if the user's profile picture is already in the dict. If it isn't, then download it.
-        if user.id not in ACTIVE_PROFILE_PICTURES:
-            load_profile_picture(user)
-
-        # Then, modify the user profile picture data.
-        ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
+    # Run the standard version for every user.
+    return [checkout_profile_picture_by_user(user, message, command_key, return_image=return_image, size=size)
+            for user in users]
 
 
-async def checkout_profile_picture_by_user_bulk_with_typing(users, message, command_key):
+async def checkout_profile_picture_by_user_bulk_with_typing(users, message, command_key, return_image=False, size=None):
     """
     Checks out a profile picture for temporary use.
     Will download the profile picture if it doesn't yet exist in the files.
@@ -171,14 +191,18 @@ async def checkout_profile_picture_by_user_bulk_with_typing(users, message, comm
         message (discord.message.Message) : The discord message object that triggered the command.
         command_key (str) : The key that will be used to keep track of which command is using the image.
                             Should be a wholly unique key for each command.
+        return_image (bool) : Whether to return the image. Defaults to False.
+        size ((int, int)) : The size, represented by a 2-entry tuple of ints.
+                            Width first, then height.
     """
     # If there are any users not downloaded yet, then run the checkout_profile_picture_by_user_bulk method with typing.
-    if any(user not in ACTIVE_PROFILE_PICTURES for user in users):
+    if any(user.id not in ACTIVE_PROFILE_PICTURES for user in users):
         async with message.channel.typing():
-            return checkout_profile_picture_by_user_bulk(users, message, command_key)
+            return checkout_profile_picture_by_user_bulk(users, message, command_key, return_image=return_image,
+                                                         size=size)
 
     # Otherwise, don't type.
-    return checkout_profile_picture_by_user_bulk(users, message, command_key)
+    return checkout_profile_picture_by_user_bulk(users, message, command_key, return_image=return_image, size=size)
 
 
 def retire_profile_picture_by_user(user, message, command_key):
@@ -195,9 +219,6 @@ def retire_profile_picture_by_user(user, message, command_key):
     if user.id in ACTIVE_PROFILE_PICTURES:
         ACTIVE_PROFILE_PICTURES[user.id][1].remove(command_key + str(message.channel.id))
 
-    # Run the script that clears empty profile pictures.
-    clear_profile_pictures_not_in_use()
-
 
 def retire_profile_picture_by_user_bulk(users, message, command_key):
     """
@@ -210,81 +231,32 @@ def retire_profile_picture_by_user_bulk(users, message, command_key):
                             Should be a wholly unique key for each command.
     """
     # Run the user id version.
-    retire_profile_picture_by_user_id_bulk([user.id for user in users], message, command_key)
+    [retire_profile_picture_by_user(user, message, command_key) for user in users]
 
 
-def retire_profile_picture_by_user_id_bulk(user_ids, message, command_key):
-    """
-    Retires the use of a profile picture.
-
-    Args:
-        user_ids (int[]) : A list of user id's represented as ints.
-        message (discord.message.Message) : The discord message object that triggered the command.
-        command_key (str) : The key that will be used to keep track of which command is no longer using the image.
-                            Should be a wholly unique key for each command.
-    """
-    # Iterate through user id.
-    for user_id in user_ids:
-
-        # If the user ID is in the dict, then clear the usage key.
-        if user_id in ACTIVE_PROFILE_PICTURES:
-            try:
-                ACTIVE_PROFILE_PICTURES[user_id][1].remove(command_key + str(message.channel.id))
-            except ValueError:
-                pass
-
-    # Run the script that clears empty profile pictures.
-    clear_profile_pictures_not_in_use()
-
-
-def clear_profile_pictures_not_in_use():
-    """
-    Clears (deletes) profile pictures that are not in use.
-    """
-    # Iterate through all the images in the directory.
-    for profile_image in os.listdir(os.path.join(TEMP_DIR, PFP_DIR)):
-
-        # Look for instances of images not being in the ACTIVE_PROFILE_PICTURES.
-        if int(profile_image[:-len(PFP_FILETYPE)]) not in ACTIVE_PROFILE_PICTURES:
-            logging.debug(f'Tempfile management removing profile picture for '
-                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
-            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
-            continue
-
-        # Look for instances of images in the ACTIVE_PROFILE_PICTURES not having any active users.
-        if not ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])][1]:
-            logging.debug(f'Tempfile management removing profile picture for '
-                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
-            del ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])]
-            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
-
-
-def load_profile_picture(user):
+def download_profile_picture(user):
     """
     Gets the profile picture for a user and slots it into the dict.
 
     Args:
         user (discord.user.User) : The desired profile picture's user.
+
+    Returns:
+        str : Where the image was saved.
     """
     # Log that we're downloading it.
     logging.debug(f'Tempfile management downloading profile picture for user id {user.id}')
 
-    # Gets the user's avatar URL.
-    pfp_url = user.avatar
+    # Downloads image in bytes.
+    image_bytes = requests.get(user.avatar).content
 
-    # Downloads image in bytes
-    image_bytes = requests.get(pfp_url).content
-
-    # Writes image to disk
+    # Writes image to disk.
     image_locale = os.path.join(TEMP_DIR, PFP_DIR, str(user.id) + PFP_FILETYPE)
     with open(image_locale, 'wb') as w:
         w.write(image_bytes)
 
-    # Opens as image
-    image = Image.open(image_locale)
-
-    # Slots it all into the dict.
-    ACTIVE_PROFILE_PICTURES[user.id] = (image, [])
+    # Return.
+    return image_locale
 
 
 def save_temporary_image(image):
@@ -320,9 +292,10 @@ def save_temporary_text_file(text_str):
         str : The text file's path.
     """
     # Get the filename.
-    text_file_path = os.path.join(TEMP_DIR,
-                              ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH))
-                              + TEMP_FILE_FILETYPE)
+    text_file_path = os.path.join(
+        TEMP_DIR,
+        ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH)) + TEMP_FILE_FILETYPE
+    )
 
     # Save.
     with open(text_file_path, 'w') as file:
@@ -330,6 +303,28 @@ def save_temporary_text_file(text_str):
 
     # Return the filename.
     return text_file_path
+
+
+def clear_profile_pictures_not_in_use():
+    """
+    Clears (deletes) profile pictures that are not in use.
+    """
+    # Iterate through all the images in the directory.
+    for profile_image in os.listdir(os.path.join(TEMP_DIR, PFP_DIR)):
+
+        # Look for instances of images not being in the ACTIVE_PROFILE_PICTURES.
+        if int(profile_image[:-len(PFP_FILETYPE)]) not in ACTIVE_PROFILE_PICTURES:
+            logging.debug(f'Tempfile management removing profile picture for '
+                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
+            continue
+
+        # Look for instances of images in the ACTIVE_PROFILE_PICTURES not having any active users.
+        if not ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])][1]:
+            logging.debug(f'Tempfile management removing profile picture for '
+                          f'user id {profile_image[:-len(PFP_FILETYPE)]}')
+            del ACTIVE_PROFILE_PICTURES[int(profile_image[:-len(PFP_FILETYPE)])]
+            os.remove(os.path.join(TEMP_DIR, PFP_DIR, profile_image))
 
 
 def clear_all_temporary_files():
@@ -381,6 +376,9 @@ class TempFilesThread(threading.Thread):
 
             # Delete old temporary files.
             clear_old_temporary_files()
+
+            # Delete old profile pictures.
+            clear_profile_pictures_not_in_use()
 
             # Wait until next time to delete.
             time.sleep(TEMP_FILES_DELETION_INTERVAL)

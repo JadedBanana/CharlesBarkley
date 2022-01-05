@@ -255,7 +255,7 @@ async def hunger_games_detect_expiration(bot, message):
 
             # Retire the existing players' profile pictures.
             if 'players' in hg_dict:
-                temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+                temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
             # Send a message quoting inactivity.
             logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
@@ -751,7 +751,7 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
 
         # Retire the existing players' profile pictures.
         if 'players' in hg_dict:
-            temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+            temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
@@ -847,7 +847,7 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
 
     # Retire the existing players' profile pictures.
     if 'players' in hg_dict:
-        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+        temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
 
 async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
@@ -2088,7 +2088,7 @@ async def pregame_shuffle(message, player_count, hg_dict):
     # from reloading repeat players).
     if 'players' in hg_dict:
         temp_files.checkout_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_shuffle')
-        temp_files.retire_profile_picture_by_user_id_bulk(hg_dict['players'], message, 'hg_filehold')
+        temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
     # If the player count is more than the max or less than the minimum, set them to their capstone values.
     player_count = min(player_count, HG_MAX_GAMESIZE)
