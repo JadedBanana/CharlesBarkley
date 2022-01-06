@@ -12,7 +12,7 @@ from lib.util import assets, messaging, parsing
 HELP_EMBED_COLOR = (107 << 16) + (115 << 8) + 135
 HELP_EMBED_DESCRIPTION = '''Type `{0}help [command]` for more help eg. `{0}help randomwiki`'''
 HOME_HELP_PAGE_CUSTOM_CATEGORY_HEADERS = {
-    'fun_interactive': 'Interactive Fun',
+    'fun_interactive': 'Interactive Games',
     'fun_simple': 'Simple Fun',
     'info': 'Info',
     'math': 'Math',
