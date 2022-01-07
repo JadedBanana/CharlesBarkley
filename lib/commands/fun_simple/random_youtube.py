@@ -120,9 +120,12 @@ async def quota_reached_send_message(message):
     await messaging.send_text_message(message, f'Youtube quota of 100 videos reached. Try again in {quota_str}')
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging

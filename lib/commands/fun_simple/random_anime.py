@@ -223,7 +223,7 @@ def add_user_list_to_preloaded(anime_list_json):
             PRELOADED_ANIME_URLS[anime['mal_id']] = anime['url']
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
     In this case, uses environment variables to set default values.

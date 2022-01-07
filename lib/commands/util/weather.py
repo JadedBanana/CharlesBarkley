@@ -693,9 +693,12 @@ async def weather(message, argument):
     await messaging.send_embed_without_local_image(message, embed)
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging

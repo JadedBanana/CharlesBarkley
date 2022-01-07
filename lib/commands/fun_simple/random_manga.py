@@ -223,10 +223,13 @@ def add_user_list_to_preloaded(manga_list_json):
             PRELOADED_MANGA_URLS[manga['mal_id']] = manga['url']
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
     In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging

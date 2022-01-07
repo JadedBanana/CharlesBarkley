@@ -38,7 +38,7 @@ BASHFUL_MESSAGES = [
     "Wh-?! What's with that look?! It's not like I like {1} or anything!",
     'Ah... I guess... {1} would be a good match for me.'
 ]
-BOT_USER = None  # Initialized in initialize method
+BOT = None  # Initialized in initialize method
 
 
 async def ship(message, argument):
@@ -75,11 +75,11 @@ async def ship(message, argument):
         # Grab partner 1, if necessary
         if not partner_1:
             partner_1 = random.choice(
-                discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=[BOT_USER]))
+                discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=[BOT.user]))
 
         # Grab partner 2.
         partner_2 = random.choice(discord_info.get_applicable_users(message, exclude_bots=True, exclude_users=[
-            BOT_USER, partner_1
+            BOT.user, partner_1
         ]))
 
         # Log this ship
@@ -105,7 +105,7 @@ async def ship(message, argument):
         # Sends the simple image-based embed.
         # Vary the title based on whether this bot is getting shipped.
         await messaging.send_image_based_embed(message, together_canvas, random.choice(
-            BASHFUL_MESSAGES if partner_1 == BOT_USER else NORMAL_MESSAGES).format(
+            BASHFUL_MESSAGES if partner_1 == BOT.user else NORMAL_MESSAGES).format(
             partner_1.display_name, partner_2.display_name
         ), EMBED_COLOR)
 
@@ -134,8 +134,8 @@ def initialize(bot):
     logging.debug('Initializing fun_simple.ship...')
 
     # Set global variables.
-    global BOT_USER
-    BOT_USER = bot.user
+    global BOT
+    BOT = bot
 
 
 # Command values

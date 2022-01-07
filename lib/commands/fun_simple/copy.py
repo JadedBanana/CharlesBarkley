@@ -13,7 +13,7 @@ import discord
 
 # Dict of copied users, keyed by guild / channel. Also the bot user.
 COPIED_USERS = {}
-BOT_USER = None  # Initialized in initialize method
+BOT = None  # Initialized in initialize method
 
 
 async def copy_msg(message):
@@ -64,7 +64,7 @@ async def copy_user(message, argument):
     copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
 
     # Checks to make sure the mentioned user isn't the bot itself.
-    if user.id == BOT_USER.id:
+    if user.id == BOT.user.id:
         logging.debug(message, 'requested copy for this bot')
         return await messaging.send_text_message(message, 'Ha, ha. Very funny. No.')
 
@@ -116,8 +116,8 @@ def initialize(bot):
     logging.debug('Initializing fun_simple.copy...')
 
     # Set global variables.
-    global BOT_USER
-    BOT_USER = bot.user
+    global BOT
+    BOT = bot
 
 
 # Command values
