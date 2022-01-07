@@ -23,7 +23,7 @@ def channel_in_game(channel_id):
     return any(channel_id in game_dict for game_dict in GAME_DICTS)
 
 
-def send_game_in_progress_message(message):
+async def send_game_in_progress_message(message):
     """
     Sends a text message back to the channel the trigger message came from notifying them that a game is already in
     progress.
@@ -32,4 +32,4 @@ def send_game_in_progress_message(message):
         message (discord.message.Message) : The discord message object that triggered the command.
     """
     # Simply send the message.
-    await messaging.send_text_message(message, 'There is already a game active in this channel.')
+    await messaging.send_text_message(message, 'There is already a game in progress in this channel.')
