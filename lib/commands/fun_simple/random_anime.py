@@ -133,7 +133,7 @@ async def get_random_anime_from_default_user(message):
     Gets a random anime from the default user.
     Basically, just picks a random anime from their list.
     Ideally, the default user has a LOT of anime in their list.
-    Will act differently depending on whether or not everything is preloaded.
+    Will act differently depending on whether everything is preloaded.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.

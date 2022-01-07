@@ -354,7 +354,7 @@ async def help_command(bot, message, argument):
         else:
             await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
 
-    # Otherwise, send a different one depending on whether or not the author is a developer.
+    # Otherwise, send a different one depending on whether the author is a developer.
     elif message.author.id in bot.developer_ids:
         logging.debug(message, 'requested developer home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,

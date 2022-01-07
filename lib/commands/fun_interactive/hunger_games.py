@@ -1193,7 +1193,7 @@ def do_increment_act_check(hg_dict, count, do_previous):
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
     if current_phase[0] == 'act':
 
-        # If so, then set the action indexes depending on whether or not we're going backwards.
+        # If so, then set the action indexes depending on whether we're going backwards.
         # Backwards gets put at the end.
         if do_previous:
             hg_dict['action_max_index'] = current_phase[2] - 1

@@ -9,8 +9,8 @@ from lib.util import messaging
 
 async def toggle_ignore_dev(bot, message, argument=None):
     """
-    Toggles whether or not to ignore the developer.
-    The response varies depending on whether or not this is the deployment version.
+    Toggles whether to ignore the developer.
+    The response varies depending on whether this is the deployment version.
 
     Arguments:
         bot (lib.bot.JadieClient) : The bot object that called this command.
@@ -43,8 +43,8 @@ HELP_DOCUMENTATION_LIST = [
     {
         'command_name': 'toggleignoredev',
         'category': 'dev_only',
-        'description': 'Toggles whether or not to ignore developers. Can only be used by developers, and only works on deployment verions.',
-        'examples': [('toggleignoredev', 'Toggles whether or not to ignore the developer.')],
+        'description': 'Toggles whether to ignore developers. Can only be used by developers, and only works on deployment verions.',
+        'examples': [('toggleignoredev', 'Toggles whether to ignore the developer.')],
         'aliases': ['toggleignoredevs', 'toggleignoredeveloper', 'toggleignoredevelopers'],
         'usages': ['toggleignoredev']
     }

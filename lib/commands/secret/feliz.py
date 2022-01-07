@@ -266,7 +266,7 @@ async def feliz_domingo(bot, message, argument):
 async def feliz_send_image(message, day, angry):
     """
     The feliz sending function.
-    Sends the image based on the day and whether or not they're angry.
+    Sends the image based on the day and whether they're angry.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.

@@ -103,7 +103,7 @@ async def ship(bot, message, argument):
         together_canvas.paste(partner_2_img, (ICON_SIZE * 2, 0))
 
         # Sends the simple image-based embed.
-        # Vary the title based on whether or not this bot is getting shipped.
+        # Vary the title based on whether this bot is getting shipped.
         await messaging.send_image_based_embed(message, together_canvas, random.choice(
             BASHFUL_MESSAGES if partner_1 == bot.user else NORMAL_MESSAGES).format(
             partner_1.display_name, partner_2.display_name

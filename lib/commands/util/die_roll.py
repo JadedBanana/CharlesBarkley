@@ -193,7 +193,7 @@ async def parse_sides(message, argument):
         argument (str) : The command's argument, if any.
 
     Returns:
-        int, bool : The found addendum and whether or not the sides are valid.
+        int, bool : The found addendum and whether the sides are valid.
     """
     # Detect remaining number.
     try:
