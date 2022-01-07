@@ -5,7 +5,6 @@ If any of them exit unexpectedly, then watchdog will exit, too.
 # Package Imports
 import threading
 import logging
-import sys
 
 # Constants setting
 THREAD_CHECK_INTERVAL_SECONDS = 5
