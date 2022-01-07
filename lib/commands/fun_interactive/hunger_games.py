@@ -389,7 +389,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
                     if player not in hg_dict['players']:
 
                         # Add the player into the game.
-                        hg_dict['players'].append(player)
+                        hg_dict['players'].append(discord_info.LightweightUser(player))
 
                         # Checkout their profile picture.
                         await temp_files.checkout_profile_picture_by_user_with_typing(player, message, 'hg_filehold',
@@ -447,7 +447,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
         # With the user list, grab a random user.
         added_user = random.choice(user_list)
-        hg_dict['players'].append(added_user)
+        hg_dict['players'].append(discord_info.LightweightUser(added_user))
 
         # Checkout the added user.
         await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold',
@@ -591,7 +591,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
             # If there are other players, add a random one and checkout their profile picture.
             if other_players:
                 added_player = random.choice(other_players)
-                hg_players_no_bots.append(added_player)
+                hg_players_no_bots.append(discord_info.LightweightUser(added_player))
                 await temp_files.checkout_profile_picture_by_user_with_typing(added_player, message, 'hg_filehold',
                                                                               return_image=False)
 
@@ -2146,7 +2146,7 @@ async def pregame_shuffle(message, player_count, hg_dict):
     # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
     for i in range(min(player_count, len(user_list))):
         next_player = random.choice(user_list)
-        hg_players.append(next_player)
+        hg_players.append(discord_info.LightweightUser(next_player))
         user_list.remove(next_player)
 
     # Checkout file holdings for all the profile pictures and retire the shuffle checkout.

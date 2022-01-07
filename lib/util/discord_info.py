@@ -192,3 +192,24 @@ async def get_secondmost_recent_message(message):
     # If there's an index error, raise the FirstMessageInChannelError.
     except IndexError:
         raise FirstMessageInChannelError()
+
+
+class LightweightUser:
+    """
+    LightweightUser class is made to store a user object in a more lightweight way.
+    """
+
+    def __init__(self, base_user):
+        """
+        Initializes the LightweightUser object.
+
+        Arguments:
+            base_user (discord.User) : The user to base this lightweight user off of.
+        """
+        # Copy over variables.
+        self.id = base_user.id
+        self.name = base_user.name
+        self.display_name = base_user.display_name
+        self.bot = base_user.bot
+        self.roles = base_user.roles if hasattr(base_user, 'roles') else []
+        self.avatar = base_user.avatar
