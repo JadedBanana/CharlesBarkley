@@ -29,13 +29,12 @@ YOUTUBE_RICKROLL_CHANCE = 0.002
 YOUTUBE_QUOTA_REACHED = False
 
 
-async def random_youtube_master(bot, message, argument):
+async def random_youtube_master(message, argument):
     """
     Generates a random youtube link.
     In the case of the Youtube Token Quota being hit, an appropriate error message will be presented to the user.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

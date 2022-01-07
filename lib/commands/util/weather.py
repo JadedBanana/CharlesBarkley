@@ -601,12 +601,11 @@ def format_temperature(temp_kelvin):
            f'{int((temp_kelvin - WEATHER_KELVIN_SUB) * 1.8 + 32 + 0.5)}\N{DEGREE SIGN}F'
 
 
-async def weather(bot, message, argument):
+async def weather(message, argument):
     """
     Gets the current weather for the given city/state/province.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

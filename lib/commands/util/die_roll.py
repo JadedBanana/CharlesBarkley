@@ -21,13 +21,12 @@ EMBED_COLOR = (221 << 16) + (46 << 8) + 68
 EMBED_TITLE = ':game_die: Rolling Dice'
 
 
-async def die_roll(bot, message, argument):
+async def die_roll(message, argument):
     """
     Performs a roll of the die.
     Die roll can vary per arguments.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

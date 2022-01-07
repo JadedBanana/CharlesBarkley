@@ -7,12 +7,11 @@ from lib.util.logger import BotLogger as logging
 from lib.util import arguments, messaging, misc
 
 
-async def duodecimal(bot, message, argument):
+async def duodecimal(message, argument):
     """
     Converts a number to duodecimal.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

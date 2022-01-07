@@ -144,12 +144,11 @@ NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
 EXPIRE_SECONDS = None  # Initialized in initialize method
 
 
-async def hunger_games_start(bot, message, argument):
+async def hunger_games_start(message, argument):
     """
     Creates a hunger games simulator right inside the bot.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -173,7 +172,7 @@ async def hunger_games_start(bot, message, argument):
             return await game_manager.send_game_in_progress_message(message)
 
         # Finally, perform the update function.
-        return await hunger_games_update(bot, message)
+        return await hunger_games_update(message)
 
     # If a different game is in progress, send a message saying you can only have one game at a time.
     elif game_manager.channel_in_game(hg_key):
@@ -212,12 +211,11 @@ async def hunger_games_start(bot, message, argument):
     logging.debug(message, f'started Hunger Games instance with {len(hg_dict["players"])} players')
 
 
-async def hunger_games_update(bot, message):
+async def hunger_games_update(message):
     """
     Updates the hunger games dict for the message's channel, if it exists.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Gets the key.
@@ -251,12 +249,11 @@ async def hunger_games_update(bot, message):
     hg_dict['updated'] = datetime.today()
 
 
-async def hunger_games_detect_expiration(bot, message):
+async def hunger_games_detect_expiration(message):
     """
     Detects expired hunger games instances and deletes them.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # If there are no active games, return.

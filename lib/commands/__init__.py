@@ -340,7 +340,7 @@ async def run_standard_command(command_name, command_method, bot, message, argum
 
         # Otherwise, run the command.
         else:
-            await command_method(bot, message, argument)
+            await command_method(message, argument)
 
     # On exception, report the error back to the user.
     except Exception as e:

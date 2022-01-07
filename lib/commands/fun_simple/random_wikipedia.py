@@ -11,12 +11,11 @@ from lib.util import messaging
 import wikipedia
 
 
-async def random_wikipedia(bot, message, argument):
+async def random_wikipedia(message, argument):
     """
     Generates a random wikipedia link and sends it.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

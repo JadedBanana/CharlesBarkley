@@ -15,12 +15,11 @@ import logging
 REPORTS_CHANNEL_ID = 917484720701444176
 
 
-async def report(bot, message, argument):
+async def report(message, argument):
     """
     Creates a report and sends it to the reports channel in the Jadi3Pi development server.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

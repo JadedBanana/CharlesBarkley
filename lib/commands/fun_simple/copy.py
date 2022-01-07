@@ -15,12 +15,11 @@ import discord
 COPIED_USERS = {}
 
 
-async def copy_msg(bot, message):
+async def copy_msg(message):
     """
     Copies a user's message if they have been deemed COPIABLE by someone.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # If this is in a guild, check for the guild id in the COPIED_USERS. Otherwise, check using the channel id.
@@ -31,13 +30,12 @@ async def copy_msg(bot, message):
         await messaging.send_text_message(message, message.content)
 
 
-async def copy_user(bot, message, argument):
+async def copy_user(message, argument):
     """
     Marks a user down as COPIABLE.
     Copiable users will be copied in every message they send.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -82,12 +80,11 @@ async def copy_user(bot, message, argument):
         logging.debug(message, 'requested copy for user ' + str(user) + ', already copying')
 
 
-async def stop_copying(bot, message, argument):
+async def stop_copying(message, argument):
     """
     Stops copying everyone in a server / channel.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

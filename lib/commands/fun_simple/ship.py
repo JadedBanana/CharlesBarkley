@@ -40,14 +40,13 @@ BASHFUL_MESSAGES = [
 ]
 
 
-async def ship(bot, message, argument):
+async def ship(message, argument):
     """
     Ships 2 or more users together.
     If a user isn't tagged, it ships 2 random users together.
     If a user IS tagged, it ships them with someone random.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

@@ -18,12 +18,11 @@ REBOOT_USER = None
 REBOOT_CHANNEL = None
 
 
-async def confirm_reboot(bot, message):
+async def confirm_reboot(message):
     """
     Confirms or denies the reboot.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Make sure that the variables are set.
@@ -67,7 +66,7 @@ async def confirm_reboot(bot, message):
         await messaging.send_text_message(message, 'Invalid response. Confirm? (y/n)')
 
 
-async def remote_reboot(bot, message, argument):
+async def remote_reboot(message, argument):
     """
     Since this bot runs on automatic crontabs, we can just exit and assume the scheduling will do the rest.
     However, we don't wanna reboot all willy-nilly.
@@ -75,7 +74,6 @@ async def remote_reboot(bot, message, argument):
     This just sets the flag for a reboot.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

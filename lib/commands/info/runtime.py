@@ -11,12 +11,11 @@ from lib.util import messaging
 from datetime import datetime
 
 
-async def runtime(bot, message, argument):
+async def runtime(message, argument):
     """
     Prints out the runtime of the bot.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

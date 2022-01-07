@@ -7,12 +7,11 @@ from lib.util.logger import BotLogger as logging
 from lib.util import messaging, temp_files
 
 
-async def active_pfps(bot, message, argument):
+async def active_pfps(message, argument):
     """
     Gets all the active profile pictures.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

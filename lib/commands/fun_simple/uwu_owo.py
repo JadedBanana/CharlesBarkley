@@ -191,12 +191,11 @@ async def uwu_owo_master(message, argument, use_owo=False):
         pass
 
 
-async def uwuify(bot, message, argument):
+async def uwuify(message, argument):
     """
     Converts a message / argument to uwu-speak and sends it back.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -204,12 +203,11 @@ async def uwuify(bot, message, argument):
     await uwu_owo_master(message, argument, False)
 
 
-async def owoify(bot, message, argument):
+async def owoify(message, argument):
     """
     Converts a message / argument to owo-speak and sends it back.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

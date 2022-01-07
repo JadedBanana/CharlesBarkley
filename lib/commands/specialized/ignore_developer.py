@@ -7,13 +7,12 @@ from lib.util.logger import BotLogger as logging
 from lib.util import messaging
 
 
-async def toggle_ignore_dev(bot, message, argument=None):
+async def toggle_ignore_dev(message, argument=None):
     """
     Toggles whether to ignore the developer.
     The response varies depending on whether this is the deployment version.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

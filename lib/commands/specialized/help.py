@@ -327,13 +327,12 @@ def generate_command_specific_help_page_embeds(global_prefix, command_name, comm
     return embed
 
 
-async def help_command(bot, message, argument):
+async def help_command(message, argument):
     """
     The help command function.
     Displays the appropriate help page for the argument / author specified.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

@@ -26,13 +26,12 @@ PRELOADED_DEFAULT_PAGES = []
 ALL_DEFAULT_PAGES_PRELOADED = False
 
 
-async def random_anime_master(bot, message, argument):
+async def random_anime_master(message, argument):
     """
     Generates a random anime page from MyAnimeList and sends it to the user.
     If a valid MAL username is passed, it will pull a random anime from that user's plan to watch list.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

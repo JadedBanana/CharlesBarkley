@@ -12,14 +12,13 @@ import discord
 import os
 
 
-async def disable_command(bot, message, argument):
+async def disable_command(message, argument):
     """
     Disables the given command.
     Operates on a method-level basis, meaning that commands get their METHODS disabled rather than the actual strings.
     Developer-only commands cannot be disabled.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -49,14 +48,13 @@ async def disable_command(bot, message, argument):
     await messaging.send_text_message(message, f"Command {enabled_method} has been disabled.")
 
 
-async def enable_command(bot, message, argument):
+async def enable_command(message, argument):
     """
     Disables the given command.
     Operates on a method-level basis, meaning that commands get their METHODS disabled rather than the actual strings.
     Developer-only commands cannot be disabled.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -86,12 +84,11 @@ async def enable_command(bot, message, argument):
     await messaging.send_text_message(message, f"Command {disabled_method} has been enabled.")
 
 
-async def list_disabled_commands(bot, message, argument):
+async def list_disabled_commands(message, argument):
     """
     Lists all the currently disabled commands.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
