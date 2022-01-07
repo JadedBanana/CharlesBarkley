@@ -24,7 +24,13 @@ BASIC_REPLACE_DICT = {
     'no': 'nyo',
     'No': 'Nyo',
     'NO': 'NYO',
-    'nO': 'nYO'
+    'nO': 'nYO',
+    'widdwe': 'widdle',
+    'WIDDWE': 'WIDDLE',
+    'Widdwe': 'Widdle',
+    'wIDDWE': 'wIDDLE',
+    'wIdDwE': 'wIdDlE',
+    'WiDdWe': 'WiDdLe'
 }
 UWU_FACES = {
     ':)': 'uwu', ':(': 'umu', ':|': 'u_u', ':-)': 'uwu', ':-(': 'umu', ':-|': 'u_u', '^_^': 'uwu',
