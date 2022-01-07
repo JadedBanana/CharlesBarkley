@@ -161,8 +161,18 @@ async def hunger_games_start(bot, message, argument):
     # Gets the hunger games key (channel id).
     hg_key = str(message.channel.id)
 
-    # If a game is already in progress, we forward this message to the update function.
+    # If a game is already in progress, we perform a host check.
     if hg_key in CURRENT_GAMES:
+
+        # No host, make this user the host and proceed.
+        if 'host' not in CURRENT_GAMES[hg_key]:
+            CURRENT_GAMES[hg_key]['host'] = message.author
+
+        # Host is not this user, send the game in progress message.
+        elif message.author.id != CURRENT_GAMES[hg_key]['host'].id:
+            return await game_manager.send_game_in_progress_message(message)
+
+        # Finally, perform the update function.
         return await hunger_games_update(bot, message)
 
     # If a different game is in progress, send a message saying you can only have one game at a time.
@@ -194,6 +204,7 @@ async def hunger_games_start(bot, message, argument):
     # Set in the hunger games dict.
     hg_dict['past_pregame'] = False
     hg_dict['updated'] = datetime.today()
+    hg_dict['host'] = message.author
     CURRENT_GAMES[hg_key] = hg_dict
 
     # Send the initial cast
@@ -218,6 +229,10 @@ async def hunger_games_update(bot, message):
 
     # Loads the hg_dict.
     hg_dict = CURRENT_GAMES[hg_key]
+
+    # Checks to make sure the author is the host.
+    if hg_dict['host'].id != message.author.id:
+        return
 
     # Splits the response out of the message content and into a list.
     response = parsing.normalize_string(message.content).lower().split(' ')
@@ -915,7 +930,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
                                            footer=HG_PREGAME_DESCRIPTION.format(
-                                               'Disallow' if hg_dict['uses_bots'] else 'Allow'))
+                                               'Disallow' if hg_dict['uses_bots'] else 'Allow'),
+                                           description=f"Hosted by {hg_dict['host'].display_name}")
 
 
 async def send_midgame(message, hg_dict):
@@ -983,7 +999,7 @@ async def send_midgame(message, hg_dict):
         await messaging.send_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description if action_min_index == 0 else None),
-            title, HG_EMBED_COLOR, footer_str
+            title, HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for win AND tie pages.
@@ -998,7 +1014,7 @@ async def send_midgame(message, hg_dict):
         await messaging.send_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description), phase_object.title,
-            HG_EMBED_COLOR, footer_str
+            HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for status pages.
@@ -1015,7 +1031,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(phase_object.player_statuses, hg_dict['players']),
             f'{new_deaths} cannon shot{"" if new_deaths == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
-            footer_str
+            footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for placement pages.
@@ -1034,7 +1050,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(sorted_placements, sorted_players,
                                       placement=max([1] + phase_object.player_statuses)),
-            'Placements', HG_EMBED_COLOR, footer_str
+            'Placements', HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for killcount pages.
@@ -1054,7 +1070,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(sorted_kills, sorted_players,
                                       kills=max([1] + phase_object.player_statuses)),
-            'Kills', HG_EMBED_COLOR, footer_str
+            'Kills', HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # If there's an unexpected phase type, raise an exception.
