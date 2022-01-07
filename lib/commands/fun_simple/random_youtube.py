@@ -125,6 +125,10 @@ def initialize():
     """
     Initializes the command.
     """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_simple.random_youtube...')
+
     # Sets some global variables using environment.get
     global YOUTUBE_API_KEY
     YOUTUBE_API_KEY = environment.get('YOUTUBE_API_KEY')

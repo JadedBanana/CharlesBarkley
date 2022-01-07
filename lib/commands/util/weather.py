@@ -698,6 +698,10 @@ def initialize():
     """
     Initializes the command.
     """
+    # Log.
+    import logging
+    logging.debug('Initializing util.weather...')
+
     # Sets some global variables using environment.get
     global WEATHER_API_KEY
     WEATHER_API_KEY = environment.get('WEATHER_API_KEY')
