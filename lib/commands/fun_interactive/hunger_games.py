@@ -1695,12 +1695,13 @@ def generate_actions_trigger(trigger_action_wrapper, hg_statuses, available_play
     """
     # First, check and make sure that there are enough players available for this trigger to happen,
     # for both success and fail.
-    if (trigger_action_wrapper.success_action_ids and (not trigger_action_wrapper.success_actions or
-        len(available_players) < min(action.extra_players + 1
-                                     for action in trigger_action_wrapper.success_actions))) or \
-        (trigger_action_wrapper.failure_action_ids and (not trigger_action_wrapper.failure_actions or
-         len(available_players) < min(action.extra_players + 1
-                                      for action in trigger_action_wrapper.failure_actions))):
+    if (
+            trigger_action_wrapper.success_actions and
+            len(available_players) < min(action.extra_players + 1 for action in trigger_action_wrapper.success_actions)
+    ) or (
+            trigger_action_wrapper.failure_actions and
+            len(available_players) < min(action.extra_players + 1 for action in trigger_action_wrapper.failure_actions)
+    ):
         return
 
     # Next, establish variables for the for loop.
@@ -2030,28 +2031,36 @@ def get_trigger_actions_by_phase(phase, extra_players=None):
     # Next, iterate through the trigger actions and get each child action, if any.
     for action_wrapper in trigger_action_wrappers:
 
+        # Instantiate each list.
+        action_wrapper.success_actions = []
+        action_wrapper.failure_actions = []
+
         # Success actions
         if action_wrapper.success_action_ids:
-            action_wrapper.success_actions = []
 
             # If extra_players is set, filter by that too. Otherwise, just grab normally.
-            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
-                                 for success_action_id in action_wrapper.success_action_ids] \
-                    if isinstance(extra_players, int) else \
-                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
-                                                          extra_players=extra_players)
-                                 for success_action_id in action_wrapper.success_action_ids]:
+            for action_query in [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
+                                         extra_players=extra_players)
+                for success_action_id in action_wrapper.success_action_ids
+            ] if isinstance(extra_players, int) else [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
+                for success_action_id in action_wrapper.success_action_ids
+            ]:
                 action_wrapper.success_actions += [action for action in action_query]
 
         # Failure actions
         if action_wrapper.failure_action_ids:
-            action_wrapper.failure_actions = []
-            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
-                                 for failure_action_id in action_wrapper.failure_action_ids] \
-                    if isinstance(extra_players, int) else \
-                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
-                                                          extra_players=extra_players)
-                                 for failure_action_id in action_wrapper.failure_action_ids]:
+
+            # If extra_players is set, filter by that too. Otherwise, just grab normally.
+            for action_query in [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
+                                         extra_players=extra_players)
+                for failure_action_id in action_wrapper.failure_action_ids
+            ] if isinstance(extra_players, int) else [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
+                for failure_action_id in action_wrapper.failure_action_ids
+            ]:
                 action_wrapper.failure_actions += [action for action in action_query]
 
     # Return.
