@@ -6,6 +6,7 @@ Essentially a BrantSteele simulator simulator.
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
 from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, temp_files
+from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
 
@@ -160,9 +161,24 @@ async def hunger_games_start(bot, message, argument):
     # Gets the hunger games key (channel id).
     hg_key = str(message.channel.id)
 
-    # If a game is already in progress, we forward this message to the update function.
+    # If a game is already in progress, we perform a host check.
     if hg_key in CURRENT_GAMES:
+
+        # No host, make this user the host and proceed.
+        if 'host' not in CURRENT_GAMES[hg_key]:
+            CURRENT_GAMES[hg_key]['host'] = message.author
+
+        # Host is not this user, send the game in progress message.
+        elif message.author.id != CURRENT_GAMES[hg_key]['host'].id:
+            return await game_manager.send_game_in_progress_message(message)
+
+        # Finally, perform the update function.
         return await hunger_games_update(bot, message)
+
+    # If a different game is in progress, send a message saying you can only have one game at a time.
+    elif game_manager.channel_in_game(hg_key):
+        logging.debug(message, 'requested hunger games, but other game active')
+        return await game_manager.send_game_in_progress_message(message)
 
     # Otherwise, we instantiate a game.
     # Gets argument for how many users to start hg with.
@@ -188,6 +204,7 @@ async def hunger_games_start(bot, message, argument):
     # Set in the hunger games dict.
     hg_dict['past_pregame'] = False
     hg_dict['updated'] = datetime.today()
+    hg_dict['host'] = message.author
     CURRENT_GAMES[hg_key] = hg_dict
 
     # Send the initial cast
@@ -212,6 +229,10 @@ async def hunger_games_update(bot, message):
 
     # Loads the hg_dict.
     hg_dict = CURRENT_GAMES[hg_key]
+
+    # Checks to make sure the author is the host.
+    if hg_dict['host'].id != message.author.id:
+        return
 
     # Splits the response out of the message content and into a list.
     response = parsing.normalize_string(message.content).lower().split(' ')
@@ -909,7 +930,8 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
                                            footer=HG_PREGAME_DESCRIPTION.format(
-                                               'Disallow' if hg_dict['uses_bots'] else 'Allow'))
+                                               'Disallow' if hg_dict['uses_bots'] else 'Allow'),
+                                           description=f"Hosted by {hg_dict['host'].display_name}")
 
 
 async def send_midgame(message, hg_dict):
@@ -977,7 +999,7 @@ async def send_midgame(message, hg_dict):
         await messaging.send_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description if action_min_index == 0 else None),
-            title, HG_EMBED_COLOR, footer_str
+            title, HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for win AND tie pages.
@@ -992,7 +1014,7 @@ async def send_midgame(message, hg_dict):
         await messaging.send_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description), phase_object.title,
-            HG_EMBED_COLOR, footer_str
+            HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for status pages.
@@ -1009,7 +1031,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(phase_object.player_statuses, hg_dict['players']),
             f'{new_deaths} cannon shot{"" if new_deaths == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
-            footer_str
+            footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for placement pages.
@@ -1028,7 +1050,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(sorted_placements, sorted_players,
                                       placement=max([1] + phase_object.player_statuses)),
-            'Placements', HG_EMBED_COLOR, footer_str
+            'Placements', HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # Creates embed for killcount pages.
@@ -1048,7 +1070,7 @@ async def send_midgame(message, hg_dict):
             message,
             makeimage_player_statuses(sorted_kills, sorted_players,
                                       kills=max([1] + phase_object.player_statuses)),
-            'Kills', HG_EMBED_COLOR, footer_str
+            'Kills', HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
         )
 
     # If there's an unexpected phase type, raise an exception.
@@ -1673,12 +1695,13 @@ def generate_actions_trigger(trigger_action_wrapper, hg_statuses, available_play
     """
     # First, check and make sure that there are enough players available for this trigger to happen,
     # for both success and fail.
-    if (trigger_action_wrapper.success_action_ids and (not trigger_action_wrapper.success_actions or
-        len(available_players) < min(action.extra_players + 1
-                                     for action in trigger_action_wrapper.success_actions))) or \
-        (trigger_action_wrapper.failure_action_ids and (not trigger_action_wrapper.failure_actions or
-         len(available_players) < min(action.extra_players + 1
-                                      for action in trigger_action_wrapper.failure_actions))):
+    if (
+            trigger_action_wrapper.success_actions and
+            len(available_players) < min(action.extra_players + 1 for action in trigger_action_wrapper.success_actions)
+    ) or (
+            trigger_action_wrapper.failure_actions and
+            len(available_players) < min(action.extra_players + 1 for action in trigger_action_wrapper.failure_actions)
+    ):
         return
 
     # Next, establish variables for the for loop.
@@ -2008,28 +2031,36 @@ def get_trigger_actions_by_phase(phase, extra_players=None):
     # Next, iterate through the trigger actions and get each child action, if any.
     for action_wrapper in trigger_action_wrappers:
 
+        # Instantiate each list.
+        action_wrapper.success_actions = []
+        action_wrapper.failure_actions = []
+
         # Success actions
         if action_wrapper.success_action_ids:
-            action_wrapper.success_actions = []
 
             # If extra_players is set, filter by that too. Otherwise, just grab normally.
-            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
-                                 for success_action_id in action_wrapper.success_action_ids] \
-                    if isinstance(extra_players, int) else \
-                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
-                                                          extra_players=extra_players)
-                                 for success_action_id in action_wrapper.success_action_ids]:
+            for action_query in [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id,
+                                         extra_players=extra_players)
+                for success_action_id in action_wrapper.success_action_ids
+            ] if isinstance(extra_players, int) else [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=success_action_id)
+                for success_action_id in action_wrapper.success_action_ids
+            ]:
                 action_wrapper.success_actions += [action for action in action_query]
 
         # Failure actions
         if action_wrapper.failure_action_ids:
-            action_wrapper.failure_actions = []
-            for action_query in [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
-                                 for failure_action_id in action_wrapper.failure_action_ids] \
-                    if isinstance(extra_players, int) else \
-                                [database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
-                                                          extra_players=extra_players)
-                                 for failure_action_id in action_wrapper.failure_action_ids]:
+
+            # If extra_players is set, filter by that too. Otherwise, just grab normally.
+            for action_query in [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id,
+                                         extra_players=extra_players)
+                for failure_action_id in action_wrapper.failure_action_ids
+            ] if isinstance(extra_players, int) else [
+                database.get_filtered_by(database.HG_ACTIONS_TABLE, action_id=failure_action_id)
+                for failure_action_id in action_wrapper.failure_action_ids
+            ]:
                 action_wrapper.failure_actions += [action for action in action_query]
 
     # Return.
@@ -2133,7 +2164,15 @@ async def pregame_shuffle(message, player_count, hg_dict):
 def initialize():
     """
     Initializes the command.
+    In this case, uses environment variables to set default values.
     """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_interactive.hunger_games...')
+
+    # Add this game's game dict to the game dicts from fun_interactive.
+    game_manager.GAME_DICTS.append(CURRENT_GAMES)
+
     # Sets some global variables using environment.get
     global EXPIRE_SECONDS
     EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
