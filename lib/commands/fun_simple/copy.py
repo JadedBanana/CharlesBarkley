@@ -11,8 +11,9 @@ from lib.util import arguments, discord_info, messaging
 import discord
 
 
-# Dict of copied users, keyed by guild / channel.
+# Dict of copied users, keyed by guild / channel. Also the bot user.
 COPIED_USERS = {}
+BOT_USER = None  # Initialized in initialize method
 
 
 async def copy_msg(message):
@@ -63,7 +64,7 @@ async def copy_user(message, argument):
     copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
 
     # Checks to make sure the mentioned user isn't the bot itself.
-    if user == bot.user:
+    if user.id == BOT_USER.id:
         logging.debug(message, 'requested copy for this bot')
         return await messaging.send_text_message(message, 'Ha, ha. Very funny. No.')
 
@@ -100,6 +101,23 @@ async def stop_copying(message, argument):
     else:
         logging.debug(message, 'requested to stop copying, already done')
         await messaging.send_text_message(message, "Wasn't copying anyone here to begin with, but ok.")
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_simple.copy...')
+
+    # Set global variables.
+    global BOT_USER
+    BOT_USER = bot.user
 
 
 # Command values

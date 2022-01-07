@@ -48,11 +48,11 @@ class JadieClient(discord.Client):
 
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
-        specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
+        specialized_command_dict['help_init'](self, VERSION_NUMBER, self.global_prefix)
 
         # Initialize the commands that need initialization.
         for initialize_method in command_initialize_method_list:
-            initialize_method()
+            initialize_method(self)
 
         # Set variable for whether to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False

@@ -12,6 +12,10 @@ import discord
 import os
 
 
+# Stores the bot object.
+BOT = None  # Initialized in initialize method
+
+
 async def disable_command(message, argument):
     """
     Disables the given command.
@@ -30,18 +34,18 @@ async def disable_command(message, argument):
 
     # See if the command is in the bot's public command dict.
     argument = argument.lower()
-    if argument not in bot.public_command_dict:
+    if argument not in BOT.public_command_dict:
         logging.debug(message, f"attempted to disable command '{argument}', unknown")
         return await messaging.send_text_message(message, f"Unknown command '{argument}'.")
 
     # See if the command is already disabled.
-    enabled_method = bot.public_command_dict[argument]
-    if enabled_method in bot.disabled_commands:
+    enabled_method = BOT.public_command_dict[argument]
+    if enabled_method in BOT.disabled_commands:
         logging.debug(message, f"attempted to disable command {enabled_method}, already disabled")
         return await messaging.send_text_message(message, f"Command {enabled_method} is already disabled.")
 
     # Disable the command.
-    bot.disabled_commands.append(enabled_method)
+    BOT.disabled_commands.append(enabled_method)
 
     # Log and send.
     logging.info(message, f"disabled command {enabled_method}")
@@ -66,18 +70,18 @@ async def enable_command(message, argument):
 
     # See if the command is in the bot's public command dict.
     argument = argument.lower()
-    if argument not in bot.public_command_dict:
+    if argument not in BOT.public_command_dict:
         logging.debug(message, f"attempted to enable command '{argument}', unknown")
         return await messaging.send_text_message(message, f"Unknown command '{argument}'.")
 
     # See if the command is already disabled.
-    disabled_method = bot.public_command_dict[argument]
-    if disabled_method not in bot.disabled_commands:
+    disabled_method = BOT.public_command_dict[argument]
+    if disabled_method not in BOT.disabled_commands:
         logging.debug(message, f"attempted to enable command {disabled_method}, already enabled")
         return await messaging.send_text_message(message, f"Command {disabled_method} is already enabled.")
 
     # Disable the command.
-    bot.disabled_commands.remove(disabled_method)
+    BOT.disabled_commands.remove(disabled_method)
 
     # Log and send.
     logging.info(message, f"enabled command {disabled_method}")
@@ -96,17 +100,34 @@ async def list_disabled_commands(message, argument):
     logging.debug(message, 'Ordered disabled commands.')
 
     # If there are no commands disabled, send a command saying so.
-    if not bot.disabled_commands:
+    if not BOT.disabled_commands:
         return await messaging.send_text_message(message, 'There are currently no disabled commands.')
 
     # Create the message string.
     command_str = '\n'.join(f'{disabled_command}\t(' +
-                            (", ".join(command_name for command_name in bot.public_command_dict
-                                       if bot.public_command_dict[command_name] is disabled_command)) +
-                            ')' for disabled_command in bot.disabled_commands)
+                            (", ".join(command_name for command_name in BOT.public_command_dict
+                                       if BOT.public_command_dict[command_name] is disabled_command)) +
+                            ')' for disabled_command in BOT.disabled_commands)
 
     # Send the log message.
     await messaging.send_codeblock_message(message, command_str)
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing dev.toggle_command...')
+
+    # Set global variables.
+    global BOT
+    BOT = bot
 
 
 # Command values

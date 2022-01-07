@@ -11,6 +11,10 @@ from lib.util import messaging
 from datetime import datetime
 
 
+# Stores the bot object.
+BOT = None  # Initialized in initialize method
+
+
 async def runtime(message, argument):
     """
     Prints out the runtime of the bot.
@@ -20,17 +24,34 @@ async def runtime(message, argument):
         argument (str) : The command's argument, if any.
     """
     # Immediately returns if bot start time was not established
-    if not bot.bot_start_time:
+    if not BOT.bot_start_time:
         logging.error(message, 'requested runtime, could not find runtime variable on bot')
         return await messaging.send_text_message(message, 'An error occurred while getting runtime, sorry! :P')
 
     # Gets the time passage string.
-    time_delta = datetime.today() - bot.bot_start_time
+    time_delta = datetime.today() - BOT.bot_start_time
     time_str = format_time_delta_str(time_delta)
 
     # Sends report, logs message
     logging.debug(message, f'requested runtime, responded with {time_str}')
     await messaging.send_text_message(message, f'Jadi3Pi has been running for {time_str}.')
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing info.runtime...')
+
+    # Set global variables.
+    global BOT
+    BOT = bot
 
 
 # Command values

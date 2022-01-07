@@ -27,7 +27,11 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize_help(version_number, global_prefix):
+# Stored variables.
+BOT = None
+
+
+def initialize_help(bot, version_number, global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
@@ -67,6 +71,10 @@ def initialize_help(version_number, global_prefix):
 
                 # Add.
                 COMMAND_SPECIFIC_HELP_EMBEDS[alias] = command_name
+
+    # Store bot as a global variable.
+    global BOT
+    BOT = bot
 
 
 def get_command_dicts():
@@ -354,7 +362,7 @@ async def help_command(message, argument):
             await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
 
     # Otherwise, send a different one depending on whether the author is a developer.
-    elif message.author.id in bot.developer_ids:
+    elif message.author.id in BOT.developer_ids:
         logging.debug(message, 'requested developer home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,
                                                                  assets.get_asset_path(HOME_HELP_PAGE_ICON))

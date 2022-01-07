@@ -142,6 +142,7 @@ HG_EVENT_DAYNIGHT_MINIMUM = 4
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
 EXPIRE_SECONDS = None  # Initialized in initialize method
+BOT = None  # Initialized in initialize method
 
 
 async def hunger_games_start(message, argument):
@@ -277,7 +278,7 @@ async def hunger_games_detect_expiration(message):
 
             # Send a message quoting inactivity.
             logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
-            channel = bot.get_channel(int(hg_key))
+            channel = BOT.get_channel(int(hg_key))
             await channel.send('Hunger Games canceled due to inactivity.')
 
             # Break (the others can get canceled later.)
@@ -2158,10 +2159,13 @@ async def pregame_shuffle(message, player_count, hg_dict):
     return True
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
     In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging
@@ -2171,8 +2175,9 @@ def initialize():
     game_manager.GAME_DICTS.append(CURRENT_GAMES)
 
     # Sets some global variables using environment.get
-    global EXPIRE_SECONDS
+    global EXPIRE_SECONDS, BOT
     EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
+    BOT = bot
 
 
 # Command values

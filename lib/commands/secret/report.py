@@ -11,9 +11,9 @@ import discord
 import logging
 
 
-# The reports channel ID.
+# The reports channel ID and the bot.
 REPORTS_CHANNEL_ID = 917484720701444176
-
+BOT = None  # Initialized in initialize method
 
 async def report(message, argument):
     """
@@ -42,11 +42,28 @@ async def report(message, argument):
     logging.warning(report_str)
 
     # Get the channel and send the message.
-    channel = bot.get_channel(REPORTS_CHANNEL_ID)
+    channel = BOT.get_channel(REPORTS_CHANNEL_ID)
     await channel.send(report_str)
 
     # Send an affirmation back.
     await messaging.send_text_message(message, 'Report submitted.')
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing secret.report...')
+
+    # Set global variables.
+    global BOT
+    BOT = bot
 
 
 # Command values
