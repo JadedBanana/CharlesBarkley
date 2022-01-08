@@ -37,15 +37,6 @@ def exit_from_temp_files_thread_crash():
     stop_all_threads()
 
 
-def exit_from_task_thread_crash():
-    """
-    Exits from a task thread crash.
-    """
-    # Log and exit.
-    logging.critical('WATCHDOG: Task thread crashed.')
-    stop_all_threads()
-
-
 def stop_all_threads():
     """
     Stop all threads.
@@ -74,7 +65,7 @@ class Watchdog(threading.Thread):
     Watchdog class makes sure all the threads are still running.
     """
 
-    def __init__(self, main_thread, cron_thread, temp_files_thread, task_thread):
+    def __init__(self, main_thread, cron_thread, temp_files_thread):
         """
         Watchdog initializer.
         Carries over all the threads.
@@ -83,7 +74,6 @@ class Watchdog(threading.Thread):
         self.main_thread = main_thread
         self.cron_thread = cron_thread
         self.temp_files_thread = temp_files_thread
-        self.task_thread = task_thread
 
         # Initialize self.
         threading.Thread.__init__(self)
@@ -110,10 +100,6 @@ class Watchdog(threading.Thread):
             # Check temp_files thread.
             if not self.temp_files_thread.is_alive():
                 exit_from_temp_files_thread_crash()
-
-            # Check task thread.
-            if not self.task_thread.is_alive():
-                exit_from_task_thread_crash()
 
             # Sleep.
             time.sleep(THREAD_CHECK_INTERVAL_SECONDS)

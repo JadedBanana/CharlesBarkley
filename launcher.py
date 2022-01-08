@@ -136,16 +136,13 @@ def start_background_threads():
     temp_files_thread = temp_files.TempFilesThread()
     temp_files_thread.start()
 
-    # Get the task thread.
-    from lib.util import tasks
-
     # Get the current thread.
     import threading
     main_thread = threading.current_thread()
 
     # Run the watchdog class.
     from lib.util import watchdog
-    watchdog = watchdog.Watchdog(main_thread, cron_thread, temp_files_thread, tasks)
+    watchdog = watchdog.Watchdog(main_thread, cron_thread, temp_files_thread)
     watchdog.start()
 
 
