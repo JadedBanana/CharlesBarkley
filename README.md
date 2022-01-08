@@ -80,6 +80,8 @@ Here is an explanation for every `.env` variable:
   section on [this page](https://openweathermap.org/api) for more information.
 - **HUNGER_GAMES_EXPIRE_SECONDS**: How many seconds it takes for a Hunger Games
   instance to expire.
+- **HUNGER_GAMES_EXPIRE_CHECK_INTERVAL**: How often to check if a Hunger Games game
+  is expired, in seconds.
 - **MAL_DEFAULT_ANIME_USER**: The default user that the `randomanime` command uses
   to pull its random anime. Ideally, this should be a user with a shit-ton of anime
   on their list.

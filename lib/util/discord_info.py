@@ -194,7 +194,23 @@ async def get_secondmost_recent_message(message):
         raise FirstMessageInChannelError()
 
 
-class LightweightUser:
+class IdWrapper:
+    """
+    IdWrapper class is made to wrap any object with an ID.
+    Mostly used as an interface.
+    """
+
+    def __init__(self, object_id):
+        """
+        Initializes the IdWrapper object.
+
+        Arguments:
+            object_id (int) : The object's ID.
+        """
+        self.id = object_id
+
+
+class LightweightUser(IdWrapper):
     """
     LightweightUser class is made to store a user object in a more lightweight way.
     """
@@ -207,9 +223,25 @@ class LightweightUser:
             base_user (discord.User) : The user to base this lightweight user off of.
         """
         # Copy over variables.
-        self.id = base_user.id
+        IdWrapper.__init__(self, base_user.id)
         self.name = base_user.name
         self.display_name = base_user.display_name
         self.bot = base_user.bot
         self.roles = base_user.roles if hasattr(base_user, 'roles') else []
         self.avatar = base_user.avatar
+
+
+class MessageWrapper:
+    """
+    MessageWrapper is there to wrap message objects that exist outside their messages so that they can
+    be used with utility methods.
+    """
+
+    def __init__(self, channel_id=None):
+        """
+        Initializes the MessageWrapper object.
+
+        Arguments:
+            channel_id (int) : The message's channel's id.
+        """
+        self.channel = IdWrapper(channel_id)
