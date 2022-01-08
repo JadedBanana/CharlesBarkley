@@ -369,7 +369,7 @@ async def run_reactive_command(command_method, bot, message):
     """
     # Try/catch for error handling
     try:
-        await command_method(bot, message)
+        await command_method(message)
 
     # On exception, report the error back to the user.
     except Exception:
