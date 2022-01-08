@@ -18,7 +18,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, False)
@@ -33,7 +33,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -48,7 +48,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -63,7 +63,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -78,7 +78,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -93,7 +93,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -108,7 +108,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_lunes('bot', message, 'argument')
+        await feliz.feliz_lunes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 0, True)
@@ -123,7 +123,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -138,7 +138,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, False)
@@ -153,7 +153,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -168,7 +168,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -183,7 +183,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -198,7 +198,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -213,7 +213,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_martes('bot', message, 'argument')
+        await feliz.feliz_martes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 1, True)
@@ -228,7 +228,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -243,7 +243,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -258,7 +258,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, False)
@@ -273,7 +273,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -288,7 +288,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -303,7 +303,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -318,7 +318,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_miercoles('bot', message, 'argument')
+        await feliz.feliz_miercoles(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 2, True)
@@ -333,7 +333,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -348,7 +348,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -363,7 +363,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -378,7 +378,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, False)
@@ -393,7 +393,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -408,7 +408,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -423,7 +423,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_jueves('bot', message, 'argument')
+        await feliz.feliz_jueves(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 3, True)
@@ -438,7 +438,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -453,7 +453,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -468,7 +468,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -483,7 +483,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -498,7 +498,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, False)
@@ -513,7 +513,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -528,7 +528,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_viernes('bot', message, 'argument')
+        await feliz.feliz_viernes(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 4, True)
@@ -543,7 +543,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -558,7 +558,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -573,7 +573,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -588,7 +588,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -603,7 +603,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -618,7 +618,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, False)
@@ -633,7 +633,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_sabado('bot', message, 'argument')
+        await feliz.feliz_sabado(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 5, True)
@@ -648,7 +648,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -663,7 +663,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -678,7 +678,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -693,7 +693,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -708,7 +708,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -723,7 +723,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, True)
@@ -738,7 +738,7 @@ class TestFelizAsynchronous(IsolatedAsyncioTestCase):
         message = mock.MagicMock(channel='channel')
 
         # Run the method.
-        await feliz.feliz_domingo('bot', message, 'argument')
+        await feliz.feliz_domingo(message, 'argument')
 
         # Run assertions.
         m_fsi.assert_called_once_with(message, 6, False)
