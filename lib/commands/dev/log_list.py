@@ -10,12 +10,11 @@ from lib.util import messaging, logger
 import os
 
 
-async def log_list(bot, message, argument):
+async def log_list(message, argument):
     """
     Sends a list of all the log files in the log folder.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

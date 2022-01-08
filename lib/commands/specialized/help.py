@@ -27,7 +27,11 @@ COMMAND_SPECIFIC_HELP_EMBEDS = {}
 HOME_HELP_PAGE_ICON = 'Jadi3Pi.png'
 
 
-def initialize_help(version_number, global_prefix):
+# Stored variables.
+BOT = None
+
+
+def initialize_help(bot, version_number, global_prefix):
     """
     Initializes the help command.
     Automatic method, requires no modifications to keep up-to-date.
@@ -67,6 +71,10 @@ def initialize_help(version_number, global_prefix):
 
                 # Add.
                 COMMAND_SPECIFIC_HELP_EMBEDS[alias] = command_name
+
+    # Store bot as a global variable.
+    global BOT
+    BOT = bot
 
 
 def get_command_dicts():
@@ -327,13 +335,12 @@ def generate_command_specific_help_page_embeds(global_prefix, command_name, comm
     return embed
 
 
-async def help_command(bot, message, argument):
+async def help_command(message, argument):
     """
     The help command function.
     Displays the appropriate help page for the argument / author specified.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -354,8 +361,8 @@ async def help_command(bot, message, argument):
         else:
             await messaging.send_embed_without_local_image(message, COMMAND_SPECIFIC_HELP_EMBEDS[word])
 
-    # Otherwise, send a different one depending on whether or not the author is a developer.
-    elif message.author.id in bot.developer_ids:
+    # Otherwise, send a different one depending on whether the author is a developer.
+    elif message.author.id in BOT.developer_ids:
         logging.debug(message, 'requested developer home help page')
         await messaging.send_embed_with_local_image_as_thumbnail(message, DEVELOPER_HOME_HELP_EMBED,
                                                                  assets.get_asset_path(HOME_HELP_PAGE_ICON))

@@ -11,12 +11,11 @@ from lib.util import messaging
 SWOOCE = 'https://www.youtube.com/watch?v=gghBcjgOdd0'
 
 
-async def swooce(bot, message, argument):
+async def swooce(message, argument):
     """
     Sends the swooce video.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

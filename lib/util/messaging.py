@@ -61,7 +61,8 @@ async def send_error_message(message, global_prefix, traceback_str):
     # If there's only one traceback string, then just put the messages at the beginning and end.
     if len(traceback_strings) < 2:
         return await message.channel.send(f'An error occurred while processing this command:{traceback_strings[0]}'
-                                          f'Please use `{global_prefix}report` to let the developer know about the issue.')
+                                          f'Please use `{global_prefix}report` to let the developer know about the '
+                                          f'issue.')
 
     # Otherwise, send one start string and one end string, with the rest in the middle.
     # Send first message.
@@ -70,7 +71,8 @@ async def send_error_message(message, global_prefix, traceback_str):
     for traceback_str in traceback_strings[1:-1]:
         await message.channel.send(traceback_str)
     # Send final message.
-    await message.channel.send(f'{traceback_strings[-1]}Please use `{global_prefix}report` to let the developer know about the issue.')
+    await message.channel.send(f'{traceback_strings[-1]}Please use `{global_prefix}report` to let the developer know '
+                               f'about the issue.')
 
 
 async def send_file(message, file_dir):

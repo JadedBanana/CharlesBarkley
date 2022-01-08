@@ -11,16 +11,16 @@ from lib.util import arguments, discord_info, messaging
 import discord
 
 
-# Dict of copied users, keyed by guild / channel.
+# Dict of copied users, keyed by guild / channel. Also the bot user.
 COPIED_USERS = {}
+BOT = None  # Initialized in initialize method
 
 
-async def copy_msg(bot, message):
+async def copy_msg(message):
     """
     Copies a user's message if they have been deemed COPIABLE by someone.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # If this is in a guild, check for the guild id in the COPIED_USERS. Otherwise, check using the channel id.
@@ -31,13 +31,12 @@ async def copy_msg(bot, message):
         await messaging.send_text_message(message, message.content)
 
 
-async def copy_user(bot, message, argument):
+async def copy_user(message, argument):
     """
     Marks a user down as COPIABLE.
     Copiable users will be copied in every message they send.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -65,7 +64,7 @@ async def copy_user(bot, message, argument):
     copy_key = str(message.guild.id if isinstance(message.channel, discord.TextChannel) else message.channel.id)
 
     # Checks to make sure the mentioned user isn't the bot itself.
-    if user == bot.user:
+    if user.id == BOT.user.id:
         logging.debug(message, 'requested copy for this bot')
         return await messaging.send_text_message(message, 'Ha, ha. Very funny. No.')
 
@@ -82,12 +81,11 @@ async def copy_user(bot, message, argument):
         logging.debug(message, 'requested copy for user ' + str(user) + ', already copying')
 
 
-async def stop_copying(bot, message, argument):
+async def stop_copying(message, argument):
     """
     Stops copying everyone in a server / channel.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -103,6 +101,23 @@ async def stop_copying(bot, message, argument):
     else:
         logging.debug(message, 'requested to stop copying, already done')
         await messaging.send_text_message(message, "Wasn't copying anyone here to begin with, but ok.")
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_simple.copy...')
+
+    # Set global variables.
+    global BOT
+    BOT = bot
 
 
 # Command values

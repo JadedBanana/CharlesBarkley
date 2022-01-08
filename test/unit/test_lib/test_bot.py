@@ -74,9 +74,9 @@ class TestBotSynchronous(TestCase):
         self.assertEqual(client.developer_command_dict, {'awwyeah': 'babey'})
         self.assertEqual(client.reactive_command_list, ['awesome'])
         self.assertEqual(client.toggle_ignore_developer, 'snart')
-        help_init.assert_called_once_with(bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
+        help_init.assert_called_once_with(client, bot.VERSION_NUMBER, bot.GLOBAL_PREFIX)
         for initialize_method in command_initialize_method_list:
-            initialize_method.assert_called_once_with()
+            initialize_method.assert_called_once_with(client)
         self.assertFalse(client.ignore_developer)
         self.assertEqual(client.developer_ids, [12, 31, 50])
         m_gdc.assert_called_once_with()

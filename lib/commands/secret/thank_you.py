@@ -22,13 +22,12 @@ THANK_YOU_RESPONSES = [
 ]
 
 
-async def thank_you(bot, message, argument):
+async def thank_you(message, argument):
     """
     Thanks the bot!
     :D
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

@@ -340,10 +340,10 @@ async def run_standard_command(command_name, command_method, bot, message, argum
 
         # Otherwise, run the command.
         else:
-            await command_method(bot, message, argument)
+            await command_method(message, argument)
 
     # On exception, report the error back to the user.
-    except Exception as e:
+    except Exception:
         # Get the traceback_str.
         import traceback
         traceback_str = traceback.format_exc().replace('\n\n', '\n').strip('\n')
@@ -369,10 +369,10 @@ async def run_reactive_command(command_method, bot, message):
     """
     # Try/catch for error handling
     try:
-        await command_method(bot, message)
+        await command_method(message)
 
     # On exception, report the error back to the user.
-    except Exception as e:
+    except Exception:
         # Get the traceback_str.
         import traceback
         traceback_str = traceback.format_exc().replace('\n\n', '\n').strip('\n')

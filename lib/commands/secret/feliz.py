@@ -39,13 +39,12 @@ NUMBER_DAYS = {
 }
 
 
-async def feliz(bot, message, argument):
+async def feliz(message, argument):
     """
     The master feliz function.
     Can have a varying intended date, and parse arguments.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -81,13 +80,12 @@ async def feliz(bot, message, argument):
                            actual_date != intended_date and not intended_date == -1)
 
 
-async def feliz_lunes(bot, message, argument):
+async def feliz_lunes(message, argument):
     """
     Feliz function for monday.
     Will see if it's ACTUALLY monday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -107,13 +105,12 @@ async def feliz_lunes(bot, message, argument):
     await feliz_send_image(message, 0, actual_date != 0)
 
 
-async def feliz_martes(bot, message, argument):
+async def feliz_martes(message, argument):
     """
     Feliz function for tuesday.
     Will see if it's ACTUALLY tuesday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -133,13 +130,12 @@ async def feliz_martes(bot, message, argument):
     await feliz_send_image(message, 1, actual_date != 1)
 
 
-async def feliz_miercoles(bot, message, argument):
+async def feliz_miercoles(message, argument):
     """
     Feliz function for wednesday.
     Will see if it's ACTUALLY wednesday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -159,13 +155,12 @@ async def feliz_miercoles(bot, message, argument):
     await feliz_send_image(message, 2, actual_date != 2)
 
 
-async def feliz_jueves(bot, message, argument):
+async def feliz_jueves(message, argument):
     """
     Feliz function for thursday.
     Will see if it's ACTUALLY thursday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -185,13 +180,12 @@ async def feliz_jueves(bot, message, argument):
     await feliz_send_image(message, 3, actual_date != 3)
 
 
-async def feliz_viernes(bot, message, argument):
+async def feliz_viernes(message, argument):
     """
     Feliz function for friday.
     Will see if it's ACTUALLY friday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -211,13 +205,12 @@ async def feliz_viernes(bot, message, argument):
     await feliz_send_image(message, 4, actual_date != 4)
 
 
-async def feliz_sabado(bot, message, argument):
+async def feliz_sabado(message, argument):
     """
     Feliz function for saturday.
     Will see if it's ACTUALLY saturday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -237,13 +230,12 @@ async def feliz_sabado(bot, message, argument):
     await feliz_send_image(message, 5, actual_date != 5)
 
 
-async def feliz_domingo(bot, message, argument):
+async def feliz_domingo(message, argument):
     """
     Feliz function for sunday.
     Will see if it's ACTUALLY sunday and make the image mad if it isn't.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -266,7 +258,7 @@ async def feliz_domingo(bot, message, argument):
 async def feliz_send_image(message, day, angry):
     """
     The feliz sending function.
-    Sends the image based on the day and whether or not they're angry.
+    Sends the image based on the day and whether they're angry.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.

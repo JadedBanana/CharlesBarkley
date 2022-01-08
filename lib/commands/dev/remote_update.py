@@ -10,7 +10,7 @@ from lib.util import messaging
 import subprocess
 
 
-async def remote_update(bot, message, argument):
+async def remote_update(message, argument):
     """
     Uses git to pull the most recent commit down.
     Reboot will need to be done to apply the changes.

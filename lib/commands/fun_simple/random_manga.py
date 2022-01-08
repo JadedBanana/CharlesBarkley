@@ -26,13 +26,12 @@ PRELOADED_DEFAULT_PAGES = []
 ALL_DEFAULT_PAGES_PRELOADED = False
 
 
-async def random_manga_master(bot, message, argument):
+async def random_manga_master(message, argument):
     """
     Generates a random manga page from MyAnimeList and sends it to the user.
     If a valid MAL username is passed, it will pull a random manga from that user's plan to watch list.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -133,7 +132,7 @@ async def get_random_manga_from_default_user(message):
     Gets a random manga from the default user.
     Basically, just picks a random manga from their list.
     Ideally, the default user has a LOT of manga in their list.
-    Will act differently depending on whether or not everything is preloaded.
+    Will act differently depending on whether everything is preloaded.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
@@ -224,10 +223,13 @@ def add_user_list_to_preloaded(manga_list_json):
             PRELOADED_MANGA_URLS[manga['mal_id']] = manga['url']
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
     In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging

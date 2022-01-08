@@ -3,9 +3,9 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
+from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, tasks, temp_files
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
-from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, temp_files
 from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
@@ -141,15 +141,16 @@ HG_EVENT_DAYNIGHT_MINIMUM = 4
 
 # Miscellaneous
 NTH_SUFFIXES = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
-EXPIRE_SECONDS = None  # Initialized in initialize method
+EXPIRE_CHECK_INTERVAL = 60  # Initialized in initialize method
+EXPIRE_SECONDS = 1800  # Initialized in initialize method
+BOT = None  # Initialized in initialize method
 
 
-async def hunger_games_start(bot, message, argument):
+async def hunger_games_start(message, argument):
     """
     Creates a hunger games simulator right inside the bot.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -173,7 +174,7 @@ async def hunger_games_start(bot, message, argument):
             return await game_manager.send_game_in_progress_message(message)
 
         # Finally, perform the update function.
-        return await hunger_games_update(bot, message)
+        return await hunger_games_update(message)
 
     # If a different game is in progress, send a message saying you can only have one game at a time.
     elif game_manager.channel_in_game(hg_key):
@@ -207,17 +208,19 @@ async def hunger_games_start(bot, message, argument):
     hg_dict['host'] = message.author
     CURRENT_GAMES[hg_key] = hg_dict
 
-    # Send the initial cast
+    # Start a task for this game's expiration.
+    tasks.add_task(f'hg_expire_{hg_key}', EXPIRE_CHECK_INTERVAL, 0, hunger_games_detect_expiration, hg_key)
+
+    # Send the initial cast.
     await send_pregame(message, hg_dict)
     logging.debug(message, f'started Hunger Games instance with {len(hg_dict["players"])} players')
 
 
-async def hunger_games_update(bot, message):
+async def hunger_games_update(message):
     """
     Updates the hunger games dict for the message's channel, if it exists.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
     """
     # Gets the key.
@@ -251,40 +254,44 @@ async def hunger_games_update(bot, message):
     hg_dict['updated'] = datetime.today()
 
 
-async def hunger_games_detect_expiration(bot, message):
+async def hunger_games_detect_expiration(hg_key):
     """
     Detects expired hunger games instances and deletes them.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
-        message (discord.message.Message) : The discord message object that triggered this command.
+        hg_key (str) : The key for the hunger games dict.
     """
-    # If there are no active games, return.
-    if not CURRENT_GAMES:
-        return
+    # If this key isn't in the dict, then remove this task from the task list.
+    if hg_key not in CURRENT_GAMES:
+        tasks.remove_task(f'hg_expire_{hg_key}')
 
-    # Otherwise, get the current time.
-    now = datetime.today()
+    # Get the hg_dict and current time.
+    hg_dict = CURRENT_GAMES[hg_key]
+    now = datetime.now()
 
-    # Iterate through all the games and see if the seconds exceed the set limit.
-    for hg_key, hg_dict in CURRENT_GAMES.items():
-        if (now - hg_dict['updated']).seconds >= EXPIRE_SECONDS:
+    # If the game is due to be expired, expire it.
+    if (now - hg_dict['updated']).seconds >= EXPIRE_SECONDS:
 
-            # Delete it.
-            clear_current_game_from_database(hg_dict)
-            del CURRENT_GAMES[hg_key]
+        # Delete it.
+        clear_current_game_from_database(hg_dict)
+        del CURRENT_GAMES[hg_key]
 
-            # Retire the existing players' profile pictures.
-            if 'players' in hg_dict:
-                temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
+        # Retire the existing players' profile pictures.
+        if 'players' in hg_dict:
+            temp_files.retire_profile_picture_by_user_bulk(
+                hg_dict['players'], discord_info.MessageWrapper(channel_id=hg_key), 'hg_filehold'
+            )
 
-            # Send a message quoting inactivity.
-            logging.debug(message, f'Triggered hunger games expiration for channel {hg_key}')
-            channel = bot.get_channel(int(hg_key))
-            await channel.send('Hunger Games canceled due to inactivity.')
+        # Log.
+        import logging
+        logging.debug(f'Hunger games expired for channel id {hg_key}')
 
-            # Break (the others can get canceled later.)
-            return
+        # Send a message quoting inactivity.
+        channel = BOT.get_channel(int(hg_key))
+        await channel.send('Hunger Games canceled due to inactivity.')
+
+        # Remove the expiration task.
+        tasks.remove_task(f'hg_expire_{hg_key}')
 
 
 async def hunger_games_update_pregame(hg_key, hg_dict, response, message):
@@ -389,7 +396,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
                     if player not in hg_dict['players']:
 
                         # Add the player into the game.
-                        hg_dict['players'].append(player)
+                        hg_dict['players'].append(discord_info.LightweightUser(player))
 
                         # Checkout their profile picture.
                         await temp_files.checkout_profile_picture_by_user_with_typing(player, message, 'hg_filehold',
@@ -447,7 +454,7 @@ async def hunger_games_update_pregame_add(hg_key, hg_dict, response, message):
 
         # With the user list, grab a random user.
         added_user = random.choice(user_list)
-        hg_dict['players'].append(added_user)
+        hg_dict['players'].append(discord_info.LightweightUser(added_user))
 
         # Checkout the added user.
         await temp_files.checkout_profile_picture_by_user_with_typing(added_user, message, 'hg_filehold',
@@ -591,7 +598,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
             # If there are other players, add a random one and checkout their profile picture.
             if other_players:
                 added_player = random.choice(other_players)
-                hg_players_no_bots.append(added_player)
+                hg_players_no_bots.append(discord_info.LightweightUser(added_player))
                 await temp_files.checkout_profile_picture_by_user_with_typing(added_player, message, 'hg_filehold',
                                                                               return_image=False)
 
@@ -774,6 +781,9 @@ async def hunger_games_update_midgame_cancel(hg_key, hg_dict, response, message)
         if 'players' in hg_dict:
             temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
 
+        # Remove the expiration task.
+        tasks.remove_task(f'hg_expire_{hg_key}')
+
     elif not hg_dict['confirm_cancel']:
         # Send the message and log.
         logging.debug(message, 'requested cancel for Hunger Games')
@@ -869,6 +879,9 @@ async def hunger_games_update_cancel_confirm(hg_key, hg_dict, response, message)
     # Retire the existing players' profile pictures.
     if 'players' in hg_dict:
         temp_files.retire_profile_picture_by_user_bulk(hg_dict['players'], message, 'hg_filehold')
+
+    # Remove the expiration task.
+    tasks.remove_task(f'hg_expire_{hg_key}')
 
 
 async def hunger_games_update_cancel_abort(hg_key, hg_dict, response, message):
@@ -1193,7 +1206,7 @@ def do_increment_act_check(hg_dict, count, do_previous):
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
     if current_phase[0] == 'act':
 
-        # If so, then set the action indexes depending on whether or not we're going backwards.
+        # If so, then set the action indexes depending on whether we're going backwards.
         # Backwards gets put at the end.
         if do_previous:
             hg_dict['action_max_index'] = current_phase[2] - 1
@@ -2146,7 +2159,7 @@ async def pregame_shuffle(message, player_count, hg_dict):
     # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
     for i in range(min(player_count, len(user_list))):
         next_player = random.choice(user_list)
-        hg_players.append(next_player)
+        hg_players.append(discord_info.LightweightUser(next_player))
         user_list.remove(next_player)
 
     # Checkout file holdings for all the profile pictures and retire the shuffle checkout.
@@ -2161,10 +2174,13 @@ async def pregame_shuffle(message, player_count, hg_dict):
     return True
 
 
-def initialize():
+def initialize(bot):
     """
     Initializes the command.
     In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
     """
     # Log.
     import logging
@@ -2174,8 +2190,10 @@ def initialize():
     game_manager.GAME_DICTS.append(CURRENT_GAMES)
 
     # Sets some global variables using environment.get
-    global EXPIRE_SECONDS
+    global EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
+    EXPIRE_CHECK_INTERVAL = environment.get('HUNGER_GAMES_EXPIRE_CHECK_INTERVAL')
     EXPIRE_SECONDS = environment.get('HUNGER_GAMES_EXPIRE_SECONDS')
+    BOT = bot
 
 
 # Command values
@@ -2188,8 +2206,7 @@ PUBLIC_COMMAND_DICT = {
     'hgames': hunger_games_start
 }
 REACTIVE_COMMAND_LIST = [
-    hunger_games_update,
-    hunger_games_detect_expiration
+    hunger_games_update
 ]
 HELP_DOCUMENTATION_LIST = [
     {

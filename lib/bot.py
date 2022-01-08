@@ -19,7 +19,7 @@ import sys
 
 # Global bot variables
 GLOBAL_PREFIX = 'j!'
-VERSION_NUMBER = '0.8.4'
+VERSION_NUMBER = '0.8.5'
 
 
 class JadieClient(discord.Client):
@@ -48,13 +48,13 @@ class JadieClient(discord.Client):
 
         # Load specialized commands.
         self.toggle_ignore_developer = specialized_command_dict['toggleignoredev']
-        specialized_command_dict['help_init'](VERSION_NUMBER, self.global_prefix)
+        specialized_command_dict['help_init'](self, VERSION_NUMBER, self.global_prefix)
 
         # Initialize the commands that need initialization.
         for initialize_method in command_initialize_method_list:
-            initialize_method()
+            initialize_method(self)
 
-        # Set variable for whether or not to ignore the developer (and also store the developer's discord id's).
+        # Set variable for whether to ignore the developer (and also store the developer's discord id's).
         self.ignore_developer = False
         self.developer_ids = [int(dev_id) for dev_id in environment.get("DEVELOPER_DISCORD_IDS")]
 
@@ -175,14 +175,14 @@ class JadieClient(discord.Client):
 
     async def is_functional_message(self, message):
         """
-        Sees whether or not the given message is a functional one (one that the on_message function can react to).
+        Sees whether the given message is a functional one (one that the on_message function can react to).
 
         Arguments:
             message (discord.message.Message) : The discord message object that triggered this method.
 
         Returns:
-            bool, bool : The first value corresponds to whether or not the message is functional.
-                         The second value corresponds to whether or not the author was a developer.
+            bool, bool : The first value corresponds to whether the message is functional.
+                         The second value corresponds to whether the author was a developer.
         """
         # Checks to make sure the message, channel, and author exist, and that the message isn't from the bot itself.
         if not self.message_object_has_required_attributes(message):
@@ -211,7 +211,7 @@ class JadieClient(discord.Client):
             message (discord.message.Message) : The discord message object that triggered this method.
 
         Returns:
-            bool : Whether or not it has all the required attributes.
+            bool : Whether it has all the required attributes.
         """
         # Check for message object, content, channel, and author, and making sure we're not the author.
         if not message or not isinstance(message, discord.Message) or not message.author \

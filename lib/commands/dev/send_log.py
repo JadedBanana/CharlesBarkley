@@ -15,13 +15,12 @@ import os
 LOG_FILE_CHARS = '1234567890-'
 
 
-async def send_log(bot, message, argument):
+async def send_log(message, argument):
     """
     Sends a log file through discord.
     Argument should be formatted in YYYY-MM-DD.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

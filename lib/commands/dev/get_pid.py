@@ -10,12 +10,11 @@ from lib.util import messaging
 import os
 
 
-async def get_pid(bot, message, argument):
+async def get_pid(message, argument):
     """
     Gets the local PID this bot is running on.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
