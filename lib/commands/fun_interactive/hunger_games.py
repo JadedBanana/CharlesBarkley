@@ -209,7 +209,7 @@ async def hunger_games_start(message, argument):
     CURRENT_GAMES[hg_key] = hg_dict
 
     # Start a task for this game's expiration.
-    tasks.add_task(f'hg_expire_{hg_key}', EXPIRE_CHECK_INTERVAL, -1, hunger_games_detect_expiration, hg_key)
+    tasks.add_task(f'hg_expire_{hg_key}', EXPIRE_CHECK_INTERVAL, 0, hunger_games_detect_expiration, hg_key)
 
     # Send the initial cast.
     await send_pregame(message, hg_dict)
