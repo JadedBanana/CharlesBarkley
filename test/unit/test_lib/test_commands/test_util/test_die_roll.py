@@ -19,7 +19,7 @@ class TestDieRollAsynchronous(IsolatedAsyncioTestCase):
         m_av.return_value = False
 
         # Run the method.
-        await die_roll.die_roll('bot', 'message', 'argument')
+        await die_roll.die_roll('message', 'argument')
 
         # Run assertions.
         m_ns.assert_called_once_with('argument')
@@ -39,7 +39,7 @@ class TestDieRollAsynchronous(IsolatedAsyncioTestCase):
         m_av.return_value = True
 
         # Run the method.
-        await die_roll.die_roll('bot', 'message', 'argument')
+        await die_roll.die_roll('message', 'argument')
 
         # Run assertions.
         m_ns.assert_called_once_with('argument')
@@ -59,7 +59,7 @@ class TestDieRollAsynchronous(IsolatedAsyncioTestCase):
         m_av.return_value = False
 
         # Run the method.
-        await die_roll.die_roll('bot', 'message', 'argument')
+        await die_roll.die_roll('message', 'argument')
 
         # Run assertions.
         m_ns.assert_called_once_with('argument')
@@ -79,7 +79,7 @@ class TestDieRollAsynchronous(IsolatedAsyncioTestCase):
         m_av.return_value = True
 
         # Run the method.
-        await die_roll.die_roll('bot', 'message', 'argument')
+        await die_roll.die_roll('message', 'argument')
 
         # Run assertions.
         m_ns.assert_called_once_with('argument')
