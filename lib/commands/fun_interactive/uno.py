@@ -4,9 +4,9 @@ Recreates the Mattel Game UNO inside the bot.
 Mattel, pls don't sue.
 """
 # Local Imports
+from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, tasks, temp_files
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
-from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, temp_files
 from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 from lib.bot import GLOBAL_PREFIX
@@ -17,6 +17,9 @@ from datetime import datetime
 import discord
 import random
 
+
+# Keeps track of current games.
+CURRENT_GAMES = {}
 
 # Cards.
 CARDS = [
@@ -55,3 +58,73 @@ SKIP_CARDS = [11, 24, 37, 50]
 DRAW2_CARDS = [12, 25, 38, 51]
 DRAW4_CARDS = [57, 58, 59, 60, 61]
 WILD_CARDS = [52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
+
+# Miscellaneous
+EXPIRE_CHECK_INTERVAL = 60  # Initialized in initialize method
+EXPIRE_SECONDS = 1800  # Initialized in initialize method
+BOT = None  # Initialized in initialize method
+
+
+async def uno_start(message, argument):
+    """
+    Creates an uno game right inside the bot.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        argument (str) : The command's argument, if any.
+    """
+    # Make sure this command isn't being used in a DM.
+    if isinstance(message.channel, discord.DMChannel):
+        logging.debug(message, 'requested Uno, but in DMs, so invalid')
+        return await messaging.send_text_message(message, 'This command cannot be used in DMs.')
+
+    # Gets the hunger games key (channel id).
+    uno_key = str(message.channel.id)
+
+    # If a game is already in progress, we perform a host check.
+    if uno_key in CURRENT_GAMES:
+
+        # Host is not this user, send the game in progress message.
+        if message.author.id != CURRENT_GAMES[uno_key]['host'].id:
+            return await game_manager.send_game_in_progress_message(message)
+
+        # Finally, send the pregame again.
+        return await send_pregame(message, CURRENT_GAMES[uno_key])
+
+    # If a different game is in progress, send a message saying you can only have one game at a time.
+    elif game_manager.channel_in_game(uno_key):
+        logging.debug(message, 'requested Uno, but other game active')
+        return await game_manager.send_game_in_progress_message(message)
+
+    # Generate the uno dict.
+    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author}
+    CURRENT_GAMES[uno_key] = uno_dict
+
+    # Start a task for this game's expiration.
+    # tasks.add_task(f'uno_expire_{uno_key}', EXPIRE_CHECK_INTERVAL, 0, uno_detect_expiration, uno_key)
+
+    # Send the pregame image.
+    await send_pregame(message, uno_dict)
+    logging.debug(message, f'started Uno instance')
+
+
+def initialize(bot):
+    """
+    Initializes the command.
+    In this case, uses environment variables to set default values.
+
+    Arguments:
+        bot (lib.bot.JadieClient) : The bot object that called this command.
+    """
+    # Log.
+    import logging
+    logging.debug('Initializing fun_interactive.uno...')
+
+    # Add this game's game dict to the game dicts from fun_interactive.
+    game_manager.GAME_DICTS.append(CURRENT_GAMES)
+
+    # Sets some global variables using environment.get
+    global EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
+    EXPIRE_CHECK_INTERVAL = environment.get('UNO_EXPIRE_CHECK_INTERVAL')
+    EXPIRE_SECONDS = environment.get('UNO_EXPIRE_SECONDS')
+    BOT = bot
