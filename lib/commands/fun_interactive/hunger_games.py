@@ -20,7 +20,6 @@ import random
 # Keeps track of current games.
 CURRENT_GAMES = {}
 
-
 # Hunger Games constants.
 # Game generation
 HG_MAX_GAMESIZE = 64
@@ -165,12 +164,8 @@ async def hunger_games_start(message, argument):
     # If a game is already in progress, we perform a host check.
     if hg_key in CURRENT_GAMES:
 
-        # No host, make this user the host and proceed.
-        if 'host' not in CURRENT_GAMES[hg_key]:
-            CURRENT_GAMES[hg_key]['host'] = message.author
-
         # Host is not this user, send the game in progress message.
-        elif message.author.id != CURRENT_GAMES[hg_key]['host'].id:
+        if message.author.id != CURRENT_GAMES[hg_key]['host'].id:
             return await game_manager.send_game_in_progress_message(message)
 
         # Finally, perform the update function.
@@ -195,7 +190,7 @@ async def hunger_games_start(message, argument):
         player_count = HG_DEFAULT_GAMESIZE
 
     # Generate the playerlist.
-    hg_dict = {}
+    hg_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author}
     worked = await pregame_shuffle(message, player_count, hg_dict)
 
     # If it didn't work, return.
@@ -203,9 +198,6 @@ async def hunger_games_start(message, argument):
         return
 
     # Set in the hunger games dict.
-    hg_dict['past_pregame'] = False
-    hg_dict['updated'] = datetime.today()
-    hg_dict['host'] = message.author
     CURRENT_GAMES[hg_key] = hg_dict
 
     # Start a task for this game's expiration.
