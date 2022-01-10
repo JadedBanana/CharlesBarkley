@@ -1,6 +1,8 @@
 """
 Graphics module contains some methods that can be used to make image editing easier.
 """
+# Package Imports
+from PIL import Image
 
 
 def transparency_paste(background_image, foreground_image, pos):
@@ -11,9 +13,6 @@ def transparency_paste(background_image, foreground_image, pos):
         background_image (PIL.Image.Image) : The background image.
         foreground_image (PIL.Image.Image) : The foreground image.
         pos (int, int) : Where on the image to paste the foreground image.
-
-    Returns:
-        PIL.Image.Image : The finalized image.
     """
     # Create a new image with the same size as the background image.
     new_image = Image.new('RGBA', background_image.size)
@@ -22,4 +21,4 @@ def transparency_paste(background_image, foreground_image, pos):
     new_image.paste(foreground_image, pos)
 
     # Alpha composite the new image onto the background image.
-    return Image.alpha_composite(background_image, new_image)
+    background_image.alpha_composite(new_image)
