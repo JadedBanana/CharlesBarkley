@@ -186,7 +186,7 @@ def makeimage_lobby(uno_dict):
     lobby_image.paste(lobby_background, (0, int((600 - lobby_background.size[1]) / 2)))
 
     card_image = makeimage_lobby_card(uno_dict['host'], 1, 2)
-    lobby_image = graphics.transparency_paste(lobby_image, card_image, (300, 300))
+    graphics.transparency_paste(lobby_image, card_image, (300, 300))
 
     # Return the lobby image.
     return lobby_image
