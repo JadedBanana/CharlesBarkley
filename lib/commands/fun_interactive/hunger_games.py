@@ -43,6 +43,7 @@ HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 
                           7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
 HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
+HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR = (80, 80, 80)
 HG_STATUS_ALIVE_COLOR = (0, 255, 0)
 HG_STATUS_DEAD_COLOR = (255, 102, 102)
 
@@ -1359,10 +1360,10 @@ def makeimage_action(actions, players, action_description=None):
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
         player_drawer.rectangle(
-            [(current_x - HG_HEADER_BORDER_BUFFER,
+            ((current_x - HG_HEADER_BORDER_BUFFER,
               current_y - HG_HEADER_BORDER_BUFFER),
              (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER,
-              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
+              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)),
             HG_HEADER_BACKGROUND_COLOR,
             HG_HEADER_BORDER_COLOR
         )
@@ -1416,14 +1417,23 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     # If player dead, recolor to black and white.
     if dead:
+
+        # Put the background color behind the profile picture.
+        player_pfp = graphics.color_behind_image(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
+
+        # Perform the colorize.
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
                                        white=misc.multiply_int_tuple(
                                            (255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
                                        mid=misc.multiply_int_tuple(
                                            (128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
 
-    # Paste the player icon onto the image with transparency.
-    graphics.transparency_paste(image, player_pfp, (pfp_x, pfp_y))
+        # Paste normally.
+        image.paste(player_pfp, (pfp_x, pfp_y))
+
+    # Otherwise, paste the player icon onto the image with transparency.
+    else:
+        graphics.transparency_paste(image, player_pfp, (pfp_x, pfp_y))
 
     # Draws border around player icon.
     drawer.line([(pfp_x - 1, pfp_y - 1),
