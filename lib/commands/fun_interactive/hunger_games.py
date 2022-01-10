@@ -3,7 +3,8 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
-from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, tasks, temp_files
+from lib.util import arguments, assets, database, discord_info, environment, graphics, messaging, misc, parsing, \
+    tasks, temp_files
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
 from lib.commands import fun_interactive as game_manager
@@ -42,6 +43,7 @@ HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 
                           7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
 HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
+HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR = (80, 80, 80)
 HG_STATUS_ALIVE_COLOR = (0, 255, 0)
 HG_STATUS_DEAD_COLOR = (255, 102, 102)
 
@@ -1239,7 +1241,7 @@ def makeimage_player_statuses(player_statuses, players, placement=False, kills=F
     image_height = HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + HG_ICON_BUFFER * (len(players_split) + 1)
 
     # Creates all the images and drawers that will help us make the new image.
-    player_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    player_image = Image.new('RGBA', (image_width, image_height), HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(player_image)
     player_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
 
@@ -1346,7 +1348,7 @@ def makeimage_action(actions, players, action_description=None):
         image_width = max(image_width, HG_ICON_SIZE * len(action.players) + HG_ICON_BUFFER * (len(action.players) + 1))
 
     # Creates all the images and drawers that will help us make the new image.
-    action_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    action_image = Image.new('RGBA', (image_width, image_height), HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(action_image)
 
     # Sets the current y at the buffer between the top and the first icon.
@@ -1358,10 +1360,10 @@ def makeimage_action(actions, players, action_description=None):
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
         player_drawer.rectangle(
-            [(current_x - HG_HEADER_BORDER_BUFFER,
+            ((current_x - HG_HEADER_BORDER_BUFFER,
               current_y - HG_HEADER_BORDER_BUFFER),
              (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER,
-              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
+              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)),
             HG_HEADER_BACKGROUND_COLOR,
             HG_HEADER_BORDER_COLOR
         )
@@ -1415,12 +1417,23 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     # If player dead, recolor to black and white.
     if dead:
+
+        # Put the background color behind the profile picture.
+        player_pfp = graphics.color_behind_image(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
+
+        # Perform the colorize.
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
                                        white=misc.multiply_int_tuple(
                                            (255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
                                        mid=misc.multiply_int_tuple(
                                            (128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
-    image.paste(player_pfp, (pfp_x, pfp_y))
+
+        # Paste normally.
+        image.paste(player_pfp, (pfp_x, pfp_y))
+
+    # Otherwise, paste the player icon onto the image with transparency.
+    else:
+        graphics.transparency_paste(image, player_pfp, (pfp_x, pfp_y))
 
     # Draws border around player icon.
     drawer.line([(pfp_x - 1, pfp_y - 1),
