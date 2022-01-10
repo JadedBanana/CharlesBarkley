@@ -21,6 +21,14 @@ import random
 # Keeps track of current games.
 CURRENT_GAMES = {}
 
+# Embeds.
+UNO_EMBED_COLOR = (203 << 16) + (1 << 8)
+
+# Pregame
+UNO_LOBBY_TITLE = 'Who\'s up for a game of UNO?'
+UNO_LOBBY_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
+UNO_LOBBY_FAILSAFE_BACKGROUND = (203, 1, 0)
+
 # Cards.
 CARDS = [
     0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17,
@@ -100,12 +108,53 @@ async def uno_start(message, argument):
     uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author}
     CURRENT_GAMES[uno_key] = uno_dict
 
+    # Checkout the host's profile picture.
+    await temp_files.checkout_profile_picture_by_user_with_typing(message.author, message, 'uno_filehold')
+
     # Start a task for this game's expiration.
     # tasks.add_task(f'uno_expire_{uno_key}', EXPIRE_CHECK_INTERVAL, 0, uno_detect_expiration, uno_key)
 
     # Send the pregame image.
     await send_pregame(message, uno_dict)
     logging.debug(message, f'started Uno instance')
+
+
+async def send_pregame(message, uno_dict, title=UNO_LOBBY_TITLE):
+    """
+    Sends the pregame lobby thing.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered this command.
+        uno_dict (dict) : The full game dict.
+        title (str) : The title of the embed, if any.
+    """
+    # Generate the player statuses image.
+    image = makeimage_lobby(uno_dict)
+
+    # Sends image, logs.
+    await messaging.send_image_based_embed(message, image, title, UNO_EMBED_COLOR,
+                                           description=f"Hosted by {uno_dict['host'].display_name}")
+
+
+def makeimage_lobby(uno_dict):
+    """
+    Generates the lobby image.
+
+    Arguments:
+        uno_dict (dict) : The full game dict.
+
+    Returns:
+        PIL.Image : The finalized image.
+    """
+    # Make the lobby image.
+    lobby_image = Image.new('RGB', (900, 600), UNO_LOBBY_FAILSAFE_BACKGROUND)
+
+    # Get the lobby background image and paste it onto the lobby image.
+    lobby_background = assets.open_image(UNO_LOBBY_BACKGROUND_IMAGE)
+    lobby_image.paste(lobby_background, (0, int((600 - lobby_background.size[1]) / 2)))
+
+    # Return the lobby image.
+    return lobby_image
 
 
 def initialize(bot):
@@ -128,3 +177,8 @@ def initialize(bot):
     EXPIRE_CHECK_INTERVAL = environment.get('UNO_EXPIRE_CHECK_INTERVAL')
     EXPIRE_SECONDS = environment.get('UNO_EXPIRE_SECONDS')
     BOT = bot
+
+
+DEVELOPER_COMMAND_DICT = {
+    'uno': uno_start
+}

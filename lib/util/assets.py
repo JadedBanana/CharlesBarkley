@@ -16,6 +16,8 @@ ASSETS_DIR = 'assets'
 # List of asset files we should expect to see in the asset folder.
 EXPECTED_ASSET_FILES = [
     'heart.png', 'Jadi3Pi.png',
+    'cards/backgrounds/felt_blue.jpeg', 'cards/backgrounds/felt_green.jpeg', 'cards/backgrounds/felt_red.jpeg',
+    'cards/backgrounds/uno_lobby.png',
     'cards/uno/flat/blue_0.png', 'cards/uno/flat/blue_1.png', 'cards/uno/flat/blue_2.png', 'cards/uno/flat/blue_3.png',
     'cards/uno/flat/blue_4.png', 'cards/uno/flat/blue_5.png', 'cards/uno/flat/blue_6.png', 'cards/uno/flat/blue_7.png',
     'cards/uno/flat/blue_8.png', 'cards/uno/flat/blue_9.png', 'cards/uno/flat/blue_0.png',
