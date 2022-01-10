@@ -118,9 +118,9 @@ def open_image(filename):
         filename (str) : The image's filename.
 
     Returns:
-        PIL.Image : The opened image.
+        PIL.Image.Image : The opened image.
     """
-    return Image.open(get_asset_path(filename))
+    return Image.open(get_asset_path(filename)).convert('RGBA')
 
 
 def open_font(filename, size):

@@ -1403,7 +1403,7 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     Arguments:
         user (discord.user.User) : The desired user.
-        image (PIL.Image) : The base image.
+        image (PIL.Image.Image) : The base image.
         drawer (PIL.ImageDraw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
         pfp_y (int) : The y position of where to draw the icon.

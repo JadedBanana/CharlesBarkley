@@ -59,7 +59,7 @@ def get_profile_picture_by_user(user, size=None):
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # Get the image.
     # If the user is in the ACTIVE_PROFILE_PICTURES dict, then use that.
@@ -91,7 +91,7 @@ async def get_profile_picture_by_user_with_typing(user, message, size=None):
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # If the user isn't downloaded yet, then run the get_profile_picture_by_user method with typing.
     if user not in ACTIVE_PROFILE_PICTURES:
@@ -117,7 +117,7 @@ def checkout_profile_picture_by_user(user, message, command_key, return_image=Fa
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # First, see if the user's profile picture is already in the dict. If it isn't, then download it and slot it into
     # the dict.
@@ -150,7 +150,7 @@ async def checkout_profile_picture_by_user_with_typing(user, message, command_ke
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # If the user isn't downloaded yet, then run the checkout_profile_picture_by_user method with typing.
     if user.id not in ACTIVE_PROFILE_PICTURES:
@@ -265,7 +265,7 @@ def save_temporary_image(image):
     Saves a temporary image to a temp file that will be deleted later.
 
     Arguments:
-        image (PIL.Image) : The Image object to be sent as the embed's image.
+        image (PIL.Image.Image) : The Image object to be sent as the embed's image.
 
     Returns:
         str : The image's path.
