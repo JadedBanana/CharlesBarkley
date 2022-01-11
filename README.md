@@ -82,6 +82,11 @@ Here is an explanation for every `.env` variable:
   instance to expire.
 - **HUNGER_GAMES_EXPIRE_CHECK_INTERVAL**: How often to check if a Hunger Games game
   is expired, in seconds.
+- **UNO_EXPIRE_SECONDS**: How many seconds it takes for an Uno instance to expire.
+- **UNO_EXPIRE_CHECK_INTERVAL**: How often to check if an Uno game is expired, in 
+  seconds.
+- **UNO_ALLOW_DUPLICATE_PLAYERS_IN_GAME**: Whether to allow duplicate players in Uno
+  instances. Usually used for debugging purposes.
 - **MAL_DEFAULT_ANIME_USER**: The default user that the `randomanime` command uses
   to pull its random anime. Ideally, this should be a user with a shit-ton of anime
   on their list.
