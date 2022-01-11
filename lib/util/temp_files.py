@@ -8,7 +8,6 @@ from lib.util import graphics
 # Package Imports
 from PIL import Image
 import threading
-import datetime
 import requests
 import logging
 import random
