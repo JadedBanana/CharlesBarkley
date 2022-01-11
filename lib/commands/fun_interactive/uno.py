@@ -42,6 +42,7 @@ LOBBY_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
 LOBBY_FAILSAFE_BACKGROUND = (203, 1, 0)
 LOBBY_CARD_COLOR_DEFAULT = 'blank'
 LOBBY_CARD_COLORS = ['red', 'blue', 'green', 'yellow']
+LOBBY_CARD_BACKGROUND_COLORS = [(255, 23, 23), (23, 23, 255), (23, 105, 23), (255, 105, 0)]
 LOBBY_CARD_PFP_SIZE = (151, 151)
 LOBBY_CARD_PFP_OFFSET = (21, 70)
 LOBBY_CARD_DIRECTORY = 'cards/uno/lobby'
@@ -85,6 +86,7 @@ DRAW4_CARDS = [57, 58, 59, 60, 61]
 WILD_CARDS = [52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
 
 # Miscellaneous
+ALLOW_DUPLICATE_PLAYERS_IN_GAME = False  # Initialized in initialize method
 EXPIRE_CHECK_INTERVAL = 60  # Initialized in initialize method
 EXPIRE_SECONDS = 1800  # Initialized in initialize method
 BOT = None  # Initialized in initialize method
@@ -185,7 +187,7 @@ def makeimage_lobby(uno_dict):
     lobby_background = assets.open_image(LOBBY_BACKGROUND_IMAGE)
     lobby_image.paste(lobby_background, (0, int((600 - lobby_background.size[1]) / 2)))
 
-    card_image = makeimage_lobby_card(uno_dict['host'], 1, 2)
+    card_image = makeimage_lobby_card(uno_dict['host'], 1, 3)
     graphics.transparency_paste(lobby_image, card_image, (300, 300))
 
     # Return the lobby image.
@@ -208,13 +210,33 @@ def makeimage_lobby_card(player, card_index, card_color):
     Returns:
         PIL.Image.Image : The finalized image.
     """
-    # Load up the original card image.
-    card_image_name = \
-        f'{card_index}_{LOBBY_CARD_COLORS[card_color] if player else LOBBY_CARD_COLOR_DEFAULT}{CARD_IMAGE_TYPE}'
-    card_image = assets.open_image(os.path.join(LOBBY_CARD_DIRECTORY, card_image_name))
+    # If there's no player, then just return the blank one.
+    if not player:
+        return assets.open_image(
+            os.path.join(LOBBY_CARD_DIRECTORY, f'{card_index}_{LOBBY_CARD_COLOR_DEFAULT}{CARD_IMAGE_TYPE}'))
 
-    return card_image
+    # Create a new image to use as the base for the card image.
+    player_card = Image.new('RGBA', CARD_IMAGE_SIZE)
 
+    # Draw a colored rectangle according to the card color where the profile picture is going.
+    card_drawer = ImageDraw.Draw(player_card)
+    card_drawer.rectangle((
+        LOBBY_CARD_PFP_OFFSET[0], LOBBY_CARD_PFP_OFFSET[1],
+        LOBBY_CARD_PFP_OFFSET[0] + LOBBY_CARD_PFP_SIZE[0], LOBBY_CARD_PFP_OFFSET[1] + LOBBY_CARD_PFP_SIZE[1]),
+        LOBBY_CARD_BACKGROUND_COLORS[card_color]
+    )
+
+    # Put the profile picture there.
+    graphics.transparency_paste(player_card, temp_files.get_profile_picture_by_user(player, size=LOBBY_CARD_PFP_SIZE),
+                                LOBBY_CARD_PFP_OFFSET)
+
+    # Paste the card image on top.
+    graphics.transparency_paste(player_card, assets.open_image(
+        os.path.join(LOBBY_CARD_DIRECTORY, f'{card_index}_{LOBBY_CARD_COLORS[card_color]}{CARD_IMAGE_TYPE}')
+    ), (0, 0))
+
+    # Return.
+    return player_card
 
 
 def initialize(bot):
@@ -233,7 +255,8 @@ def initialize(bot):
     game_manager.GAME_DICTS.append(CURRENT_GAMES)
 
     # Sets some global variables using environment.get
-    global EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
+    global ALLOW_DUPLICATE_PLAYERS_IN_GAME, EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
+    ALLOW_DUPLICATE_PLAYERS_IN_GAME = environment.get('UNO_ALLOW_DUPLICATE_PLAYERS_IN_GAME')
     EXPIRE_CHECK_INTERVAL = environment.get('UNO_EXPIRE_CHECK_INTERVAL')
     EXPIRE_SECONDS = environment.get('UNO_EXPIRE_SECONDS')
     BOT = bot
