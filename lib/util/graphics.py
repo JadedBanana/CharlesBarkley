@@ -29,7 +29,7 @@ def color_behind_image(base_image, color):
     Colors behind an image.
     Will only color with alpha nonsense.
 
-    Args:
+    Arguments:
         base_image (PIL.Image.Image) : The base image to color under.
         color (int, int, int) : The color to color with.
 
@@ -48,3 +48,20 @@ def color_behind_image(base_image, color):
 
     # Return.
     return new_image
+
+
+def resize(base_image, new_size):
+    """
+    Resizes the given image to the given size.
+
+    Arguments:
+        base_image (PIL.Image.Image) : The base image to resize.
+        new_size (int, int) : The new size.
+
+    Returns:
+        PIL.Image.Image : A new image.
+    """
+    # Simple return statement.
+    return base_image.resize(
+        new_size, Image.NEAREST if base_image.width < new_size[0] or base_image.height < new_size[1] else Image.LANCZOS
+    )

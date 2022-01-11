@@ -2,11 +2,13 @@
 Tempfiles helps with creating, maintaining, and deleting files in the temp/ directory.
 Mainly deals with profile pictures (hence, that's what most of the methods are for).
 """
-# Package Imports
-import datetime
+# Local Imports
+from lib.util import graphics
 
+# Package Imports
 from PIL import Image
 import threading
+import datetime
 import requests
 import logging
 import random
@@ -73,8 +75,7 @@ def get_profile_picture_by_user(user, size=None):
 
     # If it should be resized, then resize it.
     if size and size > (0, 0):
-        image = image.resize((size[0], size[1]),
-                             Image.NEAREST if image.width < size[0] or image.height < size[1] else Image.LANCZOS)
+        image = graphics.resize(image, size)
 
     # And return the image.
     return image
