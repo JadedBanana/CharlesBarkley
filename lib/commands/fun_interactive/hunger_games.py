@@ -1419,7 +1419,7 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
     if dead:
 
         # Put the background color behind the profile picture.
-        player_pfp = graphics.color_behind_image(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
+        player_pfp = graphics.color_behind(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
 
         # Perform the colorize.
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
