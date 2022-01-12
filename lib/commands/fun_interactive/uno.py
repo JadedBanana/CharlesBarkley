@@ -36,17 +36,24 @@ LOBBY_WIDTH = 900
 CARD_IMAGE_SIZE = (192, 290)
 CARD_IMAGE_TYPE = '.png'
 
-# Pregame
+# Lobby
 LOBBY_TITLE = 'Who\'s up for a game of UNO?'
 LOBBY_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
 LOBBY_FAILSAFE_BACKGROUND = (203, 1, 0)
+# Lobby LOGO
+LOBBY_LOGO_IMAGE = 'cards/uno/logo.png'
+LOBBY_LOGO_POSITION = (140, 100)
+LOBBY_LOGO_SCALE = 0.5
+LOBBY_LOGO_DROP_SHADOW_ALPHA = 200
+LOBBY_LOGO_DROP_SHADOW_DISTANCE = 20
+# Lobby CARDS
 LOBBY_CARD_COLOR_DEFAULT = 'blank'
 LOBBY_CARD_COLORS = ['red', 'blue', 'green', 'yellow']
 LOBBY_CARD_BACKGROUND_COLORS = [(255, 23, 23), (23, 23, 255), (23, 105, 23), (255, 105, 0)]
 LOBBY_CARD_PFP_SIZE = (151, 151)
 LOBBY_CARD_PFP_OFFSET = (21, 70)
 LOBBY_CARD_DIRECTORY = 'cards/uno/lobby'
-LOBBY_CARD_FINAL_SIZE_FACTOR = 0.7
+LOBBY_CARD_SCALE = 0.7
 
 # Cards.
 CARDS = [
@@ -198,11 +205,19 @@ def makeimage_lobby(uno_dict):
 
     # Resize the card images.
     for i in range(len(card_images)):
-        card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_FINAL_SIZE_FACTOR)
+        card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_SCALE)
 
     # Make the fan from the card images.
     makeimage_card_fan(lobby_image, card_images[:int(MAX_GAMESIZE / 2)], (450, 200), 800, 50, 50)
     makeimage_card_fan(lobby_image, card_images[int(MAX_GAMESIZE / 2):], (450, 300), 800, 50, 50)
+
+    # Get the logo image and paste it onto the lobby image.
+    logo = graphics.resize(
+        graphics.drop_shadow(assets.open_image(LOBBY_LOGO_IMAGE), alpha=LOBBY_LOGO_DROP_SHADOW_ALPHA,
+                             distance=LOBBY_LOGO_DROP_SHADOW_DISTANCE),
+        factor=LOBBY_LOGO_SCALE
+    )
+    graphics.transparency_paste(lobby_image, logo, LOBBY_LOGO_POSITION, centered=True)
 
     # Return the lobby image.
     return lobby_image
@@ -291,16 +306,6 @@ def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_dist
         current_card_angle -= angle_difference
 
 
-async def cardtest(message, argument):
-
-    image = Image.new('RGBA', (900, 600), LOBBY_FAILSAFE_BACKGROUND)
-
-    makeimage_card_fan(image, [makeimage_lobby_card(message.author, i % 10, i % 4) for i in range(16)], (450, 200), 600, 50, 50)
-
-    await messaging.send_image_based_embed(message, image, 'test', EMBED_COLOR)
-
-
-
 def initialize(bot):
     """
     Initializes the command.
@@ -325,6 +330,5 @@ def initialize(bot):
 
 
 DEVELOPER_COMMAND_DICT = {
-    'uno': uno_start,
-    'test': cardtest
+    'uno': uno_start
 }

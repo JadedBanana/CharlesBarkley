@@ -2,7 +2,7 @@
 Graphics module contains some methods that can be used to make image editing easier.
 """
 # Package Imports
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps, ImageFilter
 import math
 
 
@@ -79,7 +79,7 @@ def resize(base_image, new_size=None, factor=None):
 
     # If we have a factor, perform some minor calculations.
     if factor:
-        new_size = int(base_image.size[0] * factor), int(base_image.size[1] * factor)
+        new_size = int(base_image.size[0] * factor + 0.5), int(base_image.size[1] * factor + 0.5)
 
     # Now return.
     return base_image.resize(
@@ -109,3 +109,43 @@ def rotate(base_image, angle, resize_borders_to_fit=True):
 
     # Return the rotated image.
     return base_image.rotate(-angle, center=(new_image_diagonals, new_image_diagonals), resample=Image.BILINEAR)
+
+
+def drop_shadow(base_image, angle=135, distance=5, blur_strength=10, alpha=255):
+    """
+    Drops a shadow behind the given image.
+
+    Args:
+        base_image (PIL.Image.Image) : The base image to rotate.
+        angle (int) : The angle to drop the shadow, in degrees.
+                      Defaults to 135 (down-right).
+        distance (int) : The distance to drop the shadow.
+                         Defaults to 5.
+        blur_strength (int) : The strength of the drop shadow's blur.
+        alpha (int) : The alpha value of the shadow.
+
+    Returns:
+        PIL.Image.Image : A new image.
+    """
+    # Make a shadow image using the size of the base image plus the distance plus the blur strength.
+    shadow_image_size = (base_image.size[0] + distance + blur_strength ** 2,
+                         base_image.size[1] + distance + blur_strength ** 2)
+    shadow_image = Image.new('RGBA', shadow_image_size, (0, 0, 0, 0))
+    shadow_image_form = Image.new('RGBA', base_image.size, (0, 0, 0, alpha))
+
+    # Paste the shadow image form onto the shadow image using the base image as a mask.
+    angle_radians = math.radians(angle)
+    shadow_image.paste(shadow_image_form, (
+        int((distance + blur_strength**2) / 2 - math.cos(angle_radians) * distance + 0.5),
+        int((distance + blur_strength**2) / 2 + math.sin(angle_radians) * distance + 0.5)
+    ), mask=base_image)
+
+    # Blur it.
+    shadow_image = shadow_image.filter(ImageFilter.GaussianBlur(blur_strength))
+
+    # Paste the base image onto the shadow image.
+    transparency_paste(shadow_image, base_image, (int(shadow_image_size[0] / 2), int(shadow_image_size[1] / 2)),
+                       centered=True)
+
+    # Return the final image.
+    return shadow_image

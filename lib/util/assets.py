@@ -56,6 +56,7 @@ EXPECTED_ASSET_FILES = [
     'cards/uno/lobby/8_red.png', 'cards/uno/lobby/8_yellow.png',
     'cards/uno/lobby/9_blank.png', 'cards/uno/lobby/9_blue.png', 'cards/uno/lobby/9_green.png',
     'cards/uno/lobby/9_red.png', 'cards/uno/lobby/9_yellow.png',
+    'cards/uno/logo.png',
     'danganronpa_bg/drbottom.png', 'danganronpa_bg/drmiddle.png', 'danganronpa_bg/drtop.png',
     'danganronpa_chars/akamatsu_kaede.webp', 'danganronpa_chars/amami_rantaro.webp',
     'danganronpa_chars/asahina_aoi.webp', 'danganronpa_chars/chabashira_tenko.webp',
