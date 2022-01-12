@@ -22,7 +22,7 @@ def transparency_paste(background_image, foreground_image, pos, centered=False):
     # Paste the foreground image onto the new image.
     new_image.paste(
         foreground_image,
-        int((pos[0] - foreground_image.size[0] / 2), int(pos[1] - foreground_image.size[1] / 2)) if centered else pos
+        (int(pos[0] - foreground_image.size[0] / 2), int(pos[1] - foreground_image.size[1] / 2)) if centered else pos
     )
 
     # Alpha composite the new image onto the background image.
@@ -55,20 +55,36 @@ def color_behind(base_image, color):
     return new_image
 
 
-def resize(base_image, new_size):
+def resize(base_image, new_size=None, factor=None):
     """
     Resizes the given image to the given size.
 
     Arguments:
         base_image (PIL.Image.Image) : The base image to resize.
-        new_size (int, int) : The new size.
+        new_size (int, int) : The new size (specific).
+                              Must be supplied if factor is not.
+        factor (float) : A factor to scale the original image to.
+                         Must be supplied if new_size is not.
 
     Returns:
         PIL.Image.Image : A new image.
     """
-    # Simple return statement.
+    # If neither new_size nor factor were supplied, raise a ValueError.
+    if not (new_size or factor):
+        raise ValueError('Either new_size or factor need to be supplied')
+
+    # If both new_size and factor were supplied, raise a ValueError.
+    if new_size and factor:
+        raise ValueError('Either new_size or factor need to be supplied, not both')
+
+    # If we have a factor, perform some minor calculations.
+    if factor:
+        new_size = int(base_image.size[0] * factor), int(base_image.size[1] * factor)
+
+    # Now return.
     return base_image.resize(
-        new_size, Image.NEAREST if base_image.width < new_size[0] or base_image.height < new_size[1] else Image.LANCZOS
+        new_size,
+        Image.NEAREST if base_image.width < new_size[0] or base_image.height < new_size[1] else Image.LANCZOS
     )
 
 
@@ -87,9 +103,9 @@ def rotate(base_image, angle, resize_borders_to_fit=True):
     # If we resize, remake the base_image.
     if resize_borders_to_fit:
         new_image_diagonals = math.hypot(base_image.size[0], base_image.size[1])
-        new_image = Image.new('RGBA', (new_image_diagonals * 2, new_image_diagonals * 2))
+        new_image = Image.new('RGBA', (int(new_image_diagonals * 2), int(new_image_diagonals * 2)))
         transparency_paste(new_image, base_image, (new_image_diagonals, new_image_diagonals), centered=True)
         base_image = new_image
 
     # Return the rotated image.
-    return base_image.rotate(angle, center=(new_image_diagonals, new_image_diagonals), resample=Image.BILINEAR)
+    return base_image.rotate(-angle, center=(new_image_diagonals, new_image_diagonals), resample=Image.BILINEAR)

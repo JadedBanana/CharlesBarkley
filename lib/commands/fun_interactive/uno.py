@@ -4,8 +4,7 @@ Recreates the Mattel Game UNO inside the bot.
 Mattel, pls don't sue.
 """
 # Local Imports
-from lib.util import arguments, assets, database, discord_info, environment, graphics, messaging, misc, parsing, \
-    tasks, temp_files
+from lib.util import arguments, assets, discord_info, environment, graphics, messaging, misc, parsing, tasks, temp_files
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
 from lib.commands import fun_interactive as game_manager
@@ -17,6 +16,7 @@ from PIL import Image, ImageOps, ImageDraw
 from datetime import datetime
 import discord
 import random
+import math
 import os
 
 
@@ -46,6 +46,7 @@ LOBBY_CARD_BACKGROUND_COLORS = [(255, 23, 23), (23, 23, 255), (23, 105, 23), (25
 LOBBY_CARD_PFP_SIZE = (151, 151)
 LOBBY_CARD_PFP_OFFSET = (21, 70)
 LOBBY_CARD_DIRECTORY = 'cards/uno/lobby'
+LOBBY_CARD_FINAL_SIZE_FACTOR = 0.7
 
 # Cards.
 CARDS = [
@@ -90,6 +91,8 @@ ALLOW_DUPLICATE_PLAYERS_IN_GAME = False  # Initialized in initialize method
 EXPIRE_CHECK_INTERVAL = 60  # Initialized in initialize method
 EXPIRE_SECONDS = 1800  # Initialized in initialize method
 BOT = None  # Initialized in initialize method
+
+THING = None
 
 
 async def uno_start(message, argument):
@@ -187,8 +190,19 @@ def makeimage_lobby(uno_dict):
     lobby_background = assets.open_image(LOBBY_BACKGROUND_IMAGE)
     lobby_image.paste(lobby_background, (0, int((600 - lobby_background.size[1]) / 2)))
 
-    card_image = makeimage_lobby_card(uno_dict['host'], 1, 3)
-    graphics.transparency_paste(lobby_image, card_image, (300, 300))
+    # Make the card images.
+    card_images = [
+        makeimage_lobby_card(uno_dict['players'][i], (i + 1) % 10, uno_dict['lobby_colors'][i])
+        for i in range(len(uno_dict['players']))
+    ] + [makeimage_lobby_card(None, (i + 1) % 10, 0) for i in range(len(uno_dict['players']), MAX_GAMESIZE)]
+
+    # Resize the card images.
+    for i in range(len(card_images)):
+        card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_FINAL_SIZE_FACTOR)
+
+    # Make the fan from the card images.
+    makeimage_card_fan(lobby_image, card_images[:int(MAX_GAMESIZE / 2)], (450, 200), 800, 50, 50)
+    makeimage_card_fan(lobby_image, card_images[int(MAX_GAMESIZE / 2):], (450, 300), 800, 50, 50)
 
     # Return the lobby image.
     return lobby_image
@@ -239,6 +253,54 @@ def makeimage_lobby_card(player, card_index, card_color):
     return player_card
 
 
+def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_distance, max_card_span):
+    """
+    Makes a card fan and posts it onto the image.
+
+    Arguments:
+        base_image (PIL.Image.Image) : The base image to draw the card fan onto.
+        cards (str[] | PIL.Image.Image[]) : A list of either strings or images.
+        northmost_point (int, int) : The northmost point of the card arc.
+                                     If there are an odd number of cards, then the median card will be centered here.
+        radius (float) : How big the arc is.
+        max_card_distance (float) : The maximum distance between cards, in degrees.
+        max_card_span (float) : The maximum angle cards occupy on the curve before they start getting smushed together.
+    """
+    # Calculate the center of the circle, the angle between each card, and the starting angle (angle most to the right).
+    arc_center = northmost_point[0], northmost_point[1] + radius
+    angle_difference = min(max_card_distance, max_card_span / len(cards))
+    current_card_angle = (len(cards) - 1) * angle_difference / 2
+
+    # Iterate through each card.
+    for card in cards:
+
+        # Rotate the card.
+        card = graphics.rotate(card, -current_card_angle)
+
+        # Get the card's angle as radians.
+        current_card_angle_rad = math.radians(current_card_angle)
+
+        # Draw the card.
+        graphics.transparency_paste(
+            base_image, card, (
+                arc_center[0] - math.sin(current_card_angle_rad) * radius,
+                arc_center[1] - math.cos(current_card_angle_rad) * radius
+            ), centered=True)
+
+        # Subtract from the current_card_angle.
+        current_card_angle -= angle_difference
+
+
+async def cardtest(message, argument):
+
+    image = Image.new('RGBA', (900, 600), LOBBY_FAILSAFE_BACKGROUND)
+
+    makeimage_card_fan(image, [makeimage_lobby_card(message.author, i % 10, i % 4) for i in range(16)], (450, 200), 600, 50, 50)
+
+    await messaging.send_image_based_embed(message, image, 'test', EMBED_COLOR)
+
+
+
 def initialize(bot):
     """
     Initializes the command.
@@ -263,5 +325,6 @@ def initialize(bot):
 
 
 DEVELOPER_COMMAND_DICT = {
-    'uno': uno_start
+    'uno': uno_start,
+    'test': cardtest
 }
