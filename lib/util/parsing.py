@@ -2,14 +2,17 @@
 Parsing class helps with understanding commands more easily.
 There are multiple methods that help with picking out pieces and piecing things together.
 """
+# One constant.
+EMOJI_MIN_ORD = 8805
 
 
-def normalize_string(input_str):
+def normalize_string(input_str, remove_emojis=False):
     """
     Removes spaces at the start and end of strings, as well as double spaces, newlines, and tabs in strings.
 
     Arguments:
         input_str (str) : The string to be normalized.
+        remove_emojis (bool) : Whether to remove emojis.
 
     Returns:
         str : The normalized string.
@@ -17,6 +20,16 @@ def normalize_string(input_str):
     # If it's not a string, then just return it.
     if not isinstance(input_str, str):
         return input_str
+
+    # Emojis
+    if remove_emojis:
+        # Iterate through each character in the name and pull out any characters with ord's greater than the max.
+        i = 0
+        while i < len(input_str):
+            if ord(input_str[i]) > EMOJI_MIN_ORD:
+                input_str = input_str.replace(input_str[i], '')
+            else:
+                i += 1
 
     # Newlines, tabs
     input_str = input_str.replace('\t', ' ').replace('\n', ' ')

@@ -130,6 +130,7 @@ def open_font(filename, size):
 
     Arguments:
         filename (str) : The font's filename.
+        size (int) : The font size.
 
     Returns:
         PIL.ImageFont : The opened font.

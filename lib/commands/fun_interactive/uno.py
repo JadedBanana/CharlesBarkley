@@ -51,6 +51,18 @@ LOBBY_CARD_PFP_SIZE = (151, 151)
 LOBBY_CARD_PFP_OFFSET = (21, 70)
 LOBBY_CARD_DIRECTORY = 'cards/uno/lobby'
 LOBBY_CARD_SCALE = 0.7
+LOBBY_CARD_NAME_FONT = 'urw_grotesk_extra_narrow_medium.ttf'
+LOBBY_CARD_NAME_FONT_SIZE = 37
+LOBBY_CARD_NAME_BORDERS = [
+    (64, 170), (47, 170), (64, 170), (64, 170), (64, 170), (62, 170), (64, 170), (64, 170), (64, 170), (64, 170)
+]
+LOBBY_CARD_NAME_Y = 21
+LOBBY_CARD_READY_FONT = 'urw_grotesk_extra_narrow_medium.ttf'
+LOBBY_CARD_READY_FONT_SIZE = 20
+LOBBY_CARD_READY_BORDERS = [
+    (65, 171), (48, 171), (65, 171), (65, 171), (65, 171), (63, 171), (65, 171), (65, 171), (65, 171), (65, 171)
+]
+LOBBY_CARD_READY_Y = 56
 
 # Cards.
 CARDS = [
@@ -227,7 +239,7 @@ def makeimage_lobby(uno_dict):
     return lobby_image
 
 
-def makeimage_lobby_card(player, card_index, card_color):
+def makeimage_lobby_card(player, card_index, card_color, ready):
     """
     Generates a lobby card for the given player and returns it.
     If the player is None, then a blank one is generated instead.
@@ -239,6 +251,7 @@ def makeimage_lobby_card(player, card_index, card_color):
                            Must be between 0 and 9, inclusive.
         card_color (int) : The color of the card.
                            Must be between 0 and 3, inclusive.
+        ready (bool) : Whether the player is ready or not.
 
     Returns:
         PIL.Image.Image : The finalized image.
@@ -267,6 +280,14 @@ def makeimage_lobby_card(player, card_index, card_color):
     graphics.transparency_paste(player_card, assets.open_image(
         os.path.join(LOBBY_CARD_DIRECTORY, f'{card_index}_{LOBBY_CARD_COLORS[card_color]}{CARD_IMAGE_TYPE}')
     ), (0, 0))
+
+    # Write the user text and their 'ready' label, if they are ready.
+    graphics.text_in_boundaries(player_card, assets.open_font(LOBBY_CARD_NAME_FONT, LOBBY_CARD_NAME_FONT_SIZE),
+                                parsing.normalize_string(player.display_name, remove_emojis=True).upper(),
+                                LOBBY_CARD_NAME_BORDERS[card_index], LOBBY_CARD_NAME_Y)
+    if ready:
+        graphics.text_in_boundaries(player_card, assets.open_font(LOBBY_CARD_READY_FONT, LOBBY_CARD_READY_FONT_SIZE),
+                                    'READY', LOBBY_CARD_READY_BORDERS[card_index], LOBBY_CARD_READY_Y)
 
     # Return.
     return player_card

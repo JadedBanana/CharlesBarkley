@@ -149,3 +149,35 @@ def drop_shadow(base_image, angle=135, distance=5, blur_strength=10, alpha=255):
 
     # Return the final image.
     return shadow_image
+
+
+def text_in_boundaries(base_image, font, text, x_boundaries, text_y, fill=(255, 255, 255), use_ellipsis=True):
+    """
+    Draws text within the given boundaries.
+    Args:
+        base_image (PIL.Image.Image) : The base image to rotate.
+        font (PIL.ImageFont.ImageFont) : The font to write with.
+        text (str) : The actual text to write.
+        x_boundaries: (int, int) : The left then right boundaries of where to write.
+        text_y (int) : The y position of the text.
+        fill (int, int, int) : What color to write in.
+        use_ellipsis (bool) : Whether to put an ellipsis at the end if the text was shortened.
+    """
+    # Get the width of the area we're writing in.
+    text_max_width = x_boundaries[1] - x_boundaries[0]
+
+    # Create a drawer for this image.
+    text_writer = ImageDraw.Draw(base_image)
+
+    # If the text already fits, then write and return.
+    if font.getsize(text)[0] <= text_max_width:
+        text_writer.text((x_boundaries[0], text_y), text, font=font, fill=fill)
+        return
+
+    # Otherwise, keep taking one letter off at a time until it fits.
+    text = text[:-1]
+    while text and font.getsize(text + '...' if use_ellipsis else text)[0] > text_max_width:
+        text = text[:-1]
+
+    # Now write.
+    text_writer.text((x_boundaries[0], text_y), text + '...' if use_ellipsis else text, font=font, fill=fill)
