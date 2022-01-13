@@ -136,8 +136,8 @@ def drop_shadow(base_image, angle=135, distance=5, blur_strength=10, alpha=255):
     # Paste the shadow image form onto the shadow image using the base image as a mask.
     angle_radians = math.radians(angle)
     shadow_image.paste(shadow_image_form, (
-        int((distance + blur_strength**2) / 2 - math.cos(angle_radians) * distance + 0.5),
-        int((distance + blur_strength**2) / 2 + math.sin(angle_radians) * distance + 0.5)
+        int((distance + blur_strength**2) / 2 + math.sin(angle_radians) * distance + 0.5),
+        int((distance + blur_strength**2) / 2 - math.cos(angle_radians) * distance + 0.5)
     ), mask=base_image)
 
     # Blur it.
