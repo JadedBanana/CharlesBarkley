@@ -4,15 +4,12 @@ Recreates the Mattel Game UNO inside the bot.
 Mattel, pls don't sue.
 """
 # Local Imports
-from lib.util import arguments, assets, discord_info, environment, graphics, messaging, misc, parsing, tasks, temp_files
-from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
-    UnableToFindUserError
+from lib.util import assets, discord_info, environment, graphics, messaging, misc, parsing, tasks, temp_files
 from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
-from lib.bot import GLOBAL_PREFIX
 
 # Package Imports
-from PIL import Image, ImageOps, ImageDraw
+from PIL import Image, ImageDraw
 from datetime import datetime
 import discord
 import random
@@ -42,8 +39,8 @@ LOBBY_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
 LOBBY_FAILSAFE_BACKGROUND = (203, 1, 0)
 # Lobby LOGO
 LOBBY_LOGO_IMAGE = 'cards/uno/logo.png'
-LOBBY_LOGO_POSITION = (140, 100)
-LOBBY_LOGO_SCALE = 0.5
+LOBBY_LOGO_POSITION = (119, 90)
+LOBBY_LOGO_SCALE = 0.4
 LOBBY_LOGO_DROP_SHADOW_ALPHA = 200
 LOBBY_LOGO_DROP_SHADOW_DISTANCE = 20
 # Lobby CARDS
@@ -207,9 +204,16 @@ def makeimage_lobby(uno_dict):
     for i in range(len(card_images)):
         card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_SCALE)
 
-    # Make the fan from the card images.
-    makeimage_card_fan(lobby_image, card_images[:int(MAX_GAMESIZE / 2)], (450, 200), 800, 50, 50)
-    makeimage_card_fan(lobby_image, card_images[int(MAX_GAMESIZE / 2):], (450, 300), 800, 50, 50)
+    # Make the fan from the card images on a new image.
+    card_image = Image.new('RGBA', (900, 600), (0, 0, 0, 0))
+    makeimage_card_fan(card_image, card_images[:int(MAX_GAMESIZE / 2)], (445, 210), 990, 7, 50, reverse=True)
+    makeimage_card_fan(card_image, card_images[int(MAX_GAMESIZE / 2):], (455, 390), 1100, 6.5, 50, reverse=True)
+
+    # Draw a shadow on the card_image.
+    card_image = graphics.drop_shadow(card_image, alpha=127, distance=LOBBY_LOGO_DROP_SHADOW_DISTANCE)
+
+    # Paste the card image on.
+    graphics.transparency_paste(lobby_image, card_image, (450, 300), centered=True)
 
     # Get the logo image and paste it onto the lobby image.
     logo = graphics.resize(
@@ -268,7 +272,7 @@ def makeimage_lobby_card(player, card_index, card_color):
     return player_card
 
 
-def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_distance, max_card_span):
+def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_distance, max_card_span, reverse=False):
     """
     Makes a card fan and posts it onto the image.
 
@@ -280,17 +284,28 @@ def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_dist
         radius (float) : How big the arc is.
         max_card_distance (float) : The maximum distance between cards, in degrees.
         max_card_span (float) : The maximum angle cards occupy on the curve before they start getting smushed together.
+        reverse (bool) : Whether to reverse the card drawing order (left on top, right on bottom).
+
     """
     # Calculate the center of the circle, the angle between each card, and the starting angle (angle most to the right).
     arc_center = northmost_point[0], northmost_point[1] + radius
     angle_difference = min(max_card_distance, max_card_span / len(cards))
-    current_card_angle = (len(cards) - 1) * angle_difference / 2
+    current_card_angle = (len(cards) - 1) * angle_difference / 2 * (-1 if reverse else 1)
+
+    # If reverse, reverse the order of the cards.
+    if reverse:
+        cards.reverse()
 
     # Iterate through each card.
-    for card in cards:
+    for i in range(len(cards)):
+
+        # Draw the card's shadow to the left or right depending on whether we're reversing or not.
+        if i > 0:
+            cards[i] = graphics.drop_shadow(cards[i], angle=90 if reverse else 270, distance=2, blur_strength=2,
+                                            alpha=50)
 
         # Rotate the card.
-        card = graphics.rotate(card, -current_card_angle)
+        card = graphics.rotate(cards[i], -current_card_angle)
 
         # Get the card's angle as radians.
         current_card_angle_rad = math.radians(current_card_angle)
@@ -303,7 +318,7 @@ def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_dist
             ), centered=True)
 
         # Subtract from the current_card_angle.
-        current_card_angle -= angle_difference
+        current_card_angle -= -angle_difference if reverse else angle_difference
 
 
 def initialize(bot):
