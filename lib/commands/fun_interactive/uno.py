@@ -105,8 +105,10 @@ WILD_CARDS = [52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
 
 # Miscellaneous
 ALLOW_DUPLICATE_PLAYERS_IN_GAME = False  # Initialized in initialize method
+DISABLE_OLD_VIEW_ON_REFRESH = True  # Initialized in initialize method
+BUTTONS_TIMEOUT_SECONDS = 1800  # Initialized in initialize method
 EXPIRE_CHECK_INTERVAL = 60  # Initialized in initialize method
-EXPIRE_SECONDS = 1800  # Initialized in initialize method
+EXPIRE_SECONDS = 1200  # Initialized in initialize method
 BOT = None  # Initialized in initialize method
 
 THING = None
@@ -169,27 +171,38 @@ async def uno_start(message, argument):
     # tasks.add_task(f'uno_expire_{uno_key}', EXPIRE_CHECK_INTERVAL, 0, uno_detect_expiration, uno_key)
 
     # Send the pregame image.
-    await send_pregame(message, uno_key, uno_dict)
+    await send_pregame(message, uno_dict)
     logging.debug(message, f'started Uno instance')
 
 
-async def send_pregame(message, uno_key, uno_dict, title=LOBBY_TITLE):
+async def send_pregame(message, uno_dict, title=LOBBY_TITLE):
     """
     Sends the pregame lobby thing.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
-        uno_key (str) : The key the uno dict is keyed under.
         uno_dict (dict) : The full game dict.
         title (str) : The title of the embed, if any.
     """
     # Generate the player statuses image.
     image = makeimage_lobby(uno_dict)
 
+    # Make a lobby view.
+    lobby_view = LobbyView(uno_dict)
+
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, EMBED_COLOR,
-                                           description=f"Hosted by {uno_dict['host'].display_name}",
-                                           view=LobbyView(uno_key))
+                                           description=f"Hosted by {uno_dict['host'].display_name}", view=lobby_view)
+
+    # If the view already exists in this dict, then do something about it.
+    if 'lobby_views' in uno_dict:
+        if DISABLE_OLD_VIEW_ON_REFRESH:
+            uno_dict['lobby_views'][0].stop()
+        else:
+            return uno_dict['lobby_views'].append(lobby_view)
+
+    # Store the lobby view.
+    uno_dict['lobby_views'] = [lobby_view]
 
 
 def makeimage_lobby(uno_dict):
@@ -248,12 +261,12 @@ def makeimage_lobby_card(player, card_index, card_color, ready):
     If the player is None, then a blank one is generated instead.
 
     Args:
-        player (discord.User) : The player object that the card is for.
-                                CAN be None.
+        player (Optional[discord.User]) : The player object that the card is for.
+                                          If None, then the card will be returned as a blank one.
         card_index (int) : The index of the card.
                            Must be between 0 and 9, inclusive.
         card_color (int) : The color of the card.
-                           Must be between 0 and 3, inclusive.
+                           Must be between 0 and 3, inclusive, unless the player is None.
         ready (bool) : Whether the player is ready or not.
 
     Returns:
@@ -350,18 +363,18 @@ class LobbyView(View):
     The view that is used on the lobby screen.
     """
 
-    def __init__(self, uno_key):
+    def __init__(self, uno_dict):
         """
         Initializes the LobbyView.
 
         Arguments:
-            uno_key (str) : The uno key that keys the current game in CURRENT_GAMES.
+            uno_dict (dict) : The uno dict for the given game.
         """
         # Initialize the standard view.
-        View.__init__(self, timeout=EXPIRE_SECONDS)
+        View.__init__(self, timeout=BUTTONS_TIMEOUT_SECONDS)
 
         # Store the uno key.
-        self.uno_key = uno_key
+        self.uno_dict = uno_dict
 
         # Create the ready button.
         self.ready_button = Button(label='Ready 0/1', style=discord.ButtonStyle.green)
@@ -455,7 +468,8 @@ def initialize(bot):
     game_manager.GAME_DICTS.append(CURRENT_GAMES)
 
     # Sets some global variables using environment.get
-    global ALLOW_DUPLICATE_PLAYERS_IN_GAME, EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
+    global ALLOW_DUPLICATE_PLAYERS_IN_GAME, DISABLE_OLD_VIEW_ON_REFRESH, BUTTONS_TIMEOUT_SECONDS, \
+        EXPIRE_CHECK_INTERVAL, EXPIRE_SECONDS, BOT
     ALLOW_DUPLICATE_PLAYERS_IN_GAME = environment.get('UNO_ALLOW_DUPLICATE_PLAYERS_IN_GAME')
     EXPIRE_CHECK_INTERVAL = environment.get('UNO_EXPIRE_CHECK_INTERVAL')
     EXPIRE_SECONDS = environment.get('UNO_EXPIRE_SECONDS')
