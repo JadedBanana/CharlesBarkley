@@ -224,15 +224,16 @@ def makeimage_lobby(uno_dict):
 
     # Make the card images.
     card_images = [
-        makeimage_lobby_card(uno_dict['players'][i], (i + 1) % 10, uno_dict['lobby_colors'][i], True)
-        for i in range(len(uno_dict['players']))
+        makeimage_lobby_card((i + 1) % 10, player, color, ready) for i, (player, color, ready) in
+        enumerate(zip(uno_dict['players'], uno_dict['lobby_colors'], uno_dict['readies']))
     ] + [
-        makeimage_lobby_card(None, (i + 1) % 10, 0, False)
-        for i in range(len(uno_dict['players']), uno_dict['max_players'])]
+        makeimage_lobby_card((i + 1) % 10) for i in
+        range(len(uno_dict['players']), uno_dict['max_players'])
+    ]
 
     # Resize the card images.
-    for i in range(len(card_images)):
-        card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_SCALE)
+    for i, card_image in enumerate(card_images):
+        card_images[i] = graphics.resize(card_image, factor=LOBBY_CARD_SCALE)
 
     # Sort the card images into one or more rows.
     card_images_row1, card_images_row2 = card_images[:LOBBY_CARD_ROW_WIDTHS[uno_dict['max_players']]], None
@@ -263,19 +264,22 @@ def makeimage_lobby(uno_dict):
     return lobby_image
 
 
-def makeimage_lobby_card(player, card_index, card_color, ready):
+def makeimage_lobby_card(card_index, player=None, card_color=0, ready=False):
     """
     Generates a lobby card for the given player and returns it.
     If the player is None, then a blank one is generated instead.
 
     Args:
-        player (Optional[discord.User]) : The player object that the card is for.
-                                          If None, then the card will be returned as a blank one.
         card_index (int) : The index of the card.
                            Must be between 0 and 9, inclusive.
+        player (Optional[discord.User]) : The player object that the card is for.
+                                          If None, then the card will be returned as a blank one.
+                                          Defaults to None.
         card_color (int) : The color of the card.
                            Must be between 0 and 3, inclusive, unless the player is None.
+                           Defaults to 0.
         ready (bool) : Whether the player is ready or not.
+                       Defaults to False.
 
     Returns:
         PIL.Image.Image : The finalized image.
