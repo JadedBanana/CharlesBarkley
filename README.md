@@ -85,6 +85,8 @@ Here is an explanation for every `.env` variable:
 - **UNO_EXPIRE_SECONDS**: How many seconds it takes for an Uno instance to expire.
 - **UNO_EXPIRE_CHECK_INTERVAL**: How often to check if an Uno game is expired, in 
   seconds.
+- **UNO_BUTTONS_TIMEOUT_SECONDS**: How long before the buttons on UNO embeds 
+  (lobby, hands, postgame) stop responding to user input.
 - **UNO_ALLOW_DUPLICATE_PLAYERS_IN_GAME**: Whether to allow duplicate players in Uno
   instances. Usually used for debugging purposes.
 - **MAL_DEFAULT_ANIME_USER**: The default user that the `randomanime` command uses
