@@ -87,6 +87,8 @@ Here is an explanation for every `.env` variable:
   seconds.
 - **UNO_BUTTONS_TIMEOUT_SECONDS**: How long before the buttons on UNO embeds 
   (lobby, hands, postgame) stop responding to user input.
+- **UNO_DISABLE_OLD_VIEW_ON_REFRESH**: Whether to disable the buttons on the old embed
+  when the `uno` command is called again during the lobby phase.
 - **UNO_ALLOW_DUPLICATE_PLAYERS_IN_GAME**: Whether to allow duplicate players in Uno
   instances. Usually used for debugging purposes.
 - **MAL_DEFAULT_ANIME_USER**: The default user that the `randomanime` command uses
