@@ -64,6 +64,7 @@ LOBBY_CARD_READY_BORDERS = [
     (65, 171), (48, 171), (65, 171), (65, 171), (65, 171), (63, 171), (65, 171), (65, 171), (65, 171), (65, 171)
 ]
 LOBBY_CARD_READY_Y = 56
+LOBBY_CARD_ROW_WIDTHS = [5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5]
 
 # Cards.
 CARDS = [
@@ -160,8 +161,7 @@ async def uno_start(message, argument):
 
     # Generate the uno dict.
     uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author, 'players': [message.author],
-                'lobby_colors': [random.randint(0, 3)] + [-1 for i in range(player_count - 1)],
-                'readies': [False for i in range(player_count)]}
+                'lobby_colors': [random.randint(0, 3)], 'readies': [False], 'max_players': player_count}
     CURRENT_GAMES[uno_key] = uno_dict
 
     # Checkout the host's profile picture.
@@ -226,16 +226,24 @@ def makeimage_lobby(uno_dict):
     card_images = [
         makeimage_lobby_card(uno_dict['players'][i], (i + 1) % 10, uno_dict['lobby_colors'][i], True)
         for i in range(len(uno_dict['players']))
-    ] + [makeimage_lobby_card(None, (i + 1) % 10, 0, False) for i in range(len(uno_dict['players']), MAX_GAMESIZE)]
+    ] + [
+        makeimage_lobby_card(None, (i + 1) % 10, 0, False)
+        for i in range(len(uno_dict['players']), uno_dict['max_players'])]
 
     # Resize the card images.
     for i in range(len(card_images)):
         card_images[i] = graphics.resize(card_images[i], factor=LOBBY_CARD_SCALE)
 
+    # Sort the card images into one or more rows.
+    card_images_row1, card_images_row2 = card_images[:LOBBY_CARD_ROW_WIDTHS[uno_dict['max_players']]], None
+    if len(card_images) != len(card_images_row1):
+        card_images_row2 = card_images[LOBBY_CARD_ROW_WIDTHS[uno_dict['max_players']]:]
+
     # Make the fan from the card images on a new image.
     card_image = Image.new('RGBA', (900, 600), (0, 0, 0, 0))
-    makeimage_card_fan(card_image, card_images[:int(MAX_GAMESIZE / 2)], (445, 210), 990, 7, 50, reverse=True)
-    makeimage_card_fan(card_image, card_images[int(MAX_GAMESIZE / 2):], (455, 390), 1100, 6.5, 50, reverse=True)
+    makeimage_card_fan(card_image, card_images_row1, (445, 210), 990, 7, 50, reverse=True)
+    if card_images_row2:
+        makeimage_card_fan(card_image, card_images_row2, (455, 390), 1100, 6.5, 50, reverse=True)
 
     # Draw a shadow on the card_image.
     card_image = graphics.drop_shadow(card_image, alpha=127, distance=LOBBY_LOGO_DROP_SHADOW_DISTANCE)
@@ -409,7 +417,7 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_key)
+        print(self.uno_dict)
 
 
     async def join_callback(self, interaction):
@@ -419,7 +427,7 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_key)
+        print(self.uno_dict)
 
 
     async def leave_callback(self, interaction):
@@ -429,7 +437,7 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_key)
+        print(self.uno_dict)
 
 
     async def options_callback(self, interaction):
@@ -439,7 +447,7 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_key)
+        print(self.uno_dict)
 
 
     async def cancel_callback(self, interaction):
@@ -449,7 +457,7 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_key)
+        print(self.uno_dict)
 
 
 def initialize(bot):
