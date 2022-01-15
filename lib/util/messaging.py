@@ -86,7 +86,7 @@ async def send_file(message, file_dir):
     await message.channel.send(file=discord.File(file_dir))
 
 
-async def send_image_based_embed(message, image, title, embed_color, description='', footer=''):
+async def send_image_based_embed(message, image, title, embed_color, description='', footer='', view=None):
     """
     Sends an image-based embed back to the channel the trigger message came from.
 
@@ -97,6 +97,7 @@ async def send_image_based_embed(message, image, title, embed_color, description
         embed_color (int) : The color of the embed's sidebar thing.
         description (str) : The embed's description, if any.
         footer (str) : The footer text, if any.
+        view (discord.ui.view.View) : The discord view, if any.
     """
     # First, have the temp_files module create a temporary image on-disk.
     image_path = temp_files.save_temporary_image(image)
@@ -112,7 +113,7 @@ async def send_image_based_embed(message, image, title, embed_color, description
         embed.set_footer(text=footer)
 
     # Finally, send the message with embed and file as attributes.
-    await message.channel.send(embed=embed, file=file)
+    await message.channel.send(embed=embed, file=file, view=view)
 
 
 async def send_embed_with_local_image_as_thumbnail(message, embed, filepath):

@@ -9,6 +9,7 @@ from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 
 # Package Imports
+from discord.ui import View, Button, Select
 from PIL import Image, ImageDraw
 from datetime import datetime
 import discord
@@ -168,16 +169,17 @@ async def uno_start(message, argument):
     # tasks.add_task(f'uno_expire_{uno_key}', EXPIRE_CHECK_INTERVAL, 0, uno_detect_expiration, uno_key)
 
     # Send the pregame image.
-    await send_pregame(message, uno_dict)
+    await send_pregame(message, uno_key, uno_dict)
     logging.debug(message, f'started Uno instance')
 
 
-async def send_pregame(message, uno_dict, title=LOBBY_TITLE):
+async def send_pregame(message, uno_key, uno_dict, title=LOBBY_TITLE):
     """
     Sends the pregame lobby thing.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
+        uno_key (str) : The key the uno dict is keyed under.
         uno_dict (dict) : The full game dict.
         title (str) : The title of the embed, if any.
     """
@@ -186,7 +188,8 @@ async def send_pregame(message, uno_dict, title=LOBBY_TITLE):
 
     # Sends image, logs.
     await messaging.send_image_based_embed(message, image, title, EMBED_COLOR,
-                                           description=f"Hosted by {uno_dict['host'].display_name}")
+                                           description=f"Hosted by {uno_dict['host'].display_name}",
+                                           view=LobbyView(uno_key))
 
 
 def makeimage_lobby(uno_dict):
@@ -208,9 +211,9 @@ def makeimage_lobby(uno_dict):
 
     # Make the card images.
     card_images = [
-        makeimage_lobby_card(uno_dict['players'][i], (i + 1) % 10, uno_dict['lobby_colors'][i])
+        makeimage_lobby_card(uno_dict['players'][i], (i + 1) % 10, uno_dict['lobby_colors'][i], True)
         for i in range(len(uno_dict['players']))
-    ] + [makeimage_lobby_card(None, (i + 1) % 10, 0) for i in range(len(uno_dict['players']), MAX_GAMESIZE)]
+    ] + [makeimage_lobby_card(None, (i + 1) % 10, 0, False) for i in range(len(uno_dict['players']), MAX_GAMESIZE)]
 
     # Resize the card images.
     for i in range(len(card_images)):
@@ -340,6 +343,100 @@ def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_dist
 
         # Subtract from the current_card_angle.
         current_card_angle -= -angle_difference if reverse else angle_difference
+
+
+class LobbyView(View):
+    """
+    The view that is used on the lobby screen.
+    """
+
+    def __init__(self, uno_key):
+        """
+        Initializes the LobbyView.
+
+        Arguments:
+            uno_key (str) : The uno key that keys the current game in CURRENT_GAMES.
+        """
+        # Initialize the standard view.
+        View.__init__(self, timeout=EXPIRE_SECONDS)
+
+        # Store the uno key.
+        self.uno_key = uno_key
+
+        # Create the ready button.
+        self.ready_button = Button(label='Ready 0/1', style=discord.ButtonStyle.green)
+        self.ready_button.callback = self.ready_callback
+        self.add_item(self.ready_button)
+
+        # Create the join button.
+        self.join_button = Button(label='Join Game', style=discord.ButtonStyle.blurple)
+        self.join_button.callback = self.join_callback
+        self.add_item(self.join_button)
+
+        # Create the leave button.
+        self.leave_button = Button(label='Leave Game', style=discord.ButtonStyle.blurple)
+        self.leave_button.callback = self.leave_callback
+        self.add_item(self.leave_button)
+
+        # Create the options button.
+        self.options_button = Button(label='Options', style=discord.ButtonStyle.gray)
+        self.options_button.callback = self.options_callback
+        self.add_item(self.options_button)
+
+        # Create the ready button.
+        self.cancel_button = Button(label='Cancel', style=discord.ButtonStyle.red)
+        self.cancel_button.callback = self.cancel_callback
+        self.add_item(self.cancel_button)
+
+
+    async def ready_callback(self, interaction):
+        """
+        The method that gets called when the 'ready' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_key)
+
+
+    async def join_callback(self, interaction):
+        """
+        The method that gets called when the 'join' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_key)
+
+
+    async def leave_callback(self, interaction):
+        """
+        The method that gets called when the 'leave' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_key)
+
+
+    async def options_callback(self, interaction):
+        """
+        The method that gets called when the 'options' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_key)
+
+
+    async def cancel_callback(self, interaction):
+        """
+        The method that gets called when the 'cancel' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_key)
 
 
 def initialize(bot):
