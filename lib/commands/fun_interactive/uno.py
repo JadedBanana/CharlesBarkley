@@ -160,7 +160,8 @@ async def uno_start(message, argument):
         player_count = DEFAULT_GAMESIZE
 
     # Generate the uno dict.
-    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author, 'players': [message.author],
+    author = discord_info.LightweightUser(message.author)
+    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': [author],
                 'lobby_colors': [random.randint(0, 3)], 'readies': [False], 'max_players': player_count}
     CURRENT_GAMES[uno_key] = uno_dict
 
