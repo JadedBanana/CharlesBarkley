@@ -231,6 +231,24 @@ class LightweightUser(IdWrapper):
         self.avatar = base_user.avatar
 
 
+    def __eq__(self, other):
+        """
+        Method to see if the two users are the same.
+
+        Arguments:
+            other (object) : The other thing to compare against.
+
+        Returns:
+            bool
+        """
+        # If the object isn't a user or LightweightUser, return False.
+        if not (isinstance(other, discord.User) or isinstance(other, LightweightUser)):
+            return False
+
+        # Otherwise, return whether the id's match.
+        return other.id == self.id
+
+
 class MessageWrapper:
     """
     MessageWrapper is there to wrap message objects that exist outside their messages so that they can
