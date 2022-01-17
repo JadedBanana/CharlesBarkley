@@ -210,6 +210,96 @@ class IdWrapper:
         self.id = object_id
 
 
+    def __eq__(self, other):
+        """
+        Method to see if the two ID-having objects are the same.
+
+        Arguments:
+            other (object) : The other thing to compare against.
+
+        Returns:
+            bool
+        """
+        # If the object doesn't have an id, return False.
+        if not hasattr(other, 'id'):
+            return False
+
+        # Otherwise, return whether the id's match.
+        return other.id == self.id
+
+
+class IdWrapperList(list):
+    """
+    A list extension with operators that should help with keeping list of id wrapper objects.
+    """
+
+    def __init__(self, list_):
+        """
+        Initializes the IdWrapper object.
+
+        Arguments:
+            list_ (IdWrapper[]) : A List of IdWrapper objects.
+        """
+        list.__init__(self, list_)
+
+
+    def __contains__(self, item):
+        """
+        Sees if the given item is in this list.
+
+        Arguments:
+            item (object) : The thing to be compared.
+
+        Returns:
+            bool
+        """
+        # Simple return statement.
+        return any(obj == item for obj in self)
+
+
+    def index(self, item):
+        """
+        Finds the first instance of the given object in this list.
+        Raises an error if it isn't there.
+
+        Arguments:
+            item (object) : The thing to be compared.
+
+        Raises:
+            AttributeError : The item does not have an 'id' attribute.
+            IndexError : The item does not appear in the list.
+
+        Returns:
+            int : The index of the first instance of the object.
+        """
+        # Simple return statement.
+        return [obj.id for obj in self].index(item.id)
+
+
+    def find(self, item):
+        """
+        Finds the first instance of the given object in this list.
+        Returns -1 if it isn't there.
+
+        Arguments:
+            item (object) : The thing to be compared.
+
+        Raises:
+            AttributeError : The item does not have an 'id' attribute.
+
+        Returns:
+            int : The index of the first instance of the object.
+                  Will be -1 if it doesn't exist.
+        """
+        # Call index with a try/catch.
+        try:
+            return self.index(item)
+
+        # On IndexError, return -1.
+        except IndexError:
+            return -1
+
+
 class LightweightUser(IdWrapper):
     """
     LightweightUser class is made to store a user object in a more lightweight way.
@@ -229,24 +319,6 @@ class LightweightUser(IdWrapper):
         self.bot = base_user.bot
         self.roles = base_user.roles if hasattr(base_user, 'roles') else []
         self.avatar = base_user.avatar
-
-
-    def __eq__(self, other):
-        """
-        Method to see if the two users are the same.
-
-        Arguments:
-            other (object) : The other thing to compare against.
-
-        Returns:
-            bool
-        """
-        # If the object isn't a user or LightweightUser, return False.
-        if not (isinstance(other, discord.User) or isinstance(other, LightweightUser)):
-            return False
-
-        # Otherwise, return whether the id's match.
-        return other.id == self.id
 
 
 class MessageWrapper:
