@@ -390,21 +390,24 @@ def fix_lobby_colors(current_colors, player_count):
     rows_even = not player_count % 2
     cards_on_bottom = player_count - row_width
 
+    # Create a card offset int to help influence the randomness a little.
+    card_offset = random.randint(0, 2)
+
     # Iterate through, starting with the second card.
     for i, color in enumerate(current_colors):
         if not i:
             continue
 
-        # Get the previous color.
-        previous_color = current_colors[i - 1]
+        # Get the previous 2 - 3 colors.
+        previous_colors = current_colors[max(0, i - 3 + (i + card_offset) % 3):i]
 
         # If the index is less than the row width, only consider the color to the left.
         if i < row_width:
-            if color == previous_color:
-                current_colors[i] = random.choice([j for j in range(4) if j != previous_color])
+            if color in previous_colors:
+                current_colors[i] = random.choice([j for j in range(4) if j not in previous_colors])
 
         # If the index is equal to the row width, consider the color(s) directly above it.
-        if i == row_width:
+        elif i == row_width:
             above_colors = [
                 current_colors[int((row_width - cards_on_bottom)/2)]
             ] if rows_even else [
@@ -417,11 +420,12 @@ def fix_lobby_colors(current_colors, player_count):
         # If the index is above the row width, consider the colors above and to the left of it.
         else:
             neighboring_colors = ([
-                current_colors[i - row_width + int((row_width - cards_on_bottom)/2)]
+                current_colors[i - row_width + int((row_width - cards_on_bottom) / 2)],
+                current_colors[i - row_width + int((row_width - cards_on_bottom) / 2) - 1]
             ] if rows_even else [
-                current_colors[i - row_width + int((row_width - cards_on_bottom)/2)],
-                current_colors[i - row_width + int((row_width - cards_on_bottom)/2) + 1]
-            ]) + [previous_color]
+                current_colors[i - row_width + int((row_width - cards_on_bottom) / 2)],
+                current_colors[i - row_width + int((row_width - cards_on_bottom) / 2) + 1]
+            ]) + [previous_colors[-1]]
             if color in neighboring_colors:
                 current_colors[i] = random.choice([j for j in range(4) if j not in neighboring_colors])
 
