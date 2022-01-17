@@ -162,7 +162,8 @@ async def uno_start(message, argument):
     # Generate the uno dict.
     author = discord_info.LightweightUser(message.author)
     uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': [author],
-                'lobby_colors': [random.randint(0, 3)], 'readies': [False], 'max_players': player_count}
+                'lobby_colors': fix_lobby_colors([random.randint(0, 3) for i in range(MAX_GAMESIZE)], player_count),
+                'readies': [False for i in range(MAX_GAMESIZE)], 'max_players': player_count}
     CURRENT_GAMES[uno_key] = uno_dict
 
     # Checkout the host's profile picture.
@@ -192,8 +193,9 @@ async def send_pregame(message, uno_dict, title=LOBBY_TITLE):
     lobby_view = LobbyView(uno_dict)
 
     # Sends image, logs.
-    await messaging.send_image_based_embed(message, image, title, EMBED_COLOR,
-                                           description=f"Hosted by {uno_dict['host'].display_name}", view=lobby_view)
+    await messaging.send_local_image_based_embed(message, image, title, EMBED_COLOR,
+                                                 description=f"Hosted by {uno_dict['host'].display_name}",
+                                                 view=lobby_view, hosted_online=True)
 
     # If the view already exists in this dict, then do something about it.
     if 'lobby_views' in uno_dict:
@@ -371,6 +373,61 @@ def makeimage_card_fan(base_image, cards, northmost_point, radius, max_card_dist
         current_card_angle -= -angle_difference if reverse else angle_difference
 
 
+def fix_lobby_colors(current_colors, player_count):
+    """
+    Fixes the given lobby colors so that the four color theorem applies.
+
+    Arguments:
+        current_colors (int[]) : The current color list.
+        player_count (int) : The amount of players.
+
+    Returns:
+        int[] : The updated color list.
+    """
+    # Get the card row width, player count evenness, and cards on the bottom first.
+    row_width = LOBBY_CARD_ROW_WIDTHS[player_count]
+    rows_even = not player_count % 2
+    cards_on_bottom = player_count - row_width
+
+    # Iterate through, starting with the second card.
+    for i, color in enumerate(current_colors):
+        if not i:
+            continue
+
+        # Get the previous color.
+        previous_color = current_colors[i - 1]
+
+        # If the index is less than the row width, only consider the color to the left.
+        if i < row_width:
+            if color == previous_color:
+                current_colors[i] = random.choice([j for j in range(4) if j != previous_color])
+
+        # If the index is equal to the row width, consider the color(s) directly above it.
+        if i == row_width:
+            above_colors = [
+                current_colors[int((row_width - cards_on_bottom)/2)]
+            ] if rows_even else [
+                current_colors[int((row_width - cards_on_bottom)/2)],
+                current_colors[int((row_width - cards_on_bottom)/2) + 1]
+            ]
+            if color in above_colors:
+                current_colors[i] = random.choice([j for j in range(4) if j not in above_colors])
+
+        # If the index is above the row width, consider the colors above and to the left of it.
+        else:
+            neighboring_colors = ([
+                current_colors[i - row_width + int((row_width - cards_on_bottom)/2)]
+            ] if rows_even else [
+                current_colors[i - row_width + int((row_width - cards_on_bottom)/2)],
+                current_colors[i - row_width + int((row_width - cards_on_bottom)/2) + 1]
+            ]) + [previous_color]
+            if color in neighboring_colors:
+                current_colors[i] = random.choice([j for j in range(4) if j not in neighboring_colors])
+
+    # Return.
+    return current_colors
+
+
 class LobbyView(View):
     """
     The view that is used on the lobby screen.
@@ -432,7 +489,29 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_dict)
+        # First, gather the user who triggered this callback.
+        user = interaction.user
+
+        # See if the user is already in the uno dict's player list. If so, send a message back.
+        if [user.id == player.id for player in self.uno_dict['players']] and not ALLOW_DUPLICATE_PLAYERS_IN_GAME:
+            logging.debug(interaction.message, 'tried to join Uno game they are already in')
+            return await interaction.response.send_message('You are already in this game.', ephemeral=True)
+
+        # See if we've already hit the maximum players.
+        if len(self.uno_dict['players']) >= self.uno_dict['max_players']:
+            logging.debug(interaction.message, 'tried to join Uno game with maxed out players')
+            return await interaction.response.send_message('This game is full.', ephemeral=True)
+
+        # Add the player.
+        self.uno_dict['players'].append(discord_info.LightweightUser(user))
+
+        # Generate the player statuses image.
+        image = makeimage_lobby(self.uno_dict)
+
+        # Edit the message before.
+        await messaging.edit_local_image_based_embed(interaction, image, LOBBY_TITLE, EMBED_COLOR,
+                                                     description=f"Hosted by {self.uno_dict['host'].display_name}",
+                                                     view=self)
 
 
     async def leave_callback(self, interaction):
