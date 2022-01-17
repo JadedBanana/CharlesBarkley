@@ -32,8 +32,8 @@ async def report(message, argument):
 
     # Get the report string. It varies per channel type.
     if isinstance(message.channel, discord.TextChannel):
-        report_str = f"Report made by user {message.author} in guild '{message.guild}', channel '{message.channel}': {argument}\n" \
-                     f"{message.jump_url}"
+        report_str = f"Report made by user {message.author} in guild '{message.guild}', " \
+                     f"channel '{message.channel}': {argument}\n{message.jump_url}"
     elif isinstance(message.channel, discord.DMChannel):
         report_str = f"Report made by user {message.author} in DMs: {argument}\n{message.jump_url}"
     else:
