@@ -5,7 +5,7 @@ Mattel, pls don't sue.
 """
 # Local Imports
 from lib.util import assets, environment, graphics, messaging, misc, parsing, tasks, temp_files
-from lib.util.discord_info import LightweightUser
+from lib.util.discord_info import LightweightUser, IdWrapperList
 from lib.commands import fun_interactive as game_manager
 from lib.util.logger import BotLogger as logging
 
@@ -162,7 +162,7 @@ async def uno_start(message, argument):
 
     # Generate the uno dict.
     author = LightweightUser(message.author)
-    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': [author],
+    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': IdWrapperList([author]),
                 'lobby_colors': fix_lobby_colors([random.randint(0, 3) for i in range(MAX_GAMESIZE)], player_count),
                 'readies': [False for i in range(MAX_GAMESIZE)], 'max_players': player_count}
     CURRENT_GAMES[uno_key] = uno_dict
@@ -498,17 +498,16 @@ class LobbyView(View):
         # See if the user is already in the uno dict's player list. If so, send a message back.
         if any([user.id == player.id for player in self.uno_dict['players']]) and not ALLOW_DUPLICATE_PLAYERS_IN_GAME:
             logging.debug(interaction.message, 'tried to join Uno game they are already in')
-            return await messaging.send_text_message_from_interaction(interaction, 'You are already in this game.',
-                                                                      ephemeral=True)
+            return await messaging.send_text_message_from_interaction(interaction, 'You are already in this game.')
 
         # See if we've already hit the maximum players.
         if len(self.uno_dict['players']) >= self.uno_dict['max_players']:
             logging.debug(interaction.message, 'tried to join Uno game with maxed out players')
-            return await messaging.send_text_message_from_interaction(interaction, 'This game is full.', ephemeral=True)
+            return await messaging.send_text_message_from_interaction(interaction, 'This game is full.')
 
         # Add the player and checkout their profile picture.
         self.uno_dict['players'].append(LightweightUser(user))
-        await temp_files.checkout_profile_picture_by_user_with_typing(user, interaction.message, 'uno_filehold')
+        temp_files.checkout_profile_picture_by_user(user, interaction.message, 'uno_filehold')
 
         # Generate the player statuses image.
         image = makeimage_lobby(self.uno_dict)
@@ -517,8 +516,11 @@ class LobbyView(View):
         logging.debug(interaction.message, f'joined Uno game as player {len(self.uno_dict["players"])}')
         await messaging.edit_local_image_based_embed_from_interaction(
             interaction, image, LOBBY_TITLE, EMBED_COLOR, description=f"Hosted by {self.uno_dict['host'].display_name}",
-            view=self
+            footer=f'{user.display_name} has joined the game.', view=self
         )
+
+        # Change the 'updated' thing.
+        self.uno_dict['updated'] = datetime.today()
 
 
     async def leave_callback(self, interaction):
@@ -528,7 +530,48 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_dict)
+        # First, gather the user who triggered this callback.
+        user = interaction.user
+
+        # See if the user is in this uno dict's player list. If not, send a message back.
+        if not any([user.id == player.id for player in self.uno_dict['players']]):
+            logging.debug(interaction.message, 'tried to leave Uno game they werent even in')
+            return await messaging.send_text_message_from_interaction(interaction, "You already aren't in this game.")
+
+        # First, get their index(es), reverse the list, and remove 0.
+        user_indexes = misc.get_multi_index(self.uno_dict['players'], user)
+        user_indexes.reverse()
+        user_indexes.remove(0)
+
+        # If there are user indexes, this means the user wasn't the host (or has more than one foot in the door).
+        if user_indexes:
+
+            # Next, delete the indexes in both the player list and the ready list, and replace them if needed.
+            for index in user_indexes:
+                del self.uno_dict['players'][index]
+                del self.uno_dict['readies'][index]
+                self.uno_dict['readies'].append(False)
+
+            # Retire the user's profile picture.
+            temp_files.retire_profile_picture_by_user(user, interaction.message, 'uno_filehold')
+
+            # Generate the player statuses image.
+            image = makeimage_lobby(self.uno_dict)
+
+            # Edit the message before.
+            logging.debug(interaction.message, 'left Uno game')
+            await messaging.edit_local_image_based_embed_from_interaction(
+                interaction, image, LOBBY_TITLE, EMBED_COLOR,
+                description=f"Hosted by {self.uno_dict['host'].display_name}",
+                footer=f'{user.display_name} has left the game.', view=self
+            )
+
+        # If the user IS the host, they aren't allowed to leave.
+        else:
+            logging.debug(interaction.message, 'tried to leave Uno game, but as the host')
+            return await messaging.send_text_message_from_interaction(
+                interaction, "You can't leave this game since you're the host."
+            )
 
 
     async def options_callback(self, interaction):

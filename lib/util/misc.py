@@ -54,8 +54,8 @@ def get_multi_index(source, arg):
         arg (object) : An object that we may find in the source.
 
     Returns:
-        int[] : A list of indexes.
-                The arg appears in source at these indexes.
+        list[int] : A list of indexes.
+                    The arg appears in source at these indexes.
     """
     # List of all indexes, as well as the length we've removed.
     all_indexes = []
