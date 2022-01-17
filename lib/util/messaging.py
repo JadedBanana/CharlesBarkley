@@ -92,7 +92,7 @@ async def send_image_based_embed(message, image, title, embed_color, description
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered the command.
-        image (PIL.Image) : The Image object to be sent as the embed's image.
+        image (PIL.Image.Image) : The Image object to be sent as the embed's image.
         title (str) : The embed's title.
         embed_color (int) : The color of the embed's sidebar thing.
         description (str) : The embed's description, if any.

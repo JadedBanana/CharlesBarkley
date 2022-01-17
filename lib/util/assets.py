@@ -110,7 +110,7 @@ def open_font(filename, size):
         filename (str) : The font's filename.
 
     Returns:
-        PIL.ImageFont : The opened font.
+        PIL.ImageFont.ImageFont : The opened font.
     """
     return ImageFont.truetype(os.path.join(ASSETS_DIR, 'fonts', filename), size=size)
 

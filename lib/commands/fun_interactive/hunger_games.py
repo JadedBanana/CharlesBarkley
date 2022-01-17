@@ -1225,6 +1225,9 @@ def makeimage_player_statuses(player_statuses, players, placement=False, kills=F
         players (discord.User[]) : The player list.
         placement (bool) : Whether the player_statuses values are player placements.
         kills (int) : Whether the player_statuses values are kill counts.
+
+    Returns:
+        PIL.Image.Image : The image.
     """
     # Splits all the players into their own rows.
     players_split = []
@@ -1405,8 +1408,8 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     Arguments:
         user (discord.user.User) : The desired user.
-        image (PIL.Image) : The base image.
-        drawer (PIL.ImageDraw) : The drawer.
+        image (PIL.Image.Image) : The base image.
+        drawer (PIL.ImageDraw.Draw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
         pfp_y (int) : The y position of where to draw the icon.
         dead (bool) : Whether or not this player is dead.
@@ -1450,10 +1453,10 @@ def makeimage_action_text(action, players, drawer, txt_x, txt_y, action_font):
     Arguments:
         action (hg_actions database table) : The action that should be put onto the image.
         players (discord.User[]) : The player list.
-        drawer (PIL.ImageDraw) : The drawer.
+        drawer (PIL.ImageDraw.Draw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
         txt_y (int) : The y position of where to draw the text.
-        action_font (PIL.ImageFont) : The action font.
+        action_font (PIL.ImageFont.ImageFont) : The action font.
     """
     # Create remaining_text
     remaining_text = action.text

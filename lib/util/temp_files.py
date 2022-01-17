@@ -59,7 +59,7 @@ def get_profile_picture_by_user(user, size=None):
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # Get the image.
     # If the user is in the ACTIVE_PROFILE_PICTURES dict, then use that.
