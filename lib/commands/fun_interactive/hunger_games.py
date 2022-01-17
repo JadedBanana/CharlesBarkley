@@ -935,10 +935,10 @@ async def send_pregame(message, hg_dict, title=HG_PREGAME_TITLE):
     image = makeimage_player_statuses([0 for player in hg_dict['players']], hg_dict['players'])
 
     # Sends image, logs.
-    await messaging.send_image_based_embed(message, image, title, HG_EMBED_COLOR,
-                                           footer=HG_PREGAME_DESCRIPTION.format(
+    await messaging.send_local_image_based_embed(message, image, title, HG_EMBED_COLOR,
+                                                 footer=HG_PREGAME_DESCRIPTION.format(
                                                'Disallow' if hg_dict['uses_bots'] else 'Allow'),
-                                           description=f"Hosted by {hg_dict['host'].display_name}")
+                                                 description=f"Hosted by {hg_dict['host'].display_name}")
 
 
 async def send_midgame(message, hg_dict):
@@ -1003,7 +1003,7 @@ async def send_midgame(message, hg_dict):
                 (f' / {len(phase_object.game_action_ids)}' if phase_object.complete else '')
 
         # Create and send the embed.
-        await messaging.send_image_based_embed(
+        await messaging.send_local_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description if action_min_index == 0 else None),
             title, HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
@@ -1018,7 +1018,7 @@ async def send_midgame(message, hg_dict):
             phase_object, 0, 0)
 
         # Create and send the embed.
-        await messaging.send_image_based_embed(
+        await messaging.send_local_image_based_embed(
             message,
             makeimage_action(actions, hg_dict['players'], phase_object.description), phase_object.title,
             HG_EMBED_COLOR, footer=footer_str, description=f"Hosted by {hg_dict['host'].display_name}"
@@ -1034,7 +1034,7 @@ async def send_midgame(message, hg_dict):
         new_deaths = len([status for status in phase_object.player_statuses if status == 1])
 
         # Create and send the embed.
-        await messaging.send_image_based_embed(
+        await messaging.send_local_image_based_embed(
             message,
             makeimage_player_statuses(phase_object.player_statuses, hg_dict['players']),
             f'{new_deaths} cannon shot{"" if new_deaths == 1 else "s"} can be heard in the distance.', HG_EMBED_COLOR,
@@ -1053,7 +1053,7 @@ async def send_midgame(message, hg_dict):
         sorted_placements = [place for place, player in ordered_placements]
 
         # Create and send the embed.
-        await messaging.send_image_based_embed(
+        await messaging.send_local_image_based_embed(
             message,
             makeimage_player_statuses(sorted_placements, sorted_players,
                                       placement=max([1] + phase_object.player_statuses)),
@@ -1073,7 +1073,7 @@ async def send_midgame(message, hg_dict):
         sorted_kills = [place for place, player in ordered_kills]
 
         # Create and send the embed.
-        await messaging.send_image_based_embed(
+        await messaging.send_local_image_based_embed(
             message,
             makeimage_player_statuses(sorted_kills, sorted_players,
                                       kills=max([1] + phase_object.player_statuses)),

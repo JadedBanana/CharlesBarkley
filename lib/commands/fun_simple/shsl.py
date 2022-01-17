@@ -973,7 +973,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
 
     # Sends the message.
     logging.debug(message, 'requested ultimate/shsl talent')
-    await messaging.send_image_based_embed(message, ultimate_image, title_str, SHSL_EMBED_COLOR)
+    await messaging.send_local_image_based_embed(message, ultimate_image, title_str, SHSL_EMBED_COLOR)
 
 
 # Command values

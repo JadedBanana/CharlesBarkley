@@ -104,7 +104,7 @@ async def ship(message, argument):
 
         # Sends the simple image-based embed.
         # Vary the title based on whether this bot is getting shipped.
-        await messaging.send_image_based_embed(message, together_canvas, random.choice(
+        await messaging.send_local_image_based_embed(message, together_canvas, random.choice(
             BASHFUL_MESSAGES if partner_1 == BOT.user else NORMAL_MESSAGES).format(
             partner_1.display_name, partner_2.display_name
         ), EMBED_COLOR)

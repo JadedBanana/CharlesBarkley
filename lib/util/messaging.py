@@ -8,6 +8,11 @@ from lib.util import temp_files
 import discord
 
 
+# Image hosting channel id and bot.
+IMAGE_HOSTING_CHANNEL_ID = 932460732631621692
+BOT = None
+
+
 async def send_text_message(message, text_str):
     """
     Sends a text message back to the channel the trigger message came from.
@@ -86,7 +91,8 @@ async def send_file(message, file_dir):
     await message.channel.send(file=discord.File(file_dir))
 
 
-async def send_image_based_embed(message, image, title, embed_color, description='', footer='', view=None):
+async def send_local_image_based_embed(message, image, title, embed_color, description='', footer='', view=None,
+                                       hosted_online=False):
     """
     Sends an image-based embed back to the channel the trigger message came from.
 
@@ -98,22 +104,40 @@ async def send_image_based_embed(message, image, title, embed_color, description
         description (str) : The embed's description, if any.
         footer (str) : The footer text, if any.
         view (discord.ui.view.View) : The discord view, if any.
+        hosted_online (bool) : Whether to host this image online (and avoid sending a file).
     """
-    # First, have the temp_files module create a temporary image on-disk.
-    image_path = temp_files.save_temporary_image(image)
-
-    # Next, instantiate the embed object, then a file, and set the embed to use the file as its image.
+    # First, instantiate the embed object, then a file, and set the embed to use the file as its image.
     embed = discord.Embed(title=title, colour=embed_color, description=description) if description else \
         discord.Embed(title=title, colour=embed_color)
-    file = discord.File(image_path, filename='embed_image.png')
-    embed.set_image(url='attachment://embed_image.png')
 
     # If there's a footer, set it.
     if footer:
         embed.set_footer(text=footer)
 
-    # Finally, send the message with embed and file as attributes.
-    await message.channel.send(embed=embed, file=file, view=view)
+    # Have the temp_files module create a temporary image on-disk and create the image file..
+    image_path = temp_files.save_temporary_image(image)
+    file = discord.File(image_path, filename='embed_image.png')
+
+    # If we host online, then host online by getting the image hosting channel.
+    if hosted_online:
+        channel = BOT.get_channel(IMAGE_HOSTING_CHANNEL_ID)
+
+        # Send the image to the image hosting channel.
+        image_path = temp_files.save_temporary_image(image)
+        file = discord.File(image_path, filename='embed_image.png')
+        image_message = await channel.send(file=file)
+
+        # Extract the attachment url from the image.
+        attachment_url = image_message.attachments[0].url
+
+        # Set the image and send.
+        embed.set_image(url=attachment_url)
+        await message.channel.send(embed=embed, view=view)
+
+    # Otherwise, attach the file and send.
+    else:
+        embed.set_image(url='attachment://embed_image.png')
+        await message.channel.send(embed=embed, file=file, view=view)
 
 
 async def send_embed_with_local_image_as_thumbnail(message, embed, filepath):
@@ -156,6 +180,43 @@ async def send_embed_without_local_image_with_text_message(message, text_str, em
     """
     # Send the message.
     await message.channel.send(text_str, embed=embed)
+
+
+async def edit_local_image_based_embed(interaction, image, title, embed_color, description='', footer='', view=None):
+    """
+    Edits the interaction's message to an image-based embed.
+
+    Arguments:
+        interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        image (PIL.Image.Image) : The Image object to be sent as the embed's image.
+        title (str) : The embed's title.
+        embed_color (int) : The color of the embed's sidebar thing.
+        description (str) : The embed's description, if any.
+        footer (str) : The footer text, if any.
+        view (discord.ui.view.View) : The discord view, if any.
+    """
+    # Get the image hosting channel.
+    channel = BOT.get_channel(IMAGE_HOSTING_CHANNEL_ID)
+
+    # Send the image to the image hosting channel.
+    image_path = temp_files.save_temporary_image(image)
+    file = discord.File(image_path, filename='embed_image.png')
+    message = await channel.send(file=file)
+
+    # Extract the attachment url from the image.
+    attachment_url = message.attachments[0].url
+
+    # Next, instantiate the embed object, and set the embed to use the file as its image.
+    embed = discord.Embed(title=title, colour=embed_color, description=description) if description else \
+        discord.Embed(title=title, colour=embed_color)
+    embed.set_image(url=attachment_url)
+
+    # If there's a footer, set it.
+    if footer:
+        embed.set_footer(text=footer)
+
+    # Send the message with embed and file as attributes.
+    await interaction.response.edit_message(embed=embed, view=view)
 
 
 def format_codeblock_message(text_str, size):

@@ -4,7 +4,7 @@ The main meat of the bot. Inherits from discord.Client, is the main point at whi
 into self processing.
 """
 # Local Imports
-from lib.util import database, environment, parsing
+from lib.util import database, environment, messaging, parsing
 from lib import commands
 
 # Package Imports
@@ -60,6 +60,9 @@ class JadieClient(discord.Client):
 
         # Set up disabled commands.
         self.disabled_commands = self.get_disabled_commands()
+
+        # Give ourselves to the messaging module.
+        messaging.BOT = self
 
         # Discord client init
         intents = discord.Intents.all()
