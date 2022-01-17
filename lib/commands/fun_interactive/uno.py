@@ -509,9 +509,10 @@ class LobbyView(View):
         image = makeimage_lobby(self.uno_dict)
 
         # Edit the message before.
-        await messaging.edit_local_image_based_embed(interaction, image, LOBBY_TITLE, EMBED_COLOR,
-                                                     description=f"Hosted by {self.uno_dict['host'].display_name}",
-                                                     view=self)
+        await messaging.edit_local_image_based_embed_from_interaction(
+            interaction, image, LOBBY_TITLE, EMBED_COLOR, description=f"Hosted by {self.uno_dict['host'].display_name}",
+            view=self
+        )
 
 
     async def leave_callback(self, interaction):

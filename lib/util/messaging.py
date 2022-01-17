@@ -182,7 +182,8 @@ async def send_embed_without_local_image_with_text_message(message, text_str, em
     await message.channel.send(text_str, embed=embed)
 
 
-async def edit_local_image_based_embed(interaction, image, title, embed_color, description='', footer='', view=None):
+async def edit_local_image_based_embed_from_interaction(interaction, image, title, embed_color, description='',
+                                                        footer='', view=None):
     """
     Edits the interaction's message to an image-based embed.
 
