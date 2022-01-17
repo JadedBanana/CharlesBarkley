@@ -182,6 +182,31 @@ async def send_embed_without_local_image_with_text_message(message, text_str, em
     await message.channel.send(text_str, embed=embed)
 
 
+async def send_text_message_from_interaction(interaction, text_str, ephemeral=True):
+    """
+    Sends a text message back to the channel the interaction came from.
+    If the message exceeds the allowed 2000 characters, it will be sent as a file.
+
+    Arguments:
+        interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        text_str (str) : The text message's intended text.
+        ephemeral (bool) : Whether the message should only be visible to the user who sent the interaction.
+    """
+    # Attempt to send the message as a simple text.
+    try:
+        await interaction.response.send_message(text_str, ephemeral=ephemeral)
+
+    # If this happened, then the message was too long. Send as file.
+    except discord.errors.HTTPException:
+        # First, have the temp_files module create a temporary text file on-disk.
+        text_file_path = temp_files.save_temporary_text_file(text_str)
+
+        # Next, instantiate the file and send the message.
+        file = discord.File(text_file_path, filename='text_message.txt')
+        await interaction.response.send_message(file=file, ephemeral=ephemeral)
+
+
+
 async def edit_local_image_based_embed_from_interaction(interaction, image, title, embed_color, description='',
                                                         footer='', view=None):
     """

@@ -125,9 +125,11 @@ def checkout_profile_picture_by_user(user, message, command_key, return_image=Fa
         image_locale = download_profile_picture(user)
         ACTIVE_PROFILE_PICTURES[user.id] = (image_locale, [command_key + str(message.channel.id)])
 
-    # Otherwise, just put this command key in the dict.
+    # Otherwise, just put this command key in the dict (assuming there isn't a duplicate).
     else:
-        ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key + str(message.channel.id))
+        command_key = command_key + str(message.channel.id)
+        if command_key not in ACTIVE_PROFILE_PICTURES[user.id][1]:
+            ACTIVE_PROFILE_PICTURES[user.id][1].append(command_key)
 
     # Then, if told to do so, get the image.
     if return_image:
