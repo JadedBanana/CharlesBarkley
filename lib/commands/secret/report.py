@@ -15,6 +15,7 @@ import logging
 REPORTS_CHANNEL_ID = 917484720701444176
 BOT = None  # Initialized in initialize method
 
+
 async def report(message, argument):
     """
     Creates a report and sends it to the reports channel in the Jadi3Pi development server.
