@@ -67,6 +67,12 @@ LOBBY_CARD_READY_BORDERS = [
 LOBBY_CARD_READY_Y = 56
 LOBBY_CARD_ROW_WIDTHS = [5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5]
 
+# Options.
+OPTIONS_TITLE = 'Options'
+OPTIONS_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
+OPTIONS_FAILSAFE_BACKGROUND = (203, 1, 0)
+# Options
+
 # Cards.
 CARDS = [
     0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17, 17,
@@ -625,6 +631,87 @@ class LobbyView(View):
         # The user is not the host, tell them only the host can do that.
         logging.debug(interaction.message, 'tried to cancel uno game when not host')
         await messaging.send_text_message_from_interaction(interaction, "Only the host can do that.")
+
+
+class OptionsOuterView(View):
+    """
+    The view that is used on the basic options screen.
+    """
+
+    def __init__(self, uno_key, uno_dict):
+        """
+        Initializes the LobbyView.
+
+        Arguments:
+            uno_key (str) : The key the game is keyed under.
+            uno_dict (dict) : The uno dict for the given game.
+        """
+        # Initialize the standard view.
+        View.__init__(self, timeout=BUTTONS_TIMEOUT_SECONDS)
+
+        # Store the uno key and uno dict.
+        self.uno_key = uno_key
+        self.uno_dict = uno_dict
+
+        # Create the manage rules button.
+        self.rules_button = Button(label='Manage Rules', style=discord.ButtonStyle.blurple)
+        self.rules_button.callback = self.rules_callback
+        self.add_item(self.rules_button)
+
+        # Create the manage house rules button.
+        self.house_rules_button = Button(label='Manage House Rules', style=discord.ButtonStyle.blurple)
+        self.house_rules_button.callback = self.house_rules_callback
+        self.add_item(self.house_rules_button)
+
+        # Create the manage players button.
+        self.players_button = Button(label='Manage Players', style=discord.ButtonStyle.blurple)
+        self.players_button.callback = self.players_callback
+        self.add_item(self.players_button)
+
+        # Create the close button.
+        self.close_button = Button(label='Close', style=discord.ButtonStyle.gray)
+        self.close_button.callback = self.close_callback
+        self.add_item(self.close_button)
+
+
+    async def rules_callback(self, interaction):
+        """
+        The method that gets called when the 'manage rules' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_dict)
+
+
+    async def house_rules_callback(self, interaction):
+        """
+        The method that gets called when the 'options' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_dict)
+
+
+    async def players_callback(self, interaction):
+        """
+        The method that gets called when the 'options' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_dict)
+
+
+    async def close_callback(self, interaction):
+        """
+        The method that gets called when the 'options' button is pushed.
+
+        Args:
+            interaction (discord.interactions.Interaction) : The interaction that triggered this method.
+        """
+        print(self.uno_dict)
 
 
 def initialize(bot):
