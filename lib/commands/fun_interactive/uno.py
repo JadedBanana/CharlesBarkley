@@ -542,10 +542,13 @@ class LobbyView(View):
             logging.debug(interaction.message, 'tried to leave Uno game they werent even in')
             return await messaging.send_text_message_from_interaction(interaction, "You already aren't in this game.")
 
-        # First, get their index(es), reverse the list, and remove 0.
+        # First, get their index(es) and reverse list.
         user_indexes = misc.get_multi_index(self.uno_dict['players'], user)
         user_indexes.reverse()
-        user_indexes.remove(0)
+
+        # If the user is the host, remove their last (first?) index from the list.
+        if user == self.uno_dict['host']:
+            del user_indexes[-1]
 
         # If there are user indexes, this means the user wasn't the host (or has more than one foot in the door).
         if user_indexes:
@@ -574,7 +577,8 @@ class LobbyView(View):
         else:
             logging.debug(interaction.message, 'tried to leave Uno game, but as the host')
             return await messaging.send_text_message_from_interaction(
-                interaction, "You can't leave this game since you're the host."
+                interaction, "You can't leave this game since you're the host.\n"
+                             "You can transfer host in the options menu or cancel."
             )
 
 
