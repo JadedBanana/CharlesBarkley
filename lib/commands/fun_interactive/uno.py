@@ -140,7 +140,7 @@ async def uno_start(message, argument):
             return await game_manager.send_game_in_progress_message(message)
 
         # Finally, send the pregame again.
-        return await send_pregame(message, CURRENT_GAMES[uno_key])
+        return await send_pregame(message, uno_key, CURRENT_GAMES[uno_key])
 
     # If a different game is in progress, send a message saying you can only have one game at a time.
     elif game_manager.channel_in_game(uno_key):
@@ -174,27 +174,27 @@ async def uno_start(message, argument):
     # tasks.add_task(f'uno_expire_{uno_key}', EXPIRE_CHECK_INTERVAL, 0, uno_detect_expiration, uno_key)
 
     # Send the pregame image.
-    await send_pregame(message, uno_dict)
+    await send_pregame(message, uno_key, uno_dict)
     logging.debug(message, f'started Uno instance')
 
 
-async def send_pregame(message, uno_dict, title=LOBBY_TITLE):
+async def send_pregame(message, uno_key, uno_dict):
     """
     Sends the pregame lobby thing.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
+        uno_key (str) : The key the game is keyed under.
         uno_dict (dict) : The full game dict.
-        title (str) : The title of the embed, if any.
     """
     # Generate the player statuses image.
     image = makeimage_lobby(uno_dict)
 
     # Make a lobby view.
-    lobby_view = LobbyView(uno_dict)
+    lobby_view = LobbyView(uno_key, uno_dict)
 
     # Sends image, logs.
-    await messaging.send_local_image_based_embed(message, image, title, EMBED_COLOR,
+    await messaging.send_local_image_based_embed(message, image, LOBBY_TITLE, EMBED_COLOR,
                                                  description=f"Hosted by {uno_dict['host'].display_name}",
                                                  view=lobby_view, hosted_online=True)
 
@@ -438,17 +438,19 @@ class LobbyView(View):
     The view that is used on the lobby screen.
     """
 
-    def __init__(self, uno_dict):
+    def __init__(self, uno_key, uno_dict):
         """
         Initializes the LobbyView.
 
         Arguments:
+            uno_key (str) : The key the game is keyed under.
             uno_dict (dict) : The uno dict for the given game.
         """
         # Initialize the standard view.
         View.__init__(self, timeout=BUTTONS_TIMEOUT_SECONDS)
 
-        # Store the uno key.
+        # Store the uno key and uno dict.
+        self.uno_key = uno_key
         self.uno_dict = uno_dict
 
         # Create the ready button.
@@ -599,7 +601,30 @@ class LobbyView(View):
         Args:
             interaction (discord.interactions.Interaction) : The interaction that triggered this method.
         """
-        print(self.uno_dict)
+        # First, gather the user who triggered this callback.
+        user = interaction.user
+
+        # If the user is the host, cancel.
+        if self.uno_dict['host'] == user:
+
+            # Delete the dict from CURRENT_GAMES.
+            del CURRENT_GAMES[self.uno_key]
+
+            # Send a message.
+            logging.debug(interaction.message, 'canceled uno game')
+            await messaging.send_text_message_from_interaction(interaction, "Uno game canceled.",
+                                                                      ephemeral=False)
+
+            # Retire all profile pictures.
+            temp_files.retire_profile_picture_by_user_bulk(self.uno_dict['players'], interaction.message,
+                                                           'uno_filehold')
+
+            # Terminate the view.
+            return self.stop()
+
+        # The user is not the host, tell them only the host can do that.
+        logging.debug(interaction.message, 'tried to cancel uno game when not host')
+        await messaging.send_text_message_from_interaction(interaction, "Only the host can do that.")
 
 
 def initialize(bot):
