@@ -67,11 +67,28 @@ LOBBY_CARD_READY_BORDERS = [
 LOBBY_CARD_READY_Y = 56
 LOBBY_CARD_ROW_WIDTHS = [5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5]
 
-# Options.
+# Options List
+# Bytes 0 - 8: Turn time
+# Bytes 9 - 12: Timeout penalty
+# Bytes 13 - 15: Timeout auto-action
+# Byte 16: Auto-UNO
+# Byte 17: Big Loser
+# Byte 18: Randomized Order
+# Byte 19: Stack Draw 2
+# Byte 20: Stack Draw 4
+# Byte 21: Stack Draw 2 AND Draw 4
+# Byte 22: Can Draw Anytime
+# Byte 23: Jump In
+# Byte 24: 0's rotate hands
+# Byte 25: 7's trade hands
+# Byte 26: Challenge Draw 4
+# Byte 27: Draw 25 OR ______
+# Bytes 28 - 31: vacant
 OPTIONS_TITLE = 'Options'
 OPTIONS_BACKGROUND_IMAGE = 'cards/backgrounds/uno_lobby.png'
 OPTIONS_FAILSAFE_BACKGROUND = (203, 1, 0)
-# Options
+# Specific options
+OPTIONS_DEFAULT_INT = 0b0000010011010011000101101
 
 # Cards.
 CARDS = [
