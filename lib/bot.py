@@ -19,7 +19,7 @@ import sys
 
 # Global bot variables
 GLOBAL_PREFIX = 'j!'
-VERSION_NUMBER = '0.8.5'
+VERSION_NUMBER = '0.8.6'
 
 
 class JadieClient(discord.Client):
@@ -244,7 +244,7 @@ class JadieClient(discord.Client):
             if message.content.split(' ')[0] == f'{self.global_prefix}toggleignoredev':
 
                 # If so, run the command!
-                await self.toggle_ignore_developer(self, message)
+                await commands.run_reactive_command(self.toggle_ignore_developer, self, message)
 
             # Return True, since developer is ignored.
             return True

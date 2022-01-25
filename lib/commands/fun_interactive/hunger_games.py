@@ -3,7 +3,8 @@ Hunger Games command.
 Essentially a BrantSteele simulator simulator.
 """
 # Local Imports
-from lib.util import arguments, assets, database, discord_info, environment, messaging, misc, parsing, tasks, temp_files
+from lib.util import arguments, assets, database, discord_info, environment, graphics, messaging, misc, parsing, \
+    tasks, temp_files
 from lib.util.exceptions import CannotAccessUserlistError, InvalidHungerGamesPhaseError, NoUserSpecifiedError, \
     UnableToFindUserError
 from lib.commands import fun_interactive as game_manager
@@ -19,7 +20,6 @@ import random
 
 # Keeps track of current games.
 CURRENT_GAMES = {}
-
 
 # Hunger Games constants.
 # Game generation
@@ -43,6 +43,7 @@ HG_PLAYERSTATUS_WIDTHS = [0, 1, 2, 3, 4, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 
                           7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 HG_PLAYERSTATUS_ROWHEIGHT = 172
 HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR = 0.65
+HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR = (80, 80, 80)
 HG_STATUS_ALIVE_COLOR = (0, 255, 0)
 HG_STATUS_DEAD_COLOR = (255, 102, 102)
 
@@ -165,12 +166,8 @@ async def hunger_games_start(message, argument):
     # If a game is already in progress, we perform a host check.
     if hg_key in CURRENT_GAMES:
 
-        # No host, make this user the host and proceed.
-        if 'host' not in CURRENT_GAMES[hg_key]:
-            CURRENT_GAMES[hg_key]['host'] = message.author
-
         # Host is not this user, send the game in progress message.
-        elif message.author.id != CURRENT_GAMES[hg_key]['host'].id:
+        if message.author.id != CURRENT_GAMES[hg_key]['host'].id:
             return await game_manager.send_game_in_progress_message(message)
 
         # Finally, perform the update function.
@@ -195,7 +192,7 @@ async def hunger_games_start(message, argument):
         player_count = HG_DEFAULT_GAMESIZE
 
     # Generate the playerlist.
-    hg_dict = {}
+    hg_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': message.author}
     worked = await pregame_shuffle(message, player_count, hg_dict)
 
     # If it didn't work, return.
@@ -203,9 +200,6 @@ async def hunger_games_start(message, argument):
         return
 
     # Set in the hunger games dict.
-    hg_dict['past_pregame'] = False
-    hg_dict['updated'] = datetime.today()
-    hg_dict['host'] = message.author
     CURRENT_GAMES[hg_key] = hg_dict
 
     # Start a task for this game's expiration.
@@ -1231,6 +1225,9 @@ def makeimage_player_statuses(player_statuses, players, placement=False, kills=F
         players (discord.User[]) : The player list.
         placement (bool) : Whether the player_statuses values are player placements.
         kills (int) : Whether the player_statuses values are kill counts.
+
+    Returns:
+        PIL.Image.Image : The image.
     """
     # Splits all the players into their own rows.
     players_split = []
@@ -1247,7 +1244,7 @@ def makeimage_player_statuses(player_statuses, players, placement=False, kills=F
     image_height = HG_PLAYERSTATUS_ROWHEIGHT * len(players_split) + HG_ICON_BUFFER * (len(players_split) + 1)
 
     # Creates all the images and drawers that will help us make the new image.
-    player_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    player_image = Image.new('RGBA', (image_width, image_height), HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(player_image)
     player_font = assets.open_font(HG_FONT, HG_FONT_SIZE)
 
@@ -1354,7 +1351,7 @@ def makeimage_action(actions, players, action_description=None):
         image_width = max(image_width, HG_ICON_SIZE * len(action.players) + HG_ICON_BUFFER * (len(action.players) + 1))
 
     # Creates all the images and drawers that will help us make the new image.
-    action_image = Image.new('RGB', (image_width, image_height), HG_BACKGROUND_COLOR)
+    action_image = Image.new('RGBA', (image_width, image_height), HG_BACKGROUND_COLOR)
     player_drawer = ImageDraw.Draw(action_image)
 
     # Sets the current y at the buffer between the top and the first icon.
@@ -1366,10 +1363,10 @@ def makeimage_action(actions, players, action_description=None):
         # Sets the current x and draws the border around the description.
         current_x = int((image_width - action_desc_width) / 2)
         player_drawer.rectangle(
-            [(current_x - HG_HEADER_BORDER_BUFFER,
+            ((current_x - HG_HEADER_BORDER_BUFFER,
               current_y - HG_HEADER_BORDER_BUFFER),
              (current_x + action_desc_width + HG_HEADER_BORDER_BUFFER,
-              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)],
+              current_y + HG_FONT_SIZE + HG_HEADER_BORDER_BUFFER)),
             HG_HEADER_BACKGROUND_COLOR,
             HG_HEADER_BORDER_COLOR
         )
@@ -1411,8 +1408,8 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     Arguments:
         user (discord.user.User) : The desired user.
-        image (PIL.Image) : The base image.
-        drawer (PIL.ImageDraw) : The drawer.
+        image (PIL.Image.Image) : The base image.
+        drawer (PIL.ImageDraw.Draw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
         pfp_y (int) : The y position of where to draw the icon.
         dead (bool) : Whether or not this player is dead.
@@ -1423,12 +1420,23 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
 
     # If player dead, recolor to black and white.
     if dead:
+
+        # Put the background color behind the profile picture.
+        player_pfp = graphics.color_behind_image(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
+
+        # Perform the colorize.
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
                                        white=misc.multiply_int_tuple(
                                            (255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
                                        mid=misc.multiply_int_tuple(
                                            (128, 128, 128), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR))
-    image.paste(player_pfp, (pfp_x, pfp_y))
+
+        # Paste normally.
+        image.paste(player_pfp, (pfp_x, pfp_y))
+
+    # Otherwise, paste the player icon onto the image with transparency.
+    else:
+        graphics.transparency_paste(image, player_pfp, (pfp_x, pfp_y))
 
     # Draws border around player icon.
     drawer.line([(pfp_x - 1, pfp_y - 1),
@@ -1445,10 +1453,10 @@ def makeimage_action_text(action, players, drawer, txt_x, txt_y, action_font):
     Arguments:
         action (hg_actions database table) : The action that should be put onto the image.
         players (discord.User[]) : The player list.
-        drawer (PIL.ImageDraw) : The drawer.
+        drawer (PIL.ImageDraw.Draw) : The drawer.
         txt_x (int) : The x position of where to draw the text.
         txt_y (int) : The y position of where to draw the text.
-        action_font (PIL.ImageFont) : The action font.
+        action_font (PIL.ImageFont.ImageFont) : The action font.
     """
     # Create remaining_text
     remaining_text = action.text

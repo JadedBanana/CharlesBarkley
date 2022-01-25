@@ -99,7 +99,7 @@ def open_image(filename):
     Returns:
         PIL.Image : The opened image.
     """
-    return Image.open(get_asset_path(filename))
+    return Image.open(get_asset_path(filename)).convert('RGBA')
 
 
 def open_font(filename, size):
@@ -110,7 +110,7 @@ def open_font(filename, size):
         filename (str) : The font's filename.
 
     Returns:
-        PIL.ImageFont : The opened font.
+        PIL.ImageFont.ImageFont : The opened font.
     """
     return ImageFont.truetype(os.path.join(ASSETS_DIR, 'fonts', filename), size=size)
 

@@ -443,7 +443,7 @@ SHSL_TALENTS = {
         'char': ['kuzuryu_fuyuhiko']
     },
     'Gambler': {
-        'desc': '',
+        'desc': '. {9} going all in!',
         'char': ['ludenberg_celestia']
     },
     'Gamer': {
@@ -468,7 +468,7 @@ SHSL_TALENTS = {
         'char': ['fujisaki_chihiro']
     },
     'Hairstylist': {
-        'desc': '',
+        'desc': '. No matter how they come in, all {1} clients walk out looking absolutely FABULOUS.',
         'char': ['enoshima_mukuro']
     },
     'Hope': {
@@ -491,10 +491,10 @@ SHSL_TALENTS = {
     'Impostor': {
         'desc': '. No one truly knows who {0} are beneath the mask... or that {2} even wearing one at all.',
         'char': ['pekoyama_peko']
-    },  # PLACEHOLDER UNTIL ALEX BEATS DR2
+    },
     'Internet Troll': {
         'desc': '. {9} really good at pissing people off online.',
-        'char': ['ouma_kokichi']
+        'char': ['yamada_hifumi', 'ouma_kokichi']
     },
     'Inventor': {
         'desc': '',
@@ -777,12 +777,11 @@ SHSL_PRONOUNS = [
 ]
 
 
-async def ultimate(bot, message, argument):
+async def ultimate(message, argument):
     """
     Generates an ultimate title for the user, complete with an image.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """
@@ -790,12 +789,11 @@ async def ultimate(bot, message, argument):
     await do_shsl_thing(message, argument, False)
 
 
-async def shsl(bot, message, argument):
+async def shsl(message, argument):
     """
     Generates a SHSL title for the user, complete with an image.
 
     Arguments:
-        bot (lib.bot.JadieClient) : The bot object that called this command.
         message (discord.message.Message) : The discord message object that triggered this command.
         argument (str) : The command's argument, if any.
     """

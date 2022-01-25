@@ -59,17 +59,17 @@ def get_profile_picture_by_user(user, size=None):
                             Width first, then height.
 
     Returns:
-        PIL.Image : The profile picture as an image, if return_image is True.
+        PIL.Image.Image : The profile picture as an image, if return_image is True.
     """
     # Get the image.
     # If the user is in the ACTIVE_PROFILE_PICTURES dict, then use that.
     if user.id in ACTIVE_PROFILE_PICTURES:
-        image = Image.open(ACTIVE_PROFILE_PICTURES[user.id][0])
+        image = Image.open(ACTIVE_PROFILE_PICTURES[user.id][0]).convert('RGBA')
 
     # Otherwise, download it.
     else:
         image_locale = download_profile_picture(user)
-        image = Image.open(image_locale)
+        image = Image.open(image_locale).convert('RGBA')
 
     # If it should be resized, then resize it.
     if size and size > (0, 0):
