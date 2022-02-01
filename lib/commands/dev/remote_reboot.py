@@ -69,7 +69,7 @@ async def confirm_reboot(message):
 async def remote_reboot(message, argument):
     """
     Since this bot runs on automatic crontabs, we can just exit and assume the scheduling will do the rest.
-    However, we don't wanna reboot all willy-nilly.
+    However, we don't want to reboot all willy-nilly.
     So we have a contingency!
     This just sets the flag for a reboot.
 

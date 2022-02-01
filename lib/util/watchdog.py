@@ -56,7 +56,7 @@ def stop_all_threads():
     if platform.system() == 'Windows':
         subprocess.run(['taskkill', '-F', '/PID', str(pid)])
 
-    # Otherwise, run the linux-based one.
+    # Otherwise, run the Linux-based one.
     subprocess.run(['kill', '-9', str(pid)])
 
 

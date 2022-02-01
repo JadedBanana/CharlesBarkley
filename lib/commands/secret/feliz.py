@@ -263,7 +263,7 @@ async def feliz_send_image(message, day, angry):
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
         day (int) : The integer date of today. 0 = monday, 1 = tuesday, and so on.
-        angry (bool) : Whether or not the anime girl in the picture should be pissed off because TODAY IS NOT THAT DAY.
+        angry (bool) : Whether the anime girl in the picture should be pissed off because TODAY IS NOT THAT DAY.
     """
 
     # Get where to pull the image from based on the day and whether it's angry.

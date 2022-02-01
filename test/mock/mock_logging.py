@@ -79,13 +79,13 @@ class DebugMethod:
 
 class InfoMethod:
     """
-    Simulates a info method for the logging module.
+    Simulates an info method for the logging module.
     """
 
 
     def __init__(self, *args):
         """
-        Simulates a info method for the logging module.
+        Simulates an info method for the logging module.
         """
         # Append to the called_args.
         info_called_args.append(args)
@@ -195,13 +195,13 @@ class WarningMethod:
 
 class ErrorMethod:
     """
-    Simulates a error method for the logging module.
+    Simulates an error method for the logging module.
     """
 
 
     def __init__(self, *args):
         """
-        Simulates a error method for the logging module.
+        Simulates an error method for the logging module.
         """
         # Append to the called_args.
         error_called_args.append(args)

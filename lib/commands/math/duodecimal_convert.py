@@ -1,6 +1,6 @@
 """
 Duodecimal command.
-Converts numbers from other bases into duodecimal.
+Converts a number from other bases into duodecimal.
 """
 # Imports
 from lib.util.logger import BotLogger as logging

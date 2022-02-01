@@ -50,7 +50,7 @@ class CronThread(threading.Thread):
 
     def run(self):
         """
-        Cron loop updates the cron file with new random strings so we don't create more than one instance at once thanks to cron.
+        Cron loop updates the cron file with new random strings so that we don't create more than one instance at once thanks to cron.
         """
         # Import time
         import time

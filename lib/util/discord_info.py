@@ -43,7 +43,7 @@ def get_applicable_users(message, exclude_bots=True, exclude_users=None):
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered the command.
-        exclude_bots (bool) : Whether or not to exclude bots from the list.
+        exclude_bots (bool) : Whether to exclude bots from the list.
         exclude_users (list) : Which users, if any, to exclude from the list.
 
     Returns:
@@ -291,7 +291,7 @@ class IdWrapperList(list):
             int : The index of the first instance of the object.
                   Will be -1 if it doesn't exist.
         """
-        # Call index with a try/catch.
+        # Call the index method with a try/catch.
         try:
             return self.index(item)
 

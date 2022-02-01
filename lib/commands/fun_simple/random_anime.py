@@ -13,7 +13,7 @@ import discord
 import random
 
 
-# A lot of constants important for the Youtube API.
+# A lot of constants important for the MyAnimeList API.
 DEFAULT_USER = None  # Initialized in initialize method
 DEFAULT_PAGE_NUMBERS = None  # Initialized in initialize method
 DEFAULT_PAGE_WEIGHTS = None  # Initialized in initialize method

@@ -66,7 +66,7 @@ def do_uwu_owo_replace(text, use_owo):
 
     Arguments:
         text (str) : The text to be converted to uwu- or owo-speak.
-        use_owo (bool) : Whether or not to use owo. If true, will be converted to owo-speak. If false, will be converted to uwu-speak.
+        use_owo (bool) : Whether to use owo. If true, will be converted to owo-speak. If false, will be converted to uwu-speak.
     """
     # Get the number of colons. This is used to detect the number of emotes.
     colon_count = text.count(':')

@@ -67,7 +67,7 @@ def cron_check_passed():
     Only runs if it's outlined to do so in .env.
 
     Returns:
-        bool : Whether or not the cron check passed.
+        bool : Whether the cron check passed.
     """
     # Imports.
     from lib.util import cron

@@ -1,6 +1,6 @@
 """
 Octal command.
-Converts numbers from other bases into octal.
+Converts a number from other bases into octal.
 """
 # Imports
 from lib.util.logger import BotLogger as logging

@@ -872,7 +872,7 @@ async def do_shsl_thing(message, argument, use_shsl=True):
     talent_text = Image.new('L', (1280, 720))
     talent_blur = Image.new('L', (1280, 720))
 
-    # Creates user name without emoji.
+    # Creates username without emoji.
     student_name = student.display_name
     # Iterate through each character in the name and pull out any characters with ord's greater than the max.
     i = 0

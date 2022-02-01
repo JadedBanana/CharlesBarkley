@@ -1,6 +1,7 @@
 """
 Hunger Games command.
-Essentially a BrantSteele simulator simulator.
+Essentially recreates the BrantSteele simulator of the same name.
+If you're reading this, Mr. Steele, I hope you don't mind me using your game for my bot.
 """
 # Local Imports
 from lib.util import arguments, assets, database, discord_info, environment, graphics, messaging, misc, parsing, \
@@ -585,7 +586,7 @@ async def hunger_games_update_pregame_toggle_bots(hg_key, hg_dict, response, mes
                     hg_players_no_bots.remove(player)
                     temp_files.retire_profile_picture_by_user(player, message, 'hg_filehold')
 
-        # While there are less players than the minimum, add new players on randomly.
+        # While there are fewer players than the minimum, add new players on randomly.
         while len(hg_players_no_bots) < HG_MIN_GAMESIZE:
             other_players = discord_info.get_applicable_users(message, True, hg_players_no_bots)
 
@@ -1092,10 +1093,10 @@ def do_increment(hg_dict, count, do_previous):
     Arguments:
         hg_dict (dict) : The full game dict.
         count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
+        do_previous (bool) : Whether to go backwards.
 
     Returns:
-        bool : Whether or not the hg_dict was incremented.
+        bool : Whether the hg_dict was incremented.
     """
     # Gets the current phase.
     current_phase = hg_dict['phases'][hg_dict['current_phase']]
@@ -1115,10 +1116,10 @@ def do_increment_act(hg_dict, count, do_previous):
     Arguments:
         hg_dict (dict) : The full game dict.
         count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
+        do_previous (bool) : Whether to go backwards.
 
     Returns:
-        bool : Whether or not the hg_dict was incremented.
+        bool : Whether the hg_dict was incremented.
     """
     # Backwards section.
     if do_previous:
@@ -1191,7 +1192,7 @@ def do_increment_act_check(hg_dict, count, do_previous):
     Arguments:
         hg_dict (dict) : The full game dict.
         count (int) : How many action images to show, if the next phase is an action phase.
-        do_previous (bool) : Whether or not to go backwards.
+        do_previous (bool) : Whether to go backwards.
 
     Returns:
         True
@@ -1201,12 +1202,12 @@ def do_increment_act_check(hg_dict, count, do_previous):
     if current_phase[0] == 'act':
 
         # If so, then set the action indexes depending on whether we're going backwards.
-        # Backwards gets put at the end.
+        # If we are going backwards, the action indexes get put at the end.
         if do_previous:
             hg_dict['action_max_index'] = current_phase[2] - 1
             hg_dict['action_min_index'] = max(hg_dict['action_max_index'] - count + 1, 0)
 
-        # Forwards gets put at the front.
+        # Otherwise, they get put at the front.
         else:
             hg_dict['action_min_index'] = 0
             hg_dict['action_max_index'] = min(count - 1, current_phase[2] - 1)
@@ -1409,7 +1410,7 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
         drawer (PIL.ImageDraw) : The drawer.
         pfp_x (int) : The x position of where to draw the icon.
         pfp_y (int) : The y position of where to draw the icon.
-        dead (bool) : Whether or not this player is dead.
+        dead (bool) : Whether this player is dead.
                       If they are dead, then their icon will be in grayscale and slightly darkened.
     """
     # Get the player_pfp.
@@ -1421,7 +1422,7 @@ def makeimage_pfp(player, image, drawer, pfp_x, pfp_y, dead=False):
         # Put the background color behind the profile picture.
         player_pfp = graphics.color_behind(player_pfp, HG_PLAYERSTATUS_DEAD_PFP_BACKGROUND_COLOR)
 
-        # Perform the colorize.
+        # Perform the colorize operation.
         player_pfp = ImageOps.colorize(player_pfp.convert('L'), black=(0, 0, 0),
                                        white=misc.multiply_int_tuple(
                                            (255, 255, 255), HG_PLAYERSTATUS_DEAD_PFP_DARKEN_FACTOR),
@@ -2161,7 +2162,7 @@ async def pregame_shuffle(message, player_count, hg_dict):
 
     # Otherwise, we generate the players and ask if we should proceed.
     hg_players = []
-    # Chooses a random player from the roster until we're out of players or we've reached the normal amount.
+    # Chooses a random player from the roster until we're out of players OR we've reached the normal amount.
     for i in range(min(player_count, len(user_list))):
         next_player = random.choice(user_list)
         hg_players.append(discord_info.LightweightUser(next_player))

@@ -1,6 +1,6 @@
 """
 Hexadecimal command.
-Converts numbers from other bases into hexadecimal.
+Converts a number from other bases into hexadecimal.
 """
 # Imports
 from lib.util.logger import BotLogger as logging

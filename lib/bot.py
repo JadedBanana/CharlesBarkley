@@ -127,7 +127,7 @@ class JadieClient(discord.Client):
         else:
             self.connected_before = True
         # Reconnected_since makes sure we're not putting 2 disconnect messages in a row.
-        # Marks ONLY when a reconnect has happened since the last disconnect.
+        # Marks ONLY when the bot has reconnected since the last disconnect.
         self.reconnected_since = True
 
 
@@ -137,7 +137,7 @@ class JadieClient(discord.Client):
         Good for logging purposes.
         """
         # Reconnected_since makes sure we're not putting 2 disconnect messages in a row
-        # Marks ONLY when a reconnect has happened since the last disconnect
+        # Marks ONLY when the bot has reconnected since the last disconnect
         if self.reconnected_since:
             logging.info(f'{self.user} has disconnected from Discord')
             self.reconnected_since = False

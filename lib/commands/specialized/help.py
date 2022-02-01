@@ -1,7 +1,7 @@
 """
 Help command.
 Pulls all the help documentation on a per-command basis and displays it when the user asks for it.
-Must be initialized with the initialize() method before actually running anything.
+Must be initialized with the initialize method before actually running anything.
 """
 # Local Imports
 from lib.util.logger import BotLogger as logging

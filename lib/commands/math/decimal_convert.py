@@ -1,6 +1,6 @@
 """
 Decimal command.
-Converts numbers from other bases into decimal.
+Converts a number from other bases into decimal.
 """
 # Imports
 from lib.util.logger import BotLogger as logging

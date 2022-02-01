@@ -114,7 +114,7 @@ async def send_local_image_based_embed(message, image, title, embed_color, descr
     if footer:
         embed.set_footer(text=footer)
 
-    # Have the temp_files module create a temporary image on-disk and create the image file..
+    # Have the temp_files module create a temporary image on-disk and create the image file.
     image_path = temp_files.save_temporary_image(image)
     file = discord.File(image_path, filename='embed_image.png')
 

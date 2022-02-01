@@ -64,7 +64,7 @@ async def get_weather_dict(message, argument):
     response = requests.get(WEATHER_API_URL.format(WEATHER_API_KEY, argument))
     weather_json = response.json()
 
-    # If we didn't get weather_json or it's broken, we tell the user that.
+    # If we didn't get weather_json OR it's broken, we tell the user that.
     if not weather_json or 'cod' not in weather_json:
         logging.info(message, "requested weather, think it's broken")
         return await messaging.send_text_message(message, 'Weather service is down, please try again later.')

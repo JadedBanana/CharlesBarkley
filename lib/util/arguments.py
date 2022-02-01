@@ -35,7 +35,7 @@ def get_closest_users(message, argument, exclude_bots=False, exclude_users=None,
     Arguments:
         message (discord.message.Message) : The discord message object that triggered the command.
         argument (str) : The command's argument, if any.
-        exclude_bots (bool) : Whether or not to exclude bots from the list. Defaults to False.
+        exclude_bots (bool) : Whether to exclude bots from the list. Defaults to False.
         exclude_users (list) : Which users to exclude from the list. Defaults to None.
         limit (int) : The maximum amount of users in the list. Defaults to None.
 

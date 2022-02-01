@@ -351,8 +351,10 @@ async def run_standard_command(command_name, command_method, bot, message, argum
             traceback_str = traceback_str[:-1]
 
         # Log the error.
-        logging.error(message, f"Caused exception with message content '{message.content}', detected command '{command_name}', " +
-                               (f"detected argument '{argument}'" if argument else 'no detected argument') + f":\n{traceback_str}")
+        logging.error(message, f"Caused exception with message content '{message.content}', detected command '"
+                               f"{command_name}', " +
+                               (f"detected argument '{argument}'" if argument else 'no detected argument') +
+                               f":\n{traceback_str}")
 
         # Send the message.
         await messaging.send_error_message(message, bot.global_prefix, traceback_str)

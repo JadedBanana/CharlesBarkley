@@ -11,7 +11,7 @@ from lib.util import arguments, discord_info, messaging
 import discord
 
 
-# Dict of copied users, keyed by guild / channel. Also the bot user.
+# Dict of copied users, keyed by guild / channel; also, the bot user.
 COPIED_USERS = {}
 BOT = None  # Initialized in initialize method
 

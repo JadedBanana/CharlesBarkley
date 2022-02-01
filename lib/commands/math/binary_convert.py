@@ -1,6 +1,6 @@
 """
 Binary command.
-Converts numbers from other bases into binary.
+Converts a number from other bases into binary.
 """
 # Imports
 from lib.util.logger import BotLogger as logging
