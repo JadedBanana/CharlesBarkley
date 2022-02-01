@@ -185,9 +185,11 @@ async def uno_start(message, argument):
 
     # Generate the uno dict.
     author = LightweightUser(message.author)
-    uno_dict = {'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': IdWrapperList([author]),
-                'lobby_colors': fix_lobby_colors([random.randint(0, 3) for i in range(MAX_GAMESIZE)], player_count),
-                'readies': [False for i in range(MAX_GAMESIZE)], 'max_players': player_count}
+    uno_dict = {
+        'past_pregame': False, 'updated': datetime.today(), 'host': author, 'players': IdWrapperList([author]),
+        'lobby_colors': fix_lobby_colors([random.randint(0, 3) for i in range(MAX_GAMESIZE)], player_count),
+        'readies': [False for i in range(MAX_GAMESIZE)], 'max_players': player_count, 'option_int': OPTIONS_DEFAULT_INT
+    }
     CURRENT_GAMES[uno_key] = uno_dict
 
     # Checkout the host's profile picture.

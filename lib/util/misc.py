@@ -155,25 +155,25 @@ def convert_num_from_decimal(n, base):
     """
     # Gets maximum exponent that will be necessary to dissect this number.
     exp = 0
-    while base**(exp  + 1) <= n:
-        exp+= 1
+    while base**(exp + 1) <= n:
+        exp += 1
 
     # Adds all the numbers that aren't a multiple of base to the string.
     num_str = ''
     while n != 0 and exp >= MAX_CONVERT_DEPTH:
         # Adds a decimal point if we're below 0 exp.
         if exp == -1:
-            num_str+= '.'
+            num_str += '.'
         # Grab the correct num character and add it to the string.
         num_str += CONVERT_CHARS[int(n / base ** exp)]
         # Subtract our remaining number and exponent.
         n -= (int(n / base**exp) * base**exp)
-        exp-= 1
+        exp -= 1
 
     # Adds all the zeros between exp and 0 if exp is not below 0.
     while exp >= 0:
-        num_str+= '0'
-        exp-= 1
+        num_str += '0'
+        exp -= 1
 
     # Return the converted number.
     return num_str
