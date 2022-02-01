@@ -1559,7 +1559,7 @@ class TestBotAsynchronous(IsolatedAsyncioTestCase):
 
         # Run assertions.
         self.assertTrue(ignore)
-        self.client.toggle_ignore_developer.assert_called_once_with(self.client, message)
+        self.client.toggle_ignore_developer.assert_called_once_with(message)
 
 
     async def test_ignore_developer_check_ignore_developer_author_is_developer_not_toggle(self):
