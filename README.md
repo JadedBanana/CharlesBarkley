@@ -34,7 +34,7 @@ This will automatically install all the packages required for the bot to run.
 ### <a name="environment-setup"></a>Environment Setup
 
 After Python installation is completed, the bot requires one more thing to launch.
-Take note of the [`.env.template`](.env.teplate) file in the outermost directory; 
+Take note of the [`.env.template`](.env.template) file in the outermost directory; 
 this is a template for the `.env` file that you must create in order to customize 
 the environment variables for running. Every variable referenced in 
 [`.env.template`](.env.template) is required for the `.env` file. See 
