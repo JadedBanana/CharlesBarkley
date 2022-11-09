@@ -209,6 +209,34 @@ async def get_secondmost_recent_message(message):
         raise FirstMessageInChannelError()
 
 
+async def get_reply_lineage(message, max_depth=99):
+    """
+    Gets the lineage of replies from this message.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object we are finding the ancestry of.
+        max_depth (int) : The maximum amount of replies to traverse through. Default is 99.
+
+    Returns:
+        discord.message.Message[] : The discord messages representing this message's lineage, from newest to oldest.
+    """
+    # Initialize reply list.
+    reply_list = [message]
+
+    # If this message is a reply, enter loop.
+    if message.reference:
+        reply = await message.channel.fetch_message(message.reference.message_id)
+
+        # Get every reply upstream.
+        while reply and len(reply_list) < max_depth + 1:
+            reply_list.append(reply)
+            if reply.reference:
+                reply = await message.channel.fetch_message(reply.reference.message_id)
+
+    # Return.
+    return reply_list
+
+
 class IdWrapper:
     """
     IdWrapper class is made to wrap any object with an ID.
