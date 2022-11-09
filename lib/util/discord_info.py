@@ -230,8 +230,7 @@ async def get_reply_lineage(message, max_depth=99):
         # Get every reply upstream.
         while reply and len(reply_list) < max_depth + 1:
             reply_list.append(reply)
-            if reply.reference:
-                reply = await message.channel.fetch_message(reply.reference.message_id)
+            reply = await message.channel.fetch_message(reply.reference.message_id) if reply.reference else None
 
     # Return.
     return reply_list
