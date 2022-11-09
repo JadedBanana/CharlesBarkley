@@ -2,12 +2,13 @@ from lib.util.exceptions import FirstMessageInChannelError
 from lib.util import discord_info, environment, messaging
 
 
-async def get_messages_in_screenshot(message):
+async def get_messages_in_screenshot(message, message_history):
     """
     Gathers all the messages that will be in the image based on a reply chain.
 
     Arguments:
         message (discord.message.Message) : The discord message object that triggered this command.
+        message_history (discord.message.Message) : The discord message history.
     """
     # First, gather the subject message.
     try:
@@ -26,10 +27,7 @@ async def get_messages_in_screenshot(message):
 
     # Otherwise, travel down the chain and try to find any recent parallel replies.
     original_post_list = post_list.copy()
-    recent_replies = [
-        msg for msg in await discord_info.get_message_history(message, environment.get('USERWAS_REPLY_CHECK_MAX_LENGTH'))
-        if msg.reference and msg not in post_list
-    ]
+    recent_replies = [msg for msg in message_history if msg.reference and msg not in post_list]
     recent_replies.reverse()
     for i in range(1, len(original_post_list)):
         message_replies = []
@@ -60,7 +58,7 @@ async def get_messages_in_screenshot(message):
                     break
 
     # Sort messages by their id and return.
-    return sorted(post_list, key=lambda msg: msg.id, reverse=True)
+    return sorted(post_list, key=lambda msg: msg.id)
 
 
 async def userhead(message, argument):
@@ -72,9 +70,8 @@ async def userhead(message, argument):
         argument (str) : The command's argument, if any.
     """
     # First, get all the messages.
-    messages = await get_messages_in_screenshot(message)
-
-    print([msg.content for msg in messages])
+    message_history = [msg for msg in await discord_info.get_message_history(message, environment.get('USERWAS_REPLY_CHECK_MAX_LENGTH'))]
+    messages = await get_messages_in_screenshot(message, message_history)
 
 
 # Command values
