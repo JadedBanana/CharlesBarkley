@@ -295,7 +295,7 @@ def save_temporary_text_file(text_str):
     # Get the filename.
     text_file_path = os.path.join(
         TEMP_DIR,
-        ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH)) + TEMP_FILE_FILETYPE
+        ''.join(random.choice(TEMP_FILE_CHAR_POSSIBILITIES) for i in range(TEMP_FILE_LENGTH)) + '.txt'
     )
 
     # Save.

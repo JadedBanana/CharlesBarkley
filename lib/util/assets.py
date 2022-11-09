@@ -86,7 +86,18 @@ def asset_check():
     # Detect if any asset files are missing.
     for asset_file in EXPECTED_ASSET_FILES:
         if not os.path.isfile(os.path.join(ASSETS_DIR, asset_file)):
-            raise MissingAssetFileError(asset_file)
+            raise MissingAssetFileError(f'Missing asset file {asset_file}')
+
+    # Check all expected populated asset dirs.
+    for asset_dir in EXPECTED_POPULATED_ASSET_DIRS:
+
+        # First, check that it exists.
+        if not os.path.isdir(os.path.join(ASSETS_DIR, asset_dir)):
+            raise MissingAssetFileError(f'Missing asset directory {asset_dir}')
+
+        # Next, check that it has at least one item in it.
+        if not os.listdir(os.path.join(ASSETS_DIR, asset_dir)):
+            raise MissingAssetFileError(f'Asset directory {asset_dir} is empty')
 
 
 def open_image(filename):

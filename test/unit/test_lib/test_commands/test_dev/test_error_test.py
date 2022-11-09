@@ -9,7 +9,7 @@ class TestErrorTestAsynchronous(IsolatedAsyncioTestCase):
 
 
     async def test_error_test(self):
-        """lib.commands.dev.error_test.error_test"""
+        """lib.commands.test_dev.error_test.error_test"""
         # Run the method.
         with self.assertRaises(Exception):
             await error_test.error_test(mock.MagicMock(), 'message', 'argument')
