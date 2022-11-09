@@ -172,6 +172,21 @@ def get_guild_regions_weighted(message):
     return region_count
 
 
+async def get_message_history(message, count=100):
+    """
+    Gets the message history in a channel, given a message.
+
+    Arguments:
+        message (discord.message.Message) : The discord message object that triggered the command.
+        count (int) : How many messages back to retrieve.
+
+    Returns:
+        discord.message.Message[] : The most recent messages in the channel.
+    """
+    message_history = message.channel.history(limit=count)
+    return [msg async for msg in message_history]
+
+
 async def get_secondmost_recent_message(message):
     """
     Gets the second-most recent message in a channel, given a message.
@@ -187,7 +202,7 @@ async def get_secondmost_recent_message(message):
     """
     # Simple get statement.
     try:
-        return (await message.channel.history(limit=2).flatten())[1]
+        return (await get_message_history(message, 2))[1]
 
     # If there's an index error, raise the FirstMessageInChannelError.
     except IndexError:
